@@ -1,0 +1,58 @@
+<div class="col-md-3">
+    <ul class="list-group">
+        <a class="list-group-item"
+           ng-class="{active: isSelected(route)}"
+           ng-repeat="route in routes"
+           ng-click="selectRoute(route)">{{route.desc}}
+        </a>
+    </ul>
+</div>
+<div class="col-md-9">
+    <div class="panel panel-default">
+        <div class="panel-body"
+             ng-hide="routeIsSelected">
+            Please select a route.
+        </div>
+        <div class="panel-body"
+             ng-show="routeIsSelected">
+            <ul class="nav nav-tabs">
+                <li ng-repeat="direction in selectedRoute.dir">
+                    <a href="#{{direction.desc}}"
+                       data-toggle="tab">{{direction.desc}}</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active"
+                     ng-repeat="direction in selectedRoute.dir"
+                     id="{{direction.desc}}">
+
+                    <div class="panel panel-default">
+                        <!-- Default panel contents -->
+                        <div class="panel-heading">{{direction.desc}}</div>
+                        <div class="panel-body">
+                            <p>Below is a list of stops.</p>
+                        </div>
+                        <!-- Table -->
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Stop Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="stop in direction.stop">
+                                    <td>{{stop.desc}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
