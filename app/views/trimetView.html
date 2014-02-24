@@ -50,30 +50,42 @@
     </ul>
     <div class="panel panel-default"
          ng-show="stopIsSelected">
-        <div class="panel-heading">
-            <h3 class="panel-title">{{selectedStop.desc}}</h3>
+        <div class="panel-heading">{{selectedStop.desc}}
+            <span class="pull-right">{{queryTime | date: 'medium'}}</span>
         </div>
         <div class="panel-body">
             <div class="panel panel-default">
                 <!-- Default panel contents -->
-                <div class="panel-heading">Arrivals</div>
+                <div class="panel-heading">Map</div>
+                <div class="panel-body">
+                    hello
+                </div>
+                <!-- Default panel contents -->
+                <div class="panel-heading">Arrivals
+                    <!--Refresh-->
+                    <button type="button"
+                            class="btn btn-default btn-xs pull-right"
+                            ng-click="refreshArrivals(selectedStop)">
+                        <span class="glyphicon glyphicon-refresh"></span>
+                    </button>
+                </div>
                 <!-- Table -->
                 <table class="table">
                     <thead>
-                        <tr>
-                            <th>Departed</th>
-                            <th>Estimated</th>
-                            <th>Scheduled</th>
-                            <th>Status</th>
-                        </tr>
+                    <tr>
+                        <th>Departed</th>
+                        <th>Estimated</th>
+                        <th>Scheduled</th>
+                        <th>Status</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="arrival in selectedStop.arrivalInfo.resultSet.arrival">
-                            <td>{{arrival.departed}}</td>
-                            <td>{{arrival.estimated | date:'medium'}}</td>
-                            <td>{{arrival.scheduled | date:'medium'}}</td>
-                            <td>{{arrival.status}}</td>
-                        </tr>
+                    <tr ng-repeat="arrival in selectedStop.arrivalInfo.resultSet.arrival">
+                        <td>{{arrival.departed}}</td>
+                        <td>{{arrival.estimated | date:'medium'}}</td>
+                        <td>{{arrival.scheduled | date:'medium'}}</td>
+                        <td>{{arrival.status}}</td>
+                    </tr>
                     </tbody>
                 </table>
             </div>

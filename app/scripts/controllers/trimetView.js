@@ -17,7 +17,6 @@ angular.module('pdxStreetcarApp')
         }
         function getArrivals(stop) {
             trimetFactory.getArrivalsForStop(stop, function arrivalSuccess(arrivalInfo) {
-                $scope.selectedStop.arrivalInfo = {};
                 $scope.selectedStop.arrivalInfo = arrivalInfo;
                 $scope.queryTime = arrivalInfo.resultSet.queryTime;
             }, function arrivalError(response) {
@@ -47,6 +46,9 @@ angular.module('pdxStreetcarApp')
             $scope.routeIsSelected = true;
             $scope.stopIsSelected = false;
             $scope.selectedStop = null;
+        };
+        $scope.refreshArrivals = function (stop) {
+            getArrivals(stop);
         };
         return initTrimet();
   });
