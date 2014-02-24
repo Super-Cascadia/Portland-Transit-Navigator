@@ -1,53 +1,81 @@
 <div class="col-md-3">
     <ul class="list-group">
         <a class="list-group-item"
-           ng-class="{active: isSelected(route)}"
+           ng-class="{active: isRouteSelected(route)}"
            ng-repeat="route in routes"
            ng-click="selectRoute(route)">{{route.desc}}
         </a>
     </ul>
 </div>
 <div class="col-md-9">
-    <div class="panel panel-default">
-        <div class="panel-body"
-             ng-hide="routeIsSelected">
-            Please select a route.
+    <!--Empty State-->
+    <div class="panel-body"
+         ng-hide="routeIsSelected">
+        Please select a route.
+    </div>
+    <!--All Stop-->
+    <div class="panel-body"
+         ng-show="routeIsSelected && !stopIsSelected">
+        <tabset>
+            <tab ng-repeat="direction in selectedRoute.dir"
+                 active="tab.active"
+                 disabled="tab.disabled">
+                <tab-heading>
+                    {{direction.desc}}
+                </tab-heading>
+                <table class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th>Stop Name</th>
+                        <th>Location ID</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="stop in direction.stop"
+                        ng-click="selectStop(stop)">
+                        <td>{{stop.desc}}</td>
+                        <td>{{stop.locid}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </tab>
+        </tabset>
+    </div>
+    <!--Stop Info-->
+    <ul class="pager"
+        ng-show="stopIsSelected">
+        <li class="previous">
+            <a ng-click="returnToAllStops()">&larr; All Stops</a>
+        </li>
+    </ul>
+    <div class="panel panel-default"
+         ng-show="stopIsSelected">
+        <div class="panel-heading">
+            <h3 class="panel-title">{{selectedStop.desc}}</h3>
         </div>
-        <div class="panel-body"
-             ng-show="routeIsSelected">
-            <ul class="nav nav-tabs">
-                <li ng-repeat="direction in selectedRoute.dir">
-                    <a href="#{{direction.desc}}"
-                       data-toggle="tab">{{direction.desc}}</a>
-                </li>
-            </ul>
-            <div class="tab-content">
-                <div class="tab-pane active"
-                     ng-repeat="direction in selectedRoute.dir"
-                     id="{{direction.desc}}">
-
-                    <div class="panel panel-default">
-                        <!-- Default panel contents -->
-                        <div class="panel-heading">{{direction.desc}}</div>
-                        <div class="panel-body">
-                            <p>Below is a list of stops.</p>
-                        </div>
-                        <!-- Table -->
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Stop Name</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="stop in direction.stop">
-                                    <td>{{stop.desc}}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                </div>
+        <div class="panel-body">
+            <div class="panel panel-default">
+                <!-- Default panel contents -->
+                <div class="panel-heading">Arrivals</div>
+                <!-- Table -->
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Departed</th>
+                            <th>Estimated</th>
+                            <th>Scheduled</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="arrival in selectedStop.arrivalInfo.resultSet.arrival">
+                            <td>{{arrival.departed}}</td>
+                            <td>{{arrival.estimated | date:'medium'}}</td>
+                            <td>{{arrival.scheduled | date:'medium'}}</td>
+                            <td>{{arrival.status}}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

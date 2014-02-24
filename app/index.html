@@ -22,6 +22,9 @@
           href="bower_components/bootstrap/dist/css/bootstrap.css"/>
     <link rel="stylesheet"
           href="styles/main.css">
+    <style>
+        .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
+    </style>
     <!-- endbuild -->
 </head>
 <body ng-app="pdxStreetcarApp"
@@ -41,7 +44,7 @@
      ng-controller="topNavigationCtrl"
      ng-include="'/views/navigation/top-navigation/top-navigation.html'"></nav>
 <!-- Add your site or application content here -->
-<div class="container"
+<div class="container-fluid"
      ng-view=""></div>
 <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
 <script>
@@ -65,10 +68,12 @@
 <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
 <!-- endbuild -->
 <!-- build:js scripts/modules.js -->
+
 <script src="bower_components/angular-resource/angular-resource.js"></script>
 <script src="bower_components/angular-route/angular-route.js"></script>
 <script src="bower_components/angular-cookies/angular-cookies.js"></script>
 <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+<script src="bower_components/angular-bootstrap/ui-bootstrap.js"></script>
 <!-- endbuild -->
 <!-- build:js({.tmp,app}) scripts/scripts.js -->
 <script src="scripts/app.js"></script>

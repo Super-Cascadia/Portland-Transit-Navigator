@@ -5,10 +5,9 @@ angular.module('pdxStreetcarApp')
         var trimetAppId = "F3757A12A14F88550C14A9A2B";
         var baseUrl = 'http://developer.trimet.org/ws/V1/';
         var trimetURL;
-
-        function getArrivals(success, error) {
-            var locIDs = ['2580'];
-            trimetURL = baseUrl + 'arrivals/json/true/locIDs/' + locIDs[0] + '/appID/' + trimetAppId;
+        function getArrivals(stop, success, error) {
+            var locID = stop.locid;
+            trimetURL = baseUrl + 'arrivals/json/true/streetcar/true/locIDs/' + locID + '/appID/' + trimetAppId;
             $http({
                 method: 'GET',
                 url: trimetURL,
@@ -21,7 +20,7 @@ angular.module('pdxStreetcarApp')
                 success(data);
             }).
             error(function (data, status, headers, config) {
-                error();
+                error(data);
             });
         }
         function getRoutes(success, error) {
@@ -43,8 +42,8 @@ angular.module('pdxStreetcarApp')
         }
         // Public API here
         return {
-            getArrivals: function (success, error) {
-                return getArrivals(success, error);
+            getArrivalsForStop: function (stop, success, error) {
+                return getArrivals(stop, success, error);
             },
             getRoutes: function (success, error) {
                 return getRoutes(success, error);
