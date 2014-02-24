@@ -1,21 +1,29 @@
 'use strict';
 
 angular.module('pdxStreetcarApp')
-  .controller('TrimetviewCtrl', function ($scope, $http, xmlConverter, trimetFactory) {
+  .controller('TrimetviewCtrl', function ($scope, $http, xmlConverter, trimet) {
         $scope.map = {
             center: {
                 latitude: 45,
                 longitude: -73
             },
-            zoom: 20
+            zoom: 18
         };
         function initState() {
             $scope.routeIsSelected = false;
             $scope.stopIsSelected = false;
             $scope.selectedStop = null;
         }
-        function getRoutes() {
-            trimetFactory.getRoutes(function getSuccess(response) {
+        function getRailRoutes() {
+            trimet.rail.getRoutes(function getSuccess(response) {
+                $scope.routes = response.resultSet.route;
+                $scope.selectRoute($scope.routes[0]);
+            }, function getError(response) {
+
+            });
+        }
+        function getStreetcarRoutes() {
+            trimet.streetcar.getRoutes(function getSuccess(response) {
                 $scope.routes = response.resultSet.route;
                 $scope.selectRoute($scope.routes[0]);
             }, function getError(response) {
@@ -23,7 +31,7 @@ angular.module('pdxStreetcarApp')
             });
         }
         function getArrivals(stop) {
-            trimetFactory.getArrivalsForStop(stop, function arrivalSuccess(arrivalInfo) {
+            trimet.getArrivalsForStop(stop, function arrivalSuccess(arrivalInfo) {
                 $scope.selectedStop.arrivalInfo = arrivalInfo;
                 $scope.queryTime = arrivalInfo.resultSet.queryTime;
             }, function arrivalError(response) {
@@ -32,7 +40,8 @@ angular.module('pdxStreetcarApp')
         }
         function initTrimet() {
             initState();
-            return getRoutes();
+            getStreetcarRoutes();
+            return getRailRoutes();
         }
         $scope.returnToAllStops = function () {
             $scope.stopIsSelected = false;
@@ -48,7 +57,7 @@ angular.module('pdxStreetcarApp')
                     longitude: stop.lng
                 },
                 draggable: true,
-                zoom: 20
+                zoom: 18
             };
             getArrivals(stop);
         };
