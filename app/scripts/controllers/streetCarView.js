@@ -81,19 +81,15 @@ angular.module('pdxStreetcarApp')
         }
         $scope.isArrivalImminent = function (arrival) {
             calculateDifferenceInTimes(arrival, function (diff) {
-                if (diff.minutes <= 3) {
+                if (diff.minutes < 3) {
                     return true;
-                } else {
-                    return false;
                 }
             });
         };
         $scope.isArrivalSoon = function (arrival) {
             calculateDifferenceInTimes(arrival, function (diff) {
-                if (diff.minutes <= 7) {
+                if (diff.minutes < 7) {
                     return true;
-                } else {
-                    return false;
                 }
             });
         };

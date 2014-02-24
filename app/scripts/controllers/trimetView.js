@@ -67,5 +67,45 @@ angular.module('pdxStreetcarApp')
         $scope.refreshArrivals = function (stop) {
             getArrivals(stop);
         };
+
+        function get_time_difference(earlierDate, laterDate, callback) {
+            var nTotalDiff = laterDate.getTime() - earlierDate.getTime();
+            var oDiff = new Object();
+            oDiff.days = Math.floor(nTotalDiff/1000/60/60/24);
+            nTotalDiff -= oDiff.days*1000*60*60*24;
+            oDiff.hours = Math.floor(nTotalDiff/1000/60/60);
+            nTotalDiff -= oDiff.hours*1000*60*60;
+            oDiff.minutes = Math.floor(nTotalDiff/1000/60);
+            nTotalDiff -= oDiff.minutes*1000*60;
+            oDiff.seconds = Math.floor(nTotalDiff/1000);
+            return callback(oDiff);
+        }
+        function calculateDifferenceInTimes (arrival, callback) {
+            var estimatedArrivalTime;
+            var queryTime = new Date($scope.queryTime);
+            if (arrival.estiamted) {
+                estimatedArrivalTime = new Date(arrival.estimated);
+            } else {
+                estimatedArrivalTime = new Date(arrival.scheduled);
+            }
+            get_time_difference(queryTime, estimatedArrivalTime, function (diff) {
+                return callback(diff);
+            });
+        }
+        $scope.isArrivalImminent = function (arrival) {
+            calculateDifferenceInTimes(arrival, function (diff) {
+                if (diff.minutes < 40) {
+                    arrival.imminent = true;
+                }
+            });
+        };
+        $scope.isArrivalSoon = function (arrival) {
+            calculateDifferenceInTimes(arrival, function (diff) {
+                if (diff.minutes < 7) {
+                    arrival.soon = true;
+                }
+            });
+        };
+
         return initTrimet();
   });
