@@ -1,3 +1,4 @@
+<div ng-controller="TransittimeviewCtrl"></div>
 <div class="col-md-3">
     <ul class="list-group">
         <a class="list-group-item"
@@ -53,7 +54,10 @@
                 <!-- Default panel contents -->
                 <div class="panel-heading">Map</div>
                 <div class="panel-body">
-                    <!--<google-map center="map.center" zoom="map.zoom"></google-map>-->
+                    <!--Google Map-->
+                    <div ui-map="myMap"
+                         ui-options="mapOptions"
+                         class="map-canvas"></div>
                 </div>
                 <!-- Default panel contents -->
                 <div class="panel-heading">Arrivals
@@ -68,6 +72,7 @@
                 <table class="table">
                     <thead>
                     <tr>
+                        <th>Arriving In...</th>
                         <th>Departed</th>
                         <th>Estimated</th>
                         <th>Scheduled</th>
@@ -75,7 +80,9 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="arrival in selectedStop.arrivalInfo.resultSet.arrival">
+                    <tr ng-repeat="arrival in selectedStop.arrivalInfo.resultSet.arrival"
+                        ng-class="{danger: isArrivalImminent(arrival), warning: isArrivalSoon(arrival)}">
+                        <td>{{arrival.relativeTime}}</td>
                         <td>{{arrival.departed}}</td>
                         <td>{{arrival.estimated | date:'medium'}}</td>
                         <td>{{arrival.scheduled | date:'medium'}}</td>

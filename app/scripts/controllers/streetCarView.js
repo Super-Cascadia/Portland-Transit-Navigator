@@ -2,13 +2,6 @@
 
 angular.module('pdxStreetcarApp')
   .controller('StreetcarviewCtrl', function ($scope, trimet) {
-        $scope.map = {
-            center: {
-                latitude: 45,
-                longitude: -73
-            },
-            zoom: 18
-        };
         function initState() {
             $scope.routeIsSelected = false;
             $scope.stopIsSelected = false;
@@ -22,10 +15,14 @@ angular.module('pdxStreetcarApp')
 
             });
         }
+        function calculateRelativeTimes(arrivalInfo) {
+            _.each();
+        }
         function getArrivals(stop) {
             trimet.getArrivalsForStop(stop, function arrivalSuccess(arrivalInfo) {
                 $scope.selectedStop.arrivalInfo = arrivalInfo;
                 $scope.queryTime = arrivalInfo.resultSet.queryTime;
+                calculateRelativeTimes();
             }, function arrivalError(response) {
 
             });
@@ -42,14 +39,6 @@ angular.module('pdxStreetcarApp')
             console.log(stop);
             $scope.stopIsSelected = true;
             $scope.selectedStop = stop;
-            $scope.map = {
-                center: {
-                    latitude: stop.lat,
-                    longitude: stop.lng
-                },
-                draggable: true,
-                zoom: 18
-            };
             getArrivals(stop);
         };
         $scope.isRouteSelected = function (route) {
@@ -65,6 +54,48 @@ angular.module('pdxStreetcarApp')
         };
         $scope.refreshArrivals = function (stop) {
             getArrivals(stop);
+        };
+        function get_time_difference(earlierDate, laterDate, callback) {
+            var nTotalDiff = laterDate.getTime() - earlierDate.getTime();
+            var oDiff = new Object();
+            oDiff.days = Math.floor(nTotalDiff/1000/60/60/24);
+            nTotalDiff -= oDiff.days*1000*60*60*24;
+            oDiff.hours = Math.floor(nTotalDiff/1000/60/60);
+            nTotalDiff -= oDiff.hours*1000*60*60;
+            oDiff.minutes = Math.floor(nTotalDiff/1000/60);
+            nTotalDiff -= oDiff.minutes*1000*60;
+            oDiff.seconds = Math.floor(nTotalDiff/1000);
+            return callback(oDiff);
+        }
+        function calculateDifferenceInTimes (arrival, callback) {
+            var estimatedArrivalTime;
+            var queryTime = new Date($scope.queryTime);
+            if (arrival.estiamted) {
+                estimatedArrivalTime = new Date(arrival.estimated);
+            } else {
+                estimatedArrivalTime = new Date(arrival.scheduled);
+            }
+            get_time_difference(queryTime, estimatedArrivalTime, function (diff) {
+                return callback(diff);
+            });
+        }
+        $scope.isArrivalImminent = function (arrival) {
+            calculateDifferenceInTimes(arrival, function (diff) {
+                if (diff.minutes <= 3) {
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+        };
+        $scope.isArrivalSoon = function (arrival) {
+            calculateDifferenceInTimes(arrival, function (diff) {
+                if (diff.minutes <= 7) {
+                    return true;
+                } else {
+                    return false;
+                }
+            });
         };
         return initTrimet();
   });

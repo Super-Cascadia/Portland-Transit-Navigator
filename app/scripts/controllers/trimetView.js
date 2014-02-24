@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('pdxStreetcarApp')
-  .controller('TrimetviewCtrl', function ($scope, $http, xmlConverter, trimet) {
+  .controller('TrimetviewCtrl', function ($scope, trimet) {
         $scope.map = {
             center: {
                 latitude: 45,
@@ -51,14 +51,6 @@ angular.module('pdxStreetcarApp')
             console.log(stop);
             $scope.stopIsSelected = true;
             $scope.selectedStop = stop;
-            $scope.map = {
-                center: {
-                    latitude: stop.lat,
-                    longitude: stop.lng
-                },
-                draggable: true,
-                zoom: 18
-            };
             getArrivals(stop);
         };
         $scope.isRouteSelected = function (route) {
