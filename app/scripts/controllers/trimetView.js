@@ -2,6 +2,13 @@
 
 angular.module('pdxStreetcarApp')
   .controller('TrimetviewCtrl', function ($scope, $http, xmlConverter, trimetFactory) {
+        $scope.map = {
+            center: {
+                latitude: 45,
+                longitude: -73
+            },
+            zoom: 20
+        };
         function initState() {
             $scope.routeIsSelected = false;
             $scope.stopIsSelected = false;
@@ -32,8 +39,17 @@ angular.module('pdxStreetcarApp')
             $scope.selectedStop = null;
         };
         $scope.selectStop = function (stop) {
+            console.log(stop);
             $scope.stopIsSelected = true;
             $scope.selectedStop = stop;
+            $scope.map = {
+                center: {
+                    latitude: stop.lat,
+                    longitude: stop.lng
+                },
+                draggable: true,
+                zoom: 20
+            };
             getArrivals(stop);
         };
         $scope.isRouteSelected = function (route) {
