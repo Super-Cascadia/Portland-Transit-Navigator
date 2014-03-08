@@ -2,6 +2,7 @@
 
 angular.module('pdxStreetcarApp')
   .controller('StreetcarviewCtrl', function ($scope, trimet) {
+
         function initState() {
             $scope.routeIsSelected = false;
             $scope.stopIsSelected = false;
@@ -39,6 +40,11 @@ angular.module('pdxStreetcarApp')
             console.log(stop);
             $scope.stopIsSelected = true;
             $scope.selectedStop = stop;
+            $scope.mapOptions = {
+                center: new google.maps.LatLng(stop.lat, stop.lng),
+                zoom: 17,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
             getArrivals(stop);
         };
         $scope.isRouteSelected = function (route) {

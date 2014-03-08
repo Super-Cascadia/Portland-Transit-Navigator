@@ -25,6 +25,9 @@
     <style>
         .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
     </style>
+    <style>
+        .map-canvas { height: 400px; }
+    </style>
     <!-- endbuild -->
 </head>
 <body ng-app="pdxStreetcarApp"
@@ -67,6 +70,9 @@
 <script src="bower_components/angular/angular.js"></script>
 <!-- build:js scripts/plugins.js -->
 <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+<script src="bower_components/angular-ui-utils/ui-utils.js"></script>
+<script src="bower_components/angular-ui-map/ui-map.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=onGoogleReady"></script>
 <!-- endbuild -->
 <!-- build:js scripts/modules.js -->
 <script src="bower_components/angular-resource/angular-resource.js"></script>
@@ -80,7 +86,7 @@
 <!--<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=onGoogleReady"></script>-->
 <script>
     function onGoogleReady() {
-        angular.bootstrap(document.getElementById("map"), ['ui-map']);
+        angular.bootstrap(document.getElementById("map"), ['ui.map']);
     }
 </script>
 <!-- build:js({.tmp,app}) scripts/scripts.js -->

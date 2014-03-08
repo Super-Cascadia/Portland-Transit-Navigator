@@ -11,7 +11,7 @@
 <div class="col-md-9">
     <!--All Stop-->
     <div class="panel-body"
-         ng-show="routeIsSelected && !stopIsSelected">
+         ng-if="routeIsSelected && !stopIsSelected">
         <tabset>
             <tab>
                 <tab-heading>
@@ -20,7 +20,12 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">{{direction.desc}} Transit Map</div>
                     <div class="panel-body">
-                        Panel content
+                        <!--<section id="map"-->
+                                 <!--ng-controller="MapCtrl">-->
+                            <!--<div ui-map="myMap"-->
+                                 <!--ui-options="mapOptions"-->
+                                 <!--class="map-canvas"></div>-->
+                        <!--</section>-->
                     </div>
                 </div>
             </tab>
@@ -53,13 +58,13 @@
     </div>
     <!--Stop Info-->
     <ul class="pager"
-        ng-show="stopIsSelected">
+        ng-if="stopIsSelected">
         <li class="previous">
             <a ng-click="returnToAllStops()">&larr; All Stops</a>
         </li>
     </ul>
     <div class="panel panel-default"
-         ng-show="stopIsSelected">
+         ng-if="stopIsSelected">
         <div class="panel-heading">{{selectedStop.desc}}
             <span class="pull-right">{{queryTime | date: 'medium'}}</span>
         </div>
@@ -69,9 +74,11 @@
                 <div class="panel-heading">Map</div>
                 <div class="panel-body">
                     <!--Google Map-->
-                    <div ui-map="myMap"
-                         ui-options="mapOptions"
-                         class="map-canvas"></div>
+                    <section id="map">
+                        <div ui-map="myMap"
+                             ui-options="mapOptions"
+                             class="map-canvas"></div>
+                    </section>
                 </div>
                 <!-- Default panel contents -->
                 <div class="panel-heading">Arrivals

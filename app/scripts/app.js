@@ -4,7 +4,8 @@ angular.module('pdxStreetcarApp', [
         'ngResource',
         'ngSanitize',
         'ngRoute',
-        'ui.bootstrap'
+        'ui.bootstrap',
+        'ui.map'
     ])
     .config(function ($routeProvider) {
         $routeProvider
