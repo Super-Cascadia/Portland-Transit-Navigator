@@ -12,6 +12,8 @@ angular.module('pdxStreetcarApp')
             trimet.streetcar.getRoutes(function getSuccess(response) {
                 $scope.routes = response.resultSet.route;
                 $scope.selectRoute($scope.routes[0]);
+                $scope.selectDirection($scope.selectedRoute.dir[0]);
+                $scope.selectStop($scope.selectedDirection.stop[0]);
             }, function getError(response) {
 
             });
@@ -36,16 +38,34 @@ angular.module('pdxStreetcarApp')
             $scope.stopIsSelected = false;
             $scope.selectedStop = null;
         };
+        $scope.selectDirection = function (direction) {
+            $scope.selectedDirection = direction;
+        };
         $scope.selectStop = function (stop) {
             console.log(stop);
             $scope.stopIsSelected = true;
             $scope.selectedStop = stop;
+            var latLng = new google.maps.LatLng(stop.lat, stop.lng);
             $scope.mapOptions = {
-                center: new google.maps.LatLng(stop.lat, stop.lng),
+                center: latLng,
                 zoom: 17,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             };
+            new google.maps.Marker({
+                map: $scope.myMap,
+                position: latLng
+            });
             getArrivals(stop);
+        };
+        $scope.isStopSelected = function (stop) {
+            if ($scope.selectedStop) {
+                return stop.locid === $scope.selectedStop.locid;
+            }
+        };
+        $scope.isDirectionSelected = function (direction) {
+            if ($scope.selectedDirection) {
+                return direction.dir === $scope.selectedDirection.dir;
+            }
         };
         $scope.isRouteSelected = function (route) {
             if ($scope.selectedRoute) {
@@ -54,9 +74,8 @@ angular.module('pdxStreetcarApp')
         };
         $scope.selectRoute = function (route) {
             $scope.selectedRoute = route;
-            $scope.routeIsSelected = true;
-            $scope.stopIsSelected = false;
-            $scope.selectedStop = null;
+            $scope.selectDirection($scope.selectedRoute.dir[0]);
+            $scope.selectStop($scope.selectedDirection.stop[0]);
         };
         $scope.refreshArrivals = function (stop) {
             getArrivals(stop);
