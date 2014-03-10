@@ -19,13 +19,19 @@ angular.module('pdxStreetcarApp')
             });
         }
         function calculateRelativeTimes(arrivalInfo) {
-            _.each();
+            var arrivals = arrivalInfo.resultSet.arrival;
+            for (var i = 0; i < arrivals.length; i += 1) {
+                var currentArrival = arrivals[i];
+                calculateDifferenceInTimes(currentArrival, function (response) {
+                    $scope.remainingTime = response;
+                })
+            }
         }
         function getArrivals(stop) {
             trimet.getArrivalsForStop(stop, function arrivalSuccess(arrivalInfo) {
                 $scope.selectedStop.arrivalInfo = arrivalInfo;
                 $scope.queryTime = arrivalInfo.resultSet.queryTime;
-                calculateRelativeTimes();
+                calculateRelativeTimes(arrivalInfo);
             }, function arrivalError(response) {
 
             });
@@ -95,7 +101,7 @@ angular.module('pdxStreetcarApp')
         function calculateDifferenceInTimes (arrival, callback) {
             var estimatedArrivalTime;
             var queryTime = new Date($scope.queryTime);
-            if (arrival.estiamted) {
+            if (arrival.estimated) {
                 estimatedArrivalTime = new Date(arrival.estimated);
             } else {
                 estimatedArrivalTime = new Date(arrival.scheduled);

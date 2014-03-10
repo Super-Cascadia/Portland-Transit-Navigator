@@ -59,7 +59,7 @@ angular.module('pdxStreetcarApp')
         }
         function getStopsAroundLocation(lat, lng, radiusFeet, success, error) {
             var latLng = lat + ',' + lng;
-            trimetURL = baseUrl + 'stops/json/true/ll/'+ latLng + '/feet/' + radiusFeet + '/appID/' + trimetAppId;
+            trimetURL = baseUrl + 'stops/json/true/showRoutes/true/showRouteDirs/true/ll/'+ latLng + '/feet/' + radiusFeet + '/appID/' + trimetAppId;
             $http({
                 method: 'GET',
                 url: trimetURL,

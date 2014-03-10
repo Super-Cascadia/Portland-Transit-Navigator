@@ -23,15 +23,15 @@ angular.module('pdxStreetcarApp')
             {
                 displayName: "Street Car",
                 route: "/streetcar"
-            },
-            {
-                displayName: "TriMet",
-                route: "/trimet"
-            },
-            {
-                displayName: "Bus",
-                route: "/bus"
             }
+//            {
+//                displayName: "TriMet",
+//                route: "/trimet"
+//            },
+//            {
+//                displayName: "Bus",
+//                route: "/bus"
+//            }
         ];
         $scope.topNavItemClick = function (navItem) {
             console.log(navItem);
