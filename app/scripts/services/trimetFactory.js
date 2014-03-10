@@ -57,8 +57,29 @@ angular.module('pdxStreetcarApp')
                     error();
                 });
         }
+        function getStopsAroundLocation(lat, lng, radiusFeet, success, error) {
+            var latLng = lat + ',' + lng;
+            trimetURL = baseUrl + 'stops/json/true/ll/'+ latLng + '/feet/' + radiusFeet + '/appID/' + trimetAppId;
+            $http({
+                method: 'GET',
+                url: trimetURL,
+                responseType: 'xml',
+                headers: {
+                    'Accept': 'application/xml, text/xml, */*; q=0.01'
+                }
+            }).
+                success(function (data, status, headers, config) {
+                    success(data);
+                }).
+                error(function (data, status, headers, config) {
+                    error();
+                });
+        }
         // Public API here
         return {
+            getStopsAroundLocation: function (lat, lng, radiusFeet, success, error) {
+                getStopsAroundLocation(lat, lng, radiusFeet, success, error)
+            },
             getArrivalsForStop: function (stop, success, error) {
                 return getArrivals(stop, success, error);
             },

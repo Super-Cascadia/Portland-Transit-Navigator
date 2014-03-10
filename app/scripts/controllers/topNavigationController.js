@@ -8,6 +8,7 @@ angular.module('pdxStreetcarApp')
                         lat: data.coords.latitude,
                         long: data.coords.longitude
                     };
+                    $location.path('/nearbyStops/' + $scope.coords.lat + '/' + $scope.coords.long);
                 });
         }
 
