@@ -2,13 +2,6 @@
 
 angular.module('pdxStreetcarApp')
   .controller('TrimetviewCtrl', function ($scope, trimet) {
-        $scope.map = {
-            center: {
-                latitude: 45,
-                longitude: -73
-            },
-            zoom: 18
-        };
         function initState() {
             $scope.routeIsSelected = false;
             $scope.stopIsSelected = false;
