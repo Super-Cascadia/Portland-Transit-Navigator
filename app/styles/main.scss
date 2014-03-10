@@ -4,9 +4,14 @@ $iconWhiteSpritePath: "../images/glyphicons-halflings-white.png";
 //@import "bootstrap/dist/css/bootstrap.css";
 
 /* Put your CSS here */
+html {
+  -ms-touch-action: manipulation;
+  touch-action: manipulation;
+}
 html, body {
   margin: 20px;
 }
+
 
 body {
     background: #fafafa;

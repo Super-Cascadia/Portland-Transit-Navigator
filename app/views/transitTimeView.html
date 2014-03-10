@@ -52,7 +52,9 @@
                         Next Arrival
                     </div>
                     <div class="panel-body">
-                        <h2>Next arrival in: {{remainingTime.minutes}} min, {{remainingTime.seconds}} sec @ {{selectedStop.arrivalInfo.resultSet.arrival[0].estimated | date:'h:mma'}}</h2>
+                        <div class="well well-lg">
+                            <h1>{{remainingTime.minutes}} min, {{remainingTime.seconds}} sec @ {{selectedStop.arrivalInfo.resultSet.arrival[0].estimated || selectedStop.arrivalInfo.resultSet.arrival[0].scheduled | date:'h:mm a'}}</h1>
+                        </div>
                     </div>
                 </div>
 
@@ -64,7 +66,7 @@
                     <table class="table">
                         <thead>
                         <tr>
-                            <th>Departed</th>
+                            <th>Name</th>
                             <th>Estimated</th>
                             <th>Scheduled</th>
                             <th>Status</th>
@@ -73,7 +75,7 @@
                         <tbody>
                         <tr ng-repeat="arrival in selectedStop.arrivalInfo.resultSet.arrival"
                             ng-class="{danger: arrival.imminent, warning: arrival.soon}">
-                            <td>{{arrival.departed}}</td>
+                            <td>{{arrival.shortSign}}</td>
                             <td>{{arrival.estimated | date:'medium'}}</td>
                             <td>{{arrival.scheduled | date:'medium'}}</td>
                             <td>{{arrival.status}}</td>

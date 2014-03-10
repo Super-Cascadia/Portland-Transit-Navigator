@@ -4,11 +4,12 @@ angular.module('pdxStreetcarApp')
         function geoLocate() {
             geolocation.getLocation()
                 .then(function (data) {
+                    $scope.distanceFeet = 1320;
                     $scope.coords = {
                         lat: data.coords.latitude,
                         long: data.coords.longitude
                     };
-                    $location.path('/nearbyStops/' + $scope.coords.lat + '/' + $scope.coords.long);
+                    $location.path('/nearbyStops/' + $scope.coords.lat + '/' + $scope.coords.long + '/' + $scope.distanceFeet);
                 });
         }
 

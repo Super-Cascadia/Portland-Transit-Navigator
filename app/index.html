@@ -15,13 +15,17 @@
     <meta name="description"
           content="">
     <meta name="viewport"
-          content="width=device-width">
+          content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
     <!-- build:css(.tmp) styles/main.css -->
     <link rel="stylesheet"
           href="bower_components/bootstrap/dist/css/bootstrap.css"/>
+    <!--<link rel="stylesheet"-->
+          <!--href="styles/main.css">-->
     <link rel="stylesheet"
-          href="styles/main.css">
+          href="bower_components/select2/select2.css"/>
+    <link rel="stylesheet"
+          href="styles/select2Bootstrap.css"/>
     <style>
         .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
     </style>
@@ -45,11 +49,11 @@
 <nav class="navbar navbar-default"
      role="navigation"
      ng-controller="topNavigationCtrl"
-     ng-include="'/views/navigation/top-navigation/top-navigation.html'"></nav>
+     ng-include="'views/navigation/top-navigation/top-navigation.html'"></nav>
 <!-- Add your site or application content here -->
 <div class="container-fluid"
      ng-view=""></div>
-<nav class="navbar navbar-default navbar-fixed-bottom" role="navigation">
+<nav class="navbar navbar-default navbar-bottom" role="navigation">
     <div class="container-fluid">
         <p class="navbar-text">Created by Jameson Nyeholt</p>
     </div>
@@ -79,6 +83,8 @@
 <script src="bower_components/angular-ui-map/ui-map.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=onGoogleReady"></script>
 <script src="bower_components/angularjs-geolocation/src/geolocation.js"></script>
+<script src="bower_components/select2/select2.js"></script>
+<script src="bower_components/angular-ui-select2/src/select2.js"></script>
 <!-- endbuild -->
 <!-- build:js scripts/modules.js -->
 <script src="bower_components/angular-resource/angular-resource.js"></script>

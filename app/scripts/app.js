@@ -6,7 +6,8 @@ angular.module('pdxStreetcarApp', [
         'ngRoute',
         'ui.bootstrap',
         'ui.map',
-        'geolocation'
+        'geolocation',
+        'ui.select2'
     ])
     .config(function ($routeProvider) {
         $routeProvider
@@ -26,7 +27,7 @@ angular.module('pdxStreetcarApp', [
                 templateUrl: 'views/busView.html',
                 controller: 'BusviewCtrl'
             })
-            .when('/nearbyStops/:lat/:lng', {
+            .when('/nearbyStops/:lat/:lng/:distFeet', {
               templateUrl: 'views/nearbyStops.html',
               controller: 'NearbystopsCtrl'
             })
