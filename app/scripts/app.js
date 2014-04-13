@@ -1,14 +1,14 @@
 'use strict';
 angular.module('pdxStreetcarApp', [
-        'ngCookies',
-        'ngResource',
-        'ngSanitize',
-        'ngRoute',
-        'ui.bootstrap',
-        'ui.map',
-        'geolocation',
-        'ui.select2'
-    ])
+    'ngCookies',
+    'ngResource',
+    'ngSanitize',
+    'ngRoute',
+    'ui.bootstrap',
+    'ui.map',
+    'geolocation',
+    'ui.select2'
+])
     .config(function ($routeProvider) {
         $routeProvider
             .when('/', {
@@ -28,8 +28,8 @@ angular.module('pdxStreetcarApp', [
                 controller: 'BusviewCtrl'
             })
             .when('/nearbyStops/:lat/:lng/:distFeet', {
-              templateUrl: 'views/nearbyStops.html',
-              controller: 'NearbystopsCtrl'
+                templateUrl: 'views/nearbyStops.html',
+                controller: 'NearbystopsCtrl'
             })
             .otherwise({
                 redirectTo: '/'

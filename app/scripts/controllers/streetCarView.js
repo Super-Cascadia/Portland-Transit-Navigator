@@ -1,45 +1,55 @@
 'use strict';
-
 angular.module('pdxStreetcarApp')
-  .controller('StreetcarviewCtrl', function ($scope, trimet) {
-
-        function initState() {
-            $scope.routeIsSelected = false;
-            $scope.stopIsSelected = false;
-            $scope.selectedStop = null;
-        }
-        function getStreetcarRoutes() {
-            trimet.streetcar.getRoutes(function getSuccess(response) {
-                $scope.routes = response.resultSet.route;
-                $scope.selectRoute($scope.routes[0]);
-                $scope.selectDirection($scope.selectedRoute.dir[0]);
-                $scope.selectStop($scope.selectedDirection.stop[0]);
-            }, function getError(response) {
-
-            });
-        }
-        function calculateRelativeTimes(arrivalInfo) {
-            var arrivals = arrivalInfo.resultSet.arrival;
-            for (var i = 0; i < arrivals.length; i += 1) {
-                var currentArrival = arrivals[i];
-                calculateDifferenceInTimes(currentArrival, function (response) {
-                    $scope.remainingTime = response;
-                })
-            }
-        }
+    .controller('StreetcarviewCtrl', function ($scope, $log, trimet, $interval, $q, timeCalcService) {
         function getArrivals(stop) {
+            var deferred = $q.defer();
             trimet.getArrivalsForStop(stop, function arrivalSuccess(arrivalInfo) {
                 $scope.selectedStop.arrivalInfo = arrivalInfo;
                 $scope.queryTime = arrivalInfo.resultSet.queryTime;
-                calculateRelativeTimes(arrivalInfo);
+                deferred.resolve(arrivalInfo);
             }, function arrivalError(response) {
-
+                $log.error("Could not get arrivals for streetcar stop.");
+                deferred.reject();
             });
+            return deferred.promise;
         }
-        function initTrimet() {
-            initState();
-            getStreetcarRoutes();
+
+        function refreshArrivalsOnTimeout() {
+            $interval(function () {
+                if ($scope.selectedStop) {
+                    $log.info("Refreshed arrival times.");
+                    getArrivals($scope.selectedStop);
+                }
+            }, 10000);
         }
+
+        function setMapForStop(selectedStop) {
+            var deferred = $q.defer(),
+                latLng;
+            try {
+                latLng = new google.maps.LatLng(selectedStop.lat, selectedStop.lng);
+            } catch (e) {
+                deferred.reject();
+            }
+            if (latLng) {
+                $scope.mapOptions = {
+                    center: latLng,
+                    zoom: 17,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                };
+                try {
+                    new google.maps.Marker({
+                        map: $scope.myMap,
+                        position: latLng
+                    });
+                } catch (e) {
+                    deferred.reject();
+                }
+                deferred.resolve();
+            }
+            return deferred.promise;
+        }
+
         $scope.returnToAllStops = function () {
             $scope.stopIsSelected = false;
             $scope.selectedStop = null;
@@ -48,33 +58,44 @@ angular.module('pdxStreetcarApp')
             $scope.selectedDirection = direction;
         };
         $scope.selectStop = function (stop) {
-            console.log(stop);
-            $scope.stopIsSelected = true;
-            $scope.selectedStop = stop;
-            var latLng = new google.maps.LatLng(stop.lat, stop.lng);
-            $scope.mapOptions = {
-                center: latLng,
-                zoom: 17,
-                mapTypeId: google.maps.MapTypeId.ROADMAP
-            };
-            new google.maps.Marker({
-                map: $scope.myMap,
-                position: latLng
-            });
-            getArrivals(stop);
+            if (stop) {
+                if (_.isString(stop)) {
+                    try {
+                        stop = JSON.parse(stop);
+                    } catch (e) {
+                        $log.error("Could not parse the JSON string.");
+                    }
+                }
+                $log.log(stop);
+                $scope.mapOptions = null;
+                $scope.stopIsSelected = true;
+                $scope.selectedStop = stop;
+                getArrivals(stop)
+                    .then(function (arrivalInfo) {
+                        timeCalcService.calculateRelativeTimes(arrivalInfo)
+                            .then(function (remainingTime) {
+                                $scope.remainingTime = remainingTime;
+                                setMapForStop(stop);
+                                refreshArrivalsOnTimeout();
+                            }, function () {
+                            });
+                    }, function () {
+                        $log.error("Could not get arrivals.");
+                    });
+            }
         };
         $scope.isStopSelected = function (stop) {
-            if ($scope.selectedStop) {
+            if ($scope.selectedStop && stop) {
                 return stop.locid === $scope.selectedStop.locid;
             }
         };
         $scope.isDirectionSelected = function (direction) {
-            if ($scope.selectedDirection) {
+            if ($scope.selectedDirection && direction) {
                 return direction.dir === $scope.selectedDirection.dir;
             }
         };
         $scope.isRouteSelected = function (route) {
-            if ($scope.selectedRoute) {
+            if ($scope.selectedRoute && route) {
                 return route.route === $scope.selectedRoute.route;
             }
         };
@@ -84,45 +105,59 @@ angular.module('pdxStreetcarApp')
             $scope.selectStop($scope.selectedDirection.stop[0]);
         };
         $scope.refreshArrivals = function (stop) {
-            getArrivals(stop);
+            getArrivals(stop)
+                .then(function () {
+                    $log.log("Arrivals were refreshed.");
+                }, function () {
+                    $log.error("Could not get Arrivals.");
+                });
         };
-        function get_time_difference(earlierDate, laterDate, callback) {
-            var nTotalDiff = laterDate.getTime() - earlierDate.getTime();
-            var oDiff = new Object();
-            oDiff.days = Math.floor(nTotalDiff/1000/60/60/24);
-            nTotalDiff -= oDiff.days*1000*60*60*24;
-            oDiff.hours = Math.floor(nTotalDiff/1000/60/60);
-            nTotalDiff -= oDiff.hours*1000*60*60;
-            oDiff.minutes = Math.floor(nTotalDiff/1000/60);
-            nTotalDiff -= oDiff.minutes*1000*60;
-            oDiff.seconds = Math.floor(nTotalDiff/1000);
-            return callback(oDiff);
-        }
-        function calculateDifferenceInTimes (arrival, callback) {
-            var estimatedArrivalTime;
-            var queryTime = new Date($scope.queryTime);
-            if (arrival.estimated) {
-                estimatedArrivalTime = new Date(arrival.estimated);
-            } else {
-                estimatedArrivalTime = new Date(arrival.scheduled);
-            }
-            get_time_difference(queryTime, estimatedArrivalTime, function (diff) {
-                return callback(diff);
-            });
-        }
         $scope.isArrivalImminent = function (arrival) {
-            calculateDifferenceInTimes(arrival, function (diff) {
-                if (diff.minutes < 3) {
-                    return true;
-                }
-            });
+            timeCalcService.calculateDifferenceInTimes(arrival, $scope.queryTime)
+                .then(function (diff) {
+                    if (diff.minutes < 3) {
+                        return true;
+                    }
+                }, function () {
+                    $log.error("Could not calculate the difference in times.");
+                });
         };
         $scope.isArrivalSoon = function (arrival) {
-            calculateDifferenceInTimes(arrival, function (diff) {
-                if (diff.minutes < 7) {
-                    return true;
-                }
-            });
+            timeCalcService.calculateDifferenceInTimes(arrival, $scope.queryTime)
+                .then(function (diff) {
+                    if (diff.minutes < 7) {
+                        return true;
+                    }
+                }, function () {
+                    $log.error("Could not calculate the difference in times.");
+                });
         };
-        return initTrimet();
-  });
+        // Initialization
+        function initState() {
+            $scope.routeIsSelected = false;
+            $scope.stopIsSelected = false;
+            $scope.selectedStop = null;
+        }
+
+        function getStreetcarRoutes() {
+            trimet.streetcar.getRoutes(function getSuccess(response) {
+                $scope.routes = response.resultSet.route;
+                $scope.selectRoute($scope.routes[0]);
+                $scope.selectDirection($scope.selectedRoute.dir[0]);
+                $scope.selectStop($scope.selectedDirection.stop[0]);
+            }, function getError(response) {
+                $log.error("Could not get routes for streetcar.");
+            });
+        }
+
+        function initTrimet() {
+            $q.all([initState(), getStreetcarRoutes()])
+                .then(function () {
+                    $log.log("Page was initialized.");
+                }, function () {
+                    $log.error("Page could not be initialized.");
+                });
+        }
+
+        initTrimet();
+    });

@@ -1,14 +1,27 @@
 'use strict';
 
 angular.module('pdxStreetcarApp')
-  .controller('NearbystopsCtrl', function ($scope, $log, $routeParams, $location, trimet) {
+  .controller('NearbystopsCtrl', function ($scope, $log, $routeParams, $location, trimet, geolocation) {
 
-        $scope.filterSecId = function(items) {
+        $scope.filterStopRoutes = function(items) {
             var result = {};
             angular.forEach(items, function(value, key) {
                 if (value.hasOwnProperty('type')) {
                     if (value.type === 'R') {
                         result[key] = value;
+                    }
+                }
+            });
+            return result;
+        };
+
+        $scope.filterStopsThatLackRoutes = function(stops) {
+            var result = {};
+            angular.forEach(stops, function(stop, i) {
+                if (stop.hasOwnProperty('route')) {
+                    var arrivals = $scope.filterStopRoutes(stop.route);
+                    if (arrivals.length > 0) {
+                        result[i] = stop;
                     }
                 }
             });
@@ -114,4 +127,8 @@ angular.module('pdxStreetcarApp')
                 return stop.locid === $scope.selectedStop.locid;
             }
         };
+
+
+
+
   });

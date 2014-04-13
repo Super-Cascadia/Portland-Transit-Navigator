@@ -1,0 +1,18 @@
+<div ng-controller="TransittimeviewCtrl">
+    <ul class="nav nav-tabs">
+        <li ng-class="{active: isRouteSelected(route)}"
+            ng-repeat="route in routes">
+            <a ng-click="selectRoute(route)">{{route.desc}}</a>
+        </li>
+    </ul>
+    <br>
+
+    <div class="row">
+        <div class="col-md-3">
+            <ng-include src="'views/transitTimeView/partials/leftColumn.html'"></ng-include>
+        </div>
+        <div class="col-md-9">
+            <ng-include src="'views/transitTimeView/partials/rightColumn.html'"></ng-include>
+        </div>
+    </div>
+</div>

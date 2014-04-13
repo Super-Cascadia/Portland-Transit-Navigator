@@ -1,0 +1,64 @@
+<!--Stop Info-->
+<div class="panel panel-default"
+     ng-if="stopIsSelected">
+    <div class="panel-heading">{{selectedStop.desc}}
+        <span class="pull-right">{{queryTime | date: 'medium'}}</span>
+        <button type="button"
+                class="btn btn-default btn-xs pull-right"
+                ng-click="refreshArrivals(selectedStop)">
+            <span class="glyphicon glyphicon-refresh"></span>
+        </button>
+    </div>
+    <div class="panel-body">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                Next Arrival
+            </div>
+            <div class="panel-body">
+                <div class="well well-lg">
+                    <h1>{{remainingTime.minutes}} min, {{remainingTime.seconds}} sec @
+                        {{selectedStop.arrivalInfo.resultSet.arrival[0].estimated ||
+                        selectedStop.arrivalInfo.resultSet.arrival[0].scheduled | date:'h:mm a'}}</h1>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <div class="panel-heading">Arrivals
+            </div>
+            <!-- Table -->
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Estimated</th>
+                    <th>Scheduled</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="arrival in selectedStop.arrivalInfo.resultSet.arrival"
+                    ng-class="{danger: arrival.imminent, warning: arrival.soon}">
+                    <td>{{arrival.shortSign}}</td>
+                    <td>{{arrival.estimated | date:'medium'}}</td>
+                    <td>{{arrival.scheduled | date:'medium'}}</td>
+                    <td>{{arrival.status}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                Map
+            </div>
+            <div class="panel-body">
+                <!--Google Map-->
+                <section id="map" ng-if="mapOptions !== null">
+                    <div ui-map="myMap"
+                         ui-options="mapOptions"
+                         class="map-canvas"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>

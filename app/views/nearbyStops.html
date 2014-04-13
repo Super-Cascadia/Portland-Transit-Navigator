@@ -30,12 +30,12 @@
                 <a class="list-group-item"
                    ng-class="{active: isStopSelected(stop)}"
                    ng-click="selectStop(stop)"
-                   ng-hide="stop.route.length === 0"
-                   ng-repeat="stop in nearbyStops.location">
+                   ng-repeat="stop in filterStopsThatLackRoutes(nearbyStops.location)"
+                   ng-hide="stop.route.length === 0">
                     <h4 class="list-group-item-heading">{{stop.desc}}</h4>
 
                     <p class="list-group-item-text"
-                       ng-repeat="route in filterSecId(stop.route)">
+                       ng-repeat="route in filterStopRoutes(stop.route)">
                         {{route.desc}} {{route.dir[0].desc}}</p>
                 </a>
             </div>

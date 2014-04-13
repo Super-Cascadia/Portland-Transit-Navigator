@@ -1,7 +1,8 @@
 'use strict';
 angular.module('pdxStreetcarApp')
-    .controller('topNavigationCtrl', function ($scope, $routeParams, $route, $location, geolocation) {
+    .controller('topNavigationCtrl', function ($scope, $routeParams, $log, $route, $location, geolocation) {
         function geoLocate() {
+            $log.log("Using Geolocation to find nearby stops.");
             geolocation.getLocation()
                 .then(function (data) {
                     $scope.distanceFeet = 1320;
