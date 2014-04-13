@@ -52,11 +52,18 @@
                 Map
             </div>
             <div class="panel-body">
+                <div ng-repeat="marker in myMarkers"
+                     ui-map-marker="myMarkers[$index]"
+                     ui-event="{'map-click': 'openMarkerInfo(marker)'}">
+                </div>
+                <div ui-map-info-window="myInfoWindow">
+                    <h1>Marker</h1>
+                    Lat: <input ng-model="currentMarkerLat">, Lng: <input ng-model="currentMarkerLng">
+                    <a ng-click="setMarkerPosition(currentMarker, currentMarkerLat, currentMarkerLng)">Set Position</a>
+                </div>
                 <!--Google Map-->
-                <section id="map" ng-if="mapOptions !== null">
-                    <div ui-map="myMap"
-                         ui-options="mapOptions"
-                         class="map-canvas"></div>
+                <section id="map">
+                    <div id="map-canvas"></div>
                 </section>
             </div>
         </div>

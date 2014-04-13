@@ -6,6 +6,7 @@ angular.module('pdxStreetcarApp', [
     'ngRoute',
     'ui.bootstrap',
     'ui.map',
+    'ui.utils',
     'geolocation',
     'ui.select2'
 ])

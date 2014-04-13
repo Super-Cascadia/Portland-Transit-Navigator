@@ -2,7 +2,6 @@
 angular.module('pdxStreetcarApp')
     .factory('timeCalcService', function ($q, $log) {
         // Service logic
-
         function getTimeDifference(earlierDate, laterDate) {
             var deferred = $q.defer(),
                 nTotalDiff = laterDate.getTime() - earlierDate.getTime(),
@@ -25,12 +24,13 @@ angular.module('pdxStreetcarApp')
         function calculateDifferenceInTimes(arrival, queryTime) {
             var estimatedArrivalTime,
                 deferred = $q.defer(),
-                queryTimeDateObject = new Date(queryTime);
+                queryTimeDateObject;
             if (arrival.estimated) {
                 estimatedArrivalTime = new Date(arrival.estimated);
             } else {
                 estimatedArrivalTime = new Date(arrival.scheduled);
             }
+            queryTimeDateObject = new Date(queryTime);
             getTimeDifference(queryTimeDateObject, estimatedArrivalTime)
                 .then(function (diff) {
                     deferred.resolve(diff);
@@ -40,14 +40,14 @@ angular.module('pdxStreetcarApp')
             return deferred.promise;
         }
 
-        function calculateRelativeTimes(arrivalInfo) {
+        function calculateRelativeTimes(arrivalInfo, queryTime) {
             var deferred = $q.defer(),
                 arrivals = arrivalInfo.resultSet.arrival,
                 currentArrival,
                 i;
 
             function calcTimeDiff(currentArrival) {
-                calculateDifferenceInTimes(currentArrival)
+                calculateDifferenceInTimes(currentArrival, queryTime)
                     .then(function (remainingTime) {
                         deferred.resolve(remainingTime);
                     }, function () {
@@ -62,10 +62,11 @@ angular.module('pdxStreetcarApp')
             }
             return deferred.promise;
         }
+
         // Public API here
         return {
-            calculateRelativeTimes: function (arrivalInfo) {
-                return calculateRelativeTimes(arrivalInfo);
+            calculateRelativeTimes: function (arrivalInfo, queryTime) {
+                return calculateRelativeTimes(arrivalInfo, queryTime);
             },
             calculateDifferenceInTimes: function (arrival, queryTime) {
                 return calculateDifferenceInTimes(arrival, queryTime);

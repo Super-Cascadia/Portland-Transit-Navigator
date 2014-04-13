@@ -20,12 +20,12 @@
         <select id="stopSelector"
                 class="form-control"
                 ui-select2
-                ng-model="currentlySelectedStop"
-                ng-change="selectStop(currentlySelectedStop)"
+                ng-model="selectedStopLocId"
+                ng-change="selectStop(selectedStopLocId)"
                 data-placeholder="Choose a stop">
             <option value=""></option>
             <option ng-repeat="stop in selectedDirection.stop"
-                    value="{{stop}}">{{stop.desc}}
+                    value="{{stop.locid}}">{{stop.desc}}
             </option>
         </select>
 
