@@ -1,6 +1,11 @@
 angular.module('pdxStreetcarApp')
     .controller('StreetcarviewCtrl', function ($scope, $log, trimet, $interval, $q, timeCalcService) {
         'use strict';
+
+        $scope.streetCarArrivalsView = true;
+        $scope.timeTableView = false;
+        $scope.routeMapView = false;
+
         function getArrivals(stop) {
             var deferred = $q.defer();
             trimet.getArrivalsForStop(stop, function arrivalSuccess(arrivalInfo) {
@@ -32,8 +37,6 @@ angular.module('pdxStreetcarApp')
                 userLocationMarker,
                 stopMarkerInfoWindow,
                 userLatLng,
-                userLocationInfoWindow,
-                userInfoWindowOptions,
                 stopMarker,
                 mapOptions,
                 stopLatLng;
@@ -113,6 +116,38 @@ angular.module('pdxStreetcarApp')
             return deferred.promise;
         }
 
+        function setStop(stop) {
+            $log.log(stop);
+            $scope.mapOptions = null;
+            $scope.stopIsSelected = true;
+            $scope.selectedStop = stop;
+            $scope.selectedStopLocId = stop.locid;
+            getArrivals(stop)
+                .then(function (arrivalInfo) {
+                    timeCalcService.calculateRelativeTimes(arrivalInfo, $scope.queryTime)
+                        .then(function (remainingTime) {
+                            $scope.remainingTime = remainingTime;
+                            setMapForStop(stop);
+                            refreshArrivalsOnTimeout();
+                        }, function () {
+                        });
+                }, function () {
+                    $log.error("Could not get arrivals.");
+                });
+        }
+
+        $scope.showRouteMap = function () {
+            $scope.streetCarArrivalsView = false;
+            $scope.timeTableView = false;
+            $scope.routeMapView = true;
+        };
+
+        $scope.showRouteSchedule = function () {
+            $scope.streetCarArrivalsView = false;
+            $scope.routeMapView = false;
+            $scope.timeTableView = false;
+        };
+
         $scope.returnToAllStops = function () {
             $scope.stopIsSelected = false;
             $scope.selectedStop = null;
@@ -137,25 +172,6 @@ angular.module('pdxStreetcarApp')
             $scope.selectedDirection = direction;
             $scope.selectStop($scope.selectedDirection.stop[0]);
         };
-        function setStop(stop) {
-            $log.log(stop);
-            $scope.mapOptions = null;
-            $scope.stopIsSelected = true;
-            $scope.selectedStop = stop;
-            $scope.selectedStopLocId = stop.locid;
-            getArrivals(stop)
-                .then(function (arrivalInfo) {
-                    timeCalcService.calculateRelativeTimes(arrivalInfo, $scope.queryTime)
-                        .then(function (remainingTime) {
-                            $scope.remainingTime = remainingTime;
-                            setMapForStop(stop);
-                            refreshArrivalsOnTimeout();
-                        }, function () {
-                        });
-                }, function () {
-                    $log.error("Could not get arrivals.");
-                });
-        }
 
         $scope.selectStop = function (stop) {
             if (stop) {

@@ -34,7 +34,12 @@
         .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
     </style>
     <style>
-        #map-canvas { height: 400px; }
+        #map-canvas {
+            height: 400px;
+        }
+        .map.route-map #map-canvas {
+            height: 600px;
+        }
     </style>
     <!-- endbuild -->
 </head>
@@ -117,6 +122,7 @@
 <script src="scripts/controllers/transitTimeView.js"></script>
 <script src="scripts/controllers/nearbyStops.js"></script>
 <script src="scripts/services/timeCalcService.js"></script>
+<script src="scripts/controllers/routeMap.js"></script>
 <!-- endbuild -->
 </body>
 </html>
