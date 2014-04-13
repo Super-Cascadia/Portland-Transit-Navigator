@@ -2,12 +2,9 @@
 <div class="panel panel-default"
      ng-if="stopIsSelected">
     <div class="panel-heading">{{selectedStop.desc}}
-        <span class="pull-right">{{queryTime | date: 'medium'}}</span>
-        <button type="button"
-                class="btn btn-default btn-xs pull-right"
-                ng-click="refreshArrivals(selectedStop)">
-            <span class="glyphicon glyphicon-refresh"></span>
-        </button>
+        <span class="pull-right">
+          <span class="pull-left">{{queryTime | date: 'medium'}}</span>
+        </span>
     </div>
     <div class="panel-body">
         <div class="panel panel-primary">
@@ -15,7 +12,7 @@
                 Next Arrival
             </div>
             <div class="panel-body">
-                <div class="well well-lg">
+                <div class="well well-sm">
                     <h1>{{remainingTime.minutes}} min, {{remainingTime.seconds}} sec @
                         {{selectedStop.arrivalInfo.resultSet.arrival[0].estimated ||
                         selectedStop.arrivalInfo.resultSet.arrival[0].scheduled | date:'h:mm a'}}</h1>
@@ -33,7 +30,6 @@
                     <th>Name</th>
                     <th>Estimated</th>
                     <th>Scheduled</th>
-                    <th>Status</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -42,7 +38,6 @@
                     <td>{{arrival.shortSign}}</td>
                     <td>{{arrival.estimated | date:'medium'}}</td>
                     <td>{{arrival.scheduled | date:'medium'}}</td>
-                    <td>{{arrival.status}}</td>
                 </tr>
                 </tbody>
             </table>
@@ -50,6 +45,11 @@
         <div class="panel panel-default">
             <div class="panel-heading">
                 Map
+                <button type="button"
+                        class="btn btn-default btn-xs pull-right"
+                        ng-click="refreshArrivals(selectedStop)">
+                    Get Directions
+                </button>
             </div>
             <div class="panel-body">
                 <div ng-repeat="marker in myMarkers"

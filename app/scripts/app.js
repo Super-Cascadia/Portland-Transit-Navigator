@@ -7,6 +7,8 @@ angular.module('pdxStreetcarApp', [
     'ui.bootstrap',
     'ui.map',
     'ui.utils',
+    'chieffancypants.loadingBar',
+    'ngAnimate',
     'geolocation',
     'ui.select2'
 ])

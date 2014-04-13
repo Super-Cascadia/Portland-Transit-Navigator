@@ -4,6 +4,13 @@
             ng-repeat="route in routes">
             <a ng-click="selectRoute(route)">{{route.desc}}</a>
         </li>
+        <li class="pull-right">
+            <button type="button"
+                    class="btn btn-default btn-sm pull-right"
+                    ng-click="refreshArrivals(selectedStop)">
+                <span class="glyphicon glyphicon-refresh"></span>
+            </button>
+        </li>
     </ul>
     <br>
 

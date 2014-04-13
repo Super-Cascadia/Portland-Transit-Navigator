@@ -15,65 +15,98 @@ angular.module('pdxStreetcarApp')
         }
 
         function refreshArrivalsOnTimeout() {
-            $interval(function () {
-                if ($scope.selectedStop) {
-                    $log.info("Refreshed arrival times.");
-                    getArrivals($scope.selectedStop);
-                }
-            }, 10000);
+            //            $interval(function () {
+            //                if ($scope.selectedStop) {
+            //                    $log.info("Refreshed arrival times.");
+            //                    getArrivals($scope.selectedStop);
+            //                }
+            //            }, 10000);
         }
-
-        $scope.myMarkers = [];
-
-
-        $scope.addMarker = function($event, $params) {
-            $scope.myMarkers.push(new google.maps.Marker({
-                map: $scope.myMap,
-                position: $params[0].latLng
-            }));
-        };
-
-        $scope.setZoomMessage = function(zoom) {
-            $scope.zoomMessage = 'You just zoomed to '+zoom+'!';
-            console.log(zoom,'zoomed')
-        };
-
-        $scope.openMarkerInfo = function(marker) {
-            $scope.currentMarker = marker;
-            $scope.currentMarkerLat = marker.getPosition().lat();
-            $scope.currentMarkerLng = marker.getPosition().lng();
-            $scope.myInfoWindow.open($scope.myMap, marker);
-        };
-
-        $scope.setMarkerPosition = function(marker, lat, lng) {
-            marker.setPosition(new google.maps.LatLng(lat, lng));
-        };
 
         function setMapForStop(selectedStop) {
             var deferred = $q.defer(),
                 map,
+                content,
                 transitLayer,
+                stopInfoWindowOptions,
+                userLocationMarker,
+                stopMarkerInfoWindow,
+                userLatLng,
+                userLocationInfoWindow,
+                userInfoWindowOptions,
+                stopMarker,
                 mapOptions,
-                latLng;
-            try {
-                latLng = new google.maps.LatLng(selectedStop.lat, selectedStop.lng);
-            } catch (e) {
-                deferred.reject();
+                stopLatLng;
+
+            function handleNoGeolocation(errorFlag) {
+                if (errorFlag) {
+                    content = 'Error: The Geolocation service failed.';
+                } else {
+                    content = 'Error: Your browser doesn\'t support geolocation.';
+                }
             }
-            if (latLng) {
+
+            function setStopMarker() {
+                stopMarker = new google.maps.Marker({
+                    map: map,
+                    position: stopLatLng,
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 5
+                    },
+                    animation: google.maps.Animation.DROP,
+                    clickable: true,
+                    title: selectedStop.desc
+                });
+                google.maps.event.addListener(stopMarker, 'click', function () {
+                    map.panTo(stopMarker.getPosition());
+                });
+                stopInfoWindowOptions = {
+                    map: map,
+                    position: stopLatLng,
+                    content: selectedStop.desc
+                };
+                stopMarkerInfoWindow = new google.maps.InfoWindow(stopInfoWindowOptions);
+            }
+
+            function setUserLocationMarker() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        userLatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                        userLocationMarker = new google.maps.Marker({
+                            map: map,
+                            position: userLatLng,
+                            animation: google.maps.Animation.DROP,
+                            clickable: true,
+                            title: "Current Location"
+                        });
+                        google.maps.event.addListener(userLocationMarker, 'click', function () {
+                            map.panTo(userLatLng);
+                        });
+                    }, function () {
+                        handleNoGeolocation(true);
+                    });
+                } else {
+                    // Browser doesn't support Geolocation
+                    handleNoGeolocation(false);
+                }
+            }
+
+            function setMapWithOptions() {
+                stopLatLng = new google.maps.LatLng(selectedStop.lat, selectedStop.lng);
                 mapOptions = {
-                    center: latLng,
+                    center: stopLatLng,
                     zoom: 17,
                     mapTypeId: google.maps.MapTypeId.ROADMAP
                 };
                 map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
                 transitLayer = new google.maps.TransitLayer();
-                new google.maps.Marker({
-                    map: map,
-                    position: latLng,
-                    animation: google.maps.Animation.DROP,
-                    title: selectedStop.desc
-                });
+            }
+
+            setMapWithOptions();
+            if (stopLatLng) {
+                setStopMarker();
+                setUserLocationMarker();
                 transitLayer.setMap(map);
                 deferred.resolve();
             }
@@ -84,7 +117,6 @@ angular.module('pdxStreetcarApp')
             $scope.stopIsSelected = false;
             $scope.selectedStop = null;
         };
-
         // State Scope Functions
         $scope.isStopSelected = function (stop) {
             if ($scope.selectedStop && stop) {
@@ -101,13 +133,10 @@ angular.module('pdxStreetcarApp')
                 return route.route === $scope.selectedRoute.route;
             }
         };
-
-
         $scope.selectDirection = function (direction) {
             $scope.selectedDirection = direction;
             $scope.selectStop($scope.selectedDirection.stop[0]);
         };
-
         function setStop(stop) {
             $log.log(stop);
             $scope.mapOptions = null;
@@ -150,11 +179,9 @@ angular.module('pdxStreetcarApp')
                     } else {
                         setStop(stop);
                     }
-
                 }
             }
         };
-
         $scope.selectRoute = function (route) {
             $scope.selectedRoute = route;
             $scope.selectDirection($scope.selectedRoute.dir[0]);
@@ -206,7 +233,7 @@ angular.module('pdxStreetcarApp')
             });
         }
 
-        function initTrimet() {
+        function initializeStreetCarView() {
             $q.all([initState(), getStreetcarRoutes()])
                 .then(function () {
                     $log.log("Page was initialized.");
@@ -215,5 +242,5 @@ angular.module('pdxStreetcarApp')
                 });
         }
 
-        initTrimet();
+        initializeStreetCarView();
     });
