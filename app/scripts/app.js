@@ -38,6 +38,10 @@ angular.module('pdxStreetcarApp', [
                 templateUrl: 'views/routeMap.html',
                 controller: 'RouteMapCtrl'
             })
+            .when('/routeSchedule', {
+                templateUrl: 'views/routeSchedule/routeSchedule.html',
+                controller: 'RouteScheduleCtrl'
+            })
             .otherwise({
                 redirectTo: '/'
             });

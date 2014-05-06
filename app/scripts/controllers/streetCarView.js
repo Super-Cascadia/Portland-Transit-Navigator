@@ -9,23 +9,12 @@ angular.module('pdxStreetcarApp')
         function getArrivals(stop) {
             var deferred = $q.defer();
             trimet.getArrivalsForStop(stop, function arrivalSuccess(arrivalInfo) {
-                $scope.selectedStop.arrivalInfo = arrivalInfo;
-                $scope.queryTime = arrivalInfo.resultSet.queryTime;
                 deferred.resolve(arrivalInfo);
             }, function arrivalError(response) {
                 $log.error("Could not get arrivals for streetcar stop.");
                 deferred.reject();
             });
             return deferred.promise;
-        }
-
-        function refreshArrivalsOnTimeout() {
-            //            $interval(function () {
-            //                if ($scope.selectedStop) {
-            //                    $log.info("Refreshed arrival times.");
-            //                    getArrivals($scope.selectedStop);
-            //                }
-            //            }, 10000);
         }
 
         function setMapForStop(selectedStop) {
@@ -125,10 +114,11 @@ angular.module('pdxStreetcarApp')
             getArrivals(stop)
                 .then(function (arrivalInfo) {
                     timeCalcService.calculateRelativeTimes(arrivalInfo, $scope.queryTime)
-                        .then(function (remainingTime) {
-                            $scope.remainingTime = remainingTime;
+                        .then(function (arrivalInfo) {
+                            $scope.queryTime = arrivalInfo.resultSet.queryTime;
+                            $scope.selectedStop.arrivalInfo = arrivalInfo;
+                            //                            $scope.remainingTime = remainingTime;
                             setMapForStop(stop);
-                            refreshArrivalsOnTimeout();
                         }, function () {
                         });
                 }, function () {

@@ -29,6 +29,10 @@ angular.module('pdxStreetcarApp')
             {
                 displayName: "Map",
                 route: "/routeMap"
+            },
+            {
+                displayName: "Schedule",
+                route: "/routeSchedule"
             }
         ];
         $scope.topNavItemClick = function (navItem) {

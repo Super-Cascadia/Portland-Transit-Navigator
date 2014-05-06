@@ -42,24 +42,24 @@ angular.module('pdxStreetcarApp')
 
         function calculateRelativeTimes(arrivalInfo, queryTime) {
             var deferred = $q.defer(),
-                arrivals = arrivalInfo.resultSet.arrival,
-                currentArrival,
-                i;
+                arrivals = arrivalInfo.resultSet.arrival;
 
-            function calcTimeDiff(currentArrival) {
-                calculateDifferenceInTimes(currentArrival, queryTime)
-                    .then(function (remainingTime) {
-                        deferred.resolve(remainingTime);
-                    }, function () {
-                        $log.error("Could not calculate the difference in times.");
-                        deferred.reject();
-                    });
+            function calcTimeDiff(callback) {
+                _.each(arrivals, function (currentArrival) {
+                    calculateDifferenceInTimes(currentArrival, queryTime)
+                        .then(function (remainingTime) {
+                            currentArrival.remainingTime = remainingTime;
+                        }, function () {
+                            $log.error("Could not calculate the difference in times.");
+                            deferred.reject();
+                        });
+                });
+                callback();
             }
+            calcTimeDiff(function () {
+                deferred.resolve(arrivalInfo);
 
-            for (i = 0; i < arrivals.length; i += 1) {
-                currentArrival = arrivals[i];
-                calcTimeDiff(currentArrival);
-            }
+            });
             return deferred.promise;
         }
 

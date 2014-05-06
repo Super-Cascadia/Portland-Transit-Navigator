@@ -36,8 +36,8 @@
                 <tr ng-repeat="arrival in selectedStop.arrivalInfo.resultSet.arrival"
                     ng-class="{danger: arrival.imminent, warning: arrival.soon}">
                     <td>{{arrival.shortSign}}</td>
-                    <td>{{arrival.estimated | date:'medium'}}</td>
-                    <td>{{arrival.scheduled | date:'medium'}}</td>
+                    <td>{{arrival.estimated | date:'h:mm a'}}</td>
+                    <td>{{arrival.scheduled | date:'h:mm a'}}</td>
                 </tr>
                 </tbody>
             </table>
