@@ -1,5 +1,5 @@
 angular.module('pdxStreetcarApp')
-    .controller('StreetcarviewCtrl', function ($scope, $log, trimet, $interval, $q, timeCalcService) {
+    .controller('StreetcarviewCtrl', function ($scope, $log, trimet, $interval, $q, timeCalcService, $stateParams, $state) {
         'use strict';
 
         $scope.streetCarArrivalsView = true;
@@ -153,11 +153,6 @@ angular.module('pdxStreetcarApp')
                 return direction.dir === $scope.selectedDirection.dir;
             }
         };
-        $scope.isRouteSelected = function (route) {
-            if ($scope.selectedRoute && route) {
-                return route.route === $scope.selectedRoute.route;
-            }
-        };
         $scope.selectDirection = function (direction) {
             $scope.selectedDirection = direction;
             $scope.selectStop($scope.selectedDirection.stop[0]);
@@ -221,30 +216,44 @@ angular.module('pdxStreetcarApp')
                     $log.error("Could not calculate the difference in times.");
                 });
         };
-        // Initialization
-        function initState() {
-            $scope.routeIsSelected = false;
-            $scope.stopIsSelected = false;
-            $scope.selectedStop = null;
-        }
 
+        // Initialization
         function getStreetcarRoutes() {
+            var deferred = $q.defer();
             trimet.streetcar.getRoutes(function getSuccess(response) {
-                $scope.routes = response.resultSet.route;
-                $scope.selectRoute($scope.routes[0]);
-                $scope.selectDirection($scope.selectedRoute.dir[0]);
-                $scope.selectStop($scope.selectedDirection.stop[0]);
+                deferred.resolve(response);
             }, function getError(response) {
                 $log.error("Could not get routes for streetcar.");
+                deferred.reject();
             });
+            return deferred.promise;
         }
 
         function initializeStreetCarView() {
-            $q.all([initState(), getStreetcarRoutes()])
-                .then(function () {
-                    $log.log("Page was initialized.");
+            $scope.routeIsSelected = false;
+            $scope.stopIsSelected = false;
+            $scope.selectedStop = null;
+            getStreetcarRoutes()
+                .then(function (response) {
+                    $scope.routes = response.resultSet.route;
                 }, function () {
                     $log.error("Page could not be initialized.");
+                })
+                .then(function () {
+                    $scope.selectRoute($scope.routes[0]);
+                })
+                .then(function () {
+                    $scope.selectDirection($scope.selectedRoute.dir[0]);
+                })
+                .then(function () {
+                    $scope.selectStop($scope.selectedDirection.stop[0]);
+                })
+                .then(function () {
+                    $state.go('streetcar.line.direction.stop', {
+                        line: $scope.selectedRoute.route,
+                        direction: $scope.selectedDirection.dir,
+                        stop: $scope.selectedStop.locId
+                    });
                 });
         }
 

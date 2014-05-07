@@ -36,11 +36,11 @@ angular.module('pdxStreetcarApp')
             }
         ];
         $scope.topNavItemClick = function (navItem) {
-            console.log(navItem);
+            $log.log(navItem);
         };
         $scope.isActive = function (navItem) {
-            if (navItem.route === $route.current.$$route.originalPath) {
-                return true;
-            }
+//            if (navItem.route === $route.current.$$route.originalPath) {
+//                return true;
+//            }
         };
     });

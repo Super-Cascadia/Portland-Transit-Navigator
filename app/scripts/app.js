@@ -10,41 +10,44 @@ angular.module('pdxStreetcarApp', [
     'chieffancypants.loadingBar',
     'ngAnimate',
     'geolocation',
-    'ui.select2'
+    'ui.select2',
+    'ui.router'
 ])
-    .config(function ($routeProvider) {
-        $routeProvider
-            .when('/', {
+    .config(function ($stateProvider, $urlRouterProvider) {
+        $stateProvider
+            .state('home', {
+                url: '/',
                 templateUrl: 'views/main.html',
                 controller: 'MainCtrl'
             })
-            .when('/streetcar', {
+            .state('streetcar', {
+                url: '/streetcar',
                 templateUrl: 'views/streetCarView.html',
                 controller: 'StreetcarviewCtrl'
             })
-            .when('/trimet', {
-                templateUrl: 'views/trimetView.html',
-                controller: 'TrimetviewCtrl'
+            .state('streetcar.line', {
+                url: '/:line',
+                templateUrl: 'views/transitTimeView/partials/primaryView.html',
+                controller: 'PrimaryViewCtrl'
             })
-            .when('/bus', {
-                templateUrl: 'views/busView.html',
-                controller: 'BusviewCtrl'
+            .state('streetcar.line.direction', {
+                url: '/:direction'
             })
-            .when('/nearbyStops/:lat/:lng/:distFeet', {
-                templateUrl: 'views/nearbyStops.html',
-                controller: 'NearbystopsCtrl'
+            .state('streetcar.line.direction.stop', {
+                url: '/:stop'
             })
-            .when('/routeMap', {
+            .state('routeMap', {
+                url: '/routeMap',
                 templateUrl: 'views/routeMap.html',
                 controller: 'RouteMapCtrl'
             })
-            .when('/routeSchedule', {
+            .state('/routeSchedule', {
+                url: '/routeSchedule',
                 templateUrl: 'views/routeSchedule/routeSchedule.html',
                 controller: 'RouteScheduleCtrl'
-            })
-            .otherwise({
-                redirectTo: '/'
             });
-    }).config(['$httpProvider', function ($httpProvider) {
+    })
+
+    .config(['$httpProvider', function ($httpProvider) {
         delete $httpProvider.defaults.headers.common['X-Requested-With']; //Fixes cross domain requests
     }]);
