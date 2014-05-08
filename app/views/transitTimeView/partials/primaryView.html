@@ -1,5 +1,5 @@
 <ul class="nav nav-tabs">
-    <li ng-class="{active: route.route == selectedLine}"
+    <li ng-class="{active: route.route == selectedRoute.route}"
         ng-repeat="route in routes">
         <a ng-click="selectRoute(route)">{{route.desc}}</a>
     </li>
