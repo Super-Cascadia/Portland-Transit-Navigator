@@ -34,9 +34,18 @@ angular.module('pdxStreetcarApp')
                         clickable: true,
                         title: stop.desc
                     });
+
+                    var infowindow = new google.maps.InfoWindow();
+
+                    google.maps.event.addListener(stopMarker, 'click', function() {
+                        infowindow.close();
+                        infowindow.setContent(stop.desc);
+                        infowindow.open(map, this);
+                    });
+
                 }
-                _.each($scope.selectedRoute.dir[0].stop, createGoogleStopMarker);
-                _.each($scope.selectedRoute.dir[1].stop, createGoogleStopMarker);
+                _.forEach($scope.selectedRoute.dir[0].stop, createGoogleStopMarker);
+                _.forEach($scope.selectedRoute.dir[1].stop, createGoogleStopMarker);
 
             }
 
