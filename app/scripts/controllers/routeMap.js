@@ -41,6 +41,8 @@ angular.module('pdxStreetcarApp')
                         infowindow.close();
                         infowindow.setContent(stop.desc);
                         infowindow.open(map, this);
+                        map.panTo(this.position);
+                        map.setZoom(17);
                     });
 
                 }
@@ -75,7 +77,7 @@ angular.module('pdxStreetcarApp')
             latLng = new google.maps.LatLng(45.5200, -122.6819);
             mapOptions = {
                 center: latLng,
-                zoom: 14,
+                zoom: 15,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             };
             map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
