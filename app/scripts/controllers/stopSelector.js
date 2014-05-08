@@ -1,10 +1,5 @@
 'use strict';
-
 angular.module('pdxStreetcarApp')
-  .controller('StopselectorCtrl', function ($scope) {
-    $scope.awesomeThings = [
-      'HTML5 Boilerplate',
-      'AngularJS',
-      'Karma'
-    ];
-  });
+    .controller('StreetCarStopCtrl', function ($scope, $state, $stateParams) {
+//        $scope.goToSpecifiedRoute($stateParams.line, $stateParams.direction, $stateParams.stop);
+    });

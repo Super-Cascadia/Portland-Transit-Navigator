@@ -1,7 +1,7 @@
 <ul class="nav nav-tabs">
     <li ng-class="{active: route.route == selectedLine}"
         ng-repeat="route in routes">
-        <a ng-href="#/streetcar/{{route.route}}">{{route.desc}}</a>
+        <a ng-click="selectRoute(route)">{{route.desc}}</a>
     </li>
     <li class="pull-right">
         <button class="btn primary btn-default btn-sm"
@@ -26,7 +26,7 @@
 </ol>
 <div ng-if="streetCarArrivalsView && !routeMapView">
     <div class="col-md-3">
-        <ng-include src="'views/transitTimeView/partials/leftColumn.html'"></ng-include>
+        <ui-view></ui-view>
     </div>
     <div class="col-md-9">
         <ng-include src="'views/transitTimeView/partials/rightColumn.html'"></ng-include>

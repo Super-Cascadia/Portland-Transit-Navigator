@@ -4,7 +4,7 @@ angular.module('pdxStreetcarApp')
         $scope.selectedLine = $stateParams.line;
         $scope.isRouteSelected = function (route) {
             if ($scope.selectedRoute && route) {
-                return route.route === $stateParams.line;
+                return route.route === $stateParams.route;
             }
         };
     });

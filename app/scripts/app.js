@@ -7,7 +7,7 @@ angular.module('pdxStreetcarApp', [
     'ui.bootstrap',
     'ui.map',
     'ui.utils',
-    'chieffancypants.loadingBar',
+//    'chieffancypants.loadingBar',
     'ngAnimate',
     'geolocation',
     'ui.select2',
@@ -15,6 +15,11 @@ angular.module('pdxStreetcarApp', [
 ])
     .config(function ($stateProvider, $urlRouterProvider) {
         $stateProvider
+            .state('root', {
+                url: '',
+                templateUrl: 'views/main.html',
+                controller: 'MainCtrl'
+            })
             .state('home', {
                 url: '/',
                 templateUrl: 'views/main.html',
@@ -25,23 +30,27 @@ angular.module('pdxStreetcarApp', [
                 templateUrl: 'views/streetCarView.html',
                 controller: 'StreetcarviewCtrl'
             })
-            .state('streetcar.line', {
-                url: '/:line',
+            .state('streetcar.route', {
+                url: '/:route',
                 templateUrl: 'views/transitTimeView/partials/primaryView.html',
                 controller: 'PrimaryViewCtrl'
             })
-            .state('streetcar.line.direction', {
-                url: '/:direction'
+            .state('streetcar.route.direction', {
+                url: '/:direction',
+                templateUrl: 'views/transitTimeView/partials/leftColumn.html',
+                controller: 'StreetCarRouteDirectionCtrl'
             })
-            .state('streetcar.line.direction.stop', {
-                url: '/:stop'
+            .state('streetcar.route.direction.stop', {
+                url: '/:stop',
+                controller: 'StreetCarStopCtrl',
+                templateUrl: 'views/transitTimeView/partials/stopSelector.html'
             })
             .state('routeMap', {
                 url: '/routeMap',
                 templateUrl: 'views/routeMap.html',
                 controller: 'RouteMapCtrl'
             })
-            .state('/routeSchedule', {
+            .state('routeSchedule', {
                 url: '/routeSchedule',
                 templateUrl: 'views/routeSchedule/routeSchedule.html',
                 controller: 'RouteScheduleCtrl'

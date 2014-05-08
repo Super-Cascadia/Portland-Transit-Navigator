@@ -105,27 +105,6 @@ angular.module('pdxStreetcarApp')
             return deferred.promise;
         }
 
-        function setStop(stop) {
-            $log.log(stop);
-            $scope.mapOptions = null;
-            $scope.stopIsSelected = true;
-            $scope.selectedStop = stop;
-            $scope.selectedStopLocId = stop.locid;
-            getArrivals(stop)
-                .then(function (arrivalInfo) {
-                    timeCalcService.calculateRelativeTimes(arrivalInfo, $scope.queryTime)
-                        .then(function (arrivalInfo) {
-                            $scope.queryTime = arrivalInfo.resultSet.queryTime;
-                            $scope.selectedStop.arrivalInfo = arrivalInfo;
-                            //                            $scope.remainingTime = remainingTime;
-                            setMapForStop(stop);
-                        }, function () {
-                        });
-                }, function () {
-                    $log.error("Could not get arrivals.");
-                });
-        }
-
         $scope.showRouteMap = function () {
             $scope.streetCarArrivalsView = false;
             $scope.timeTableView = false;
@@ -142,6 +121,7 @@ angular.module('pdxStreetcarApp')
             $scope.stopIsSelected = false;
             $scope.selectedStop = null;
         };
+
         // State Scope Functions
         $scope.isStopSelected = function (stop) {
             if ($scope.selectedStop && stop) {
@@ -153,41 +133,7 @@ angular.module('pdxStreetcarApp')
                 return direction.dir === $scope.selectedDirection.dir;
             }
         };
-        $scope.selectDirection = function (direction) {
-            $scope.selectedDirection = direction;
-            $scope.selectStop($scope.selectedDirection.stop[0]);
-        };
 
-        $scope.selectStop = function (stop) {
-            if (stop) {
-                if (_.isString(stop)) {
-                    try {
-                        stop = JSON.parse(stop);
-                    } catch (e) {
-                        $log.error("Could not parse the JSON string.");
-                    }
-                }
-                if ($scope.selectedStop && $scope.selectedStop.locid === stop) {
-                    $log.warn("This stop is already selected.  Doing nothing.");
-                } else {
-                    if (!stop.hasOwnProperty('desc')) {
-                        stop = _.find($scope.selectedDirection.stop, function (item, key) {
-                            if (item.locid === stop) {
-                                return stop = item;
-                            }
-                        });
-                        setStop(stop);
-                    } else {
-                        setStop(stop);
-                    }
-                }
-            }
-        };
-        $scope.selectRoute = function (route) {
-            $scope.selectedRoute = route;
-            $scope.selectDirection($scope.selectedRoute.dir[0]);
-            $scope.selectStop($scope.selectedDirection.stop[0]);
-        };
         $scope.refreshArrivals = function (stop) {
             getArrivals(stop)
                 .then(function () {
@@ -217,6 +163,124 @@ angular.module('pdxStreetcarApp')
                 });
         };
 
+        function updateRoute() {
+            $state.go('streetcar.route.direction.stop', {
+                route: $scope.selectedRoute.route,
+                direction: $scope.selectedDirection.dir,
+                stop: $scope.selectedStop.locid
+            });
+        }
+
+        function goToRoute(route, direction , stop) {
+            $state.go('streetcar.route.direction.stop', {
+                route: route,
+                direction: direction,
+                stop: stop
+            });
+        }
+
+        function findRouteById (routes, routeId) {
+            return _.find(routes, function (route) {
+                if (route.route == routeId) {
+                    return route;
+                }
+            });
+        }
+
+        function findDirectionById(directions, directionId) {
+            return _.find(directions, function (direction) {
+                if (direction.dir == directionId) {
+                    return direction;
+                }
+            });
+        }
+
+        function findStopById(stops, stopId) {
+            return _.find(stops, function (stop) {
+                if (stop.locid == stopId) {
+                    return stop;
+                }
+            });
+        }
+
+        function setConfigurationVariables (stateParams) {
+            var routeId = stateParams.route,
+                directionId = stateParams.direction,
+                stopId = stateParams.stop;
+            $scope.selectedRoute = findRouteById($scope.routes, routeId);
+            $scope.selectedDirection = findDirectionById($scope.selectedRoute.dir, directionId);
+            $scope.selectedStop = findStopById($scope.selectedDirection.stop, stopId);
+            $scope.selectStop($scope.selectedStop);
+        }
+
+        function selectDefaulStateParams() {
+            $scope.selectedRoute = $scope.routes[0];
+            $scope.selectDirection($scope.selectedRoute.dir[0]);
+            $scope.selectStop($scope.selectedDirection.stop[0]);
+        }
+
+        $scope.selectDirection = function (direction) {
+            $scope.selectedDirection = direction;
+            $scope.selectStop($scope.selectedDirection.stop[0]);
+            updateRoute();
+        };
+
+        $scope.selectRoute = function (route) {
+            $scope.selectedRoute = route;
+            $scope.selectDirection($scope.selectedRoute.dir[0]);
+            $scope.selectStop($scope.selectedDirection.stop[0]);
+            updateRoute();
+        };
+
+        function setStop(stop) {
+            $log.log(stop);
+            $scope.mapOptions = null;
+            $scope.stopIsSelected = true;
+            $scope.selectedStop = stop;
+            $scope.selectedStopLocId = stop.locid;
+            getArrivals(stop)
+                .then(function (arrivalInfo) {
+                    timeCalcService.calculateRelativeTimes(arrivalInfo, $scope.queryTime)
+                        .then(function (arrivalInfo) {
+                            $scope.queryTime = arrivalInfo.resultSet.queryTime;
+                            $scope.selectedStop.arrivalInfo = arrivalInfo;
+                            //                            $scope.remainingTime = remainingTime;
+                            setMapForStop(stop);
+                        }, function () {
+                            $log.error("Could to calculate the relative Times.");
+                        });
+                }, function () {
+                    $log.error("Could not get arrivals.");
+                });
+        }
+
+        $scope.selectStop = function (stop) {
+            if (stop) {
+                if (_.isString(stop)) {
+                    try {
+                        stop = JSON.parse(stop);
+                    } catch (e) {
+                        $log.error("Could not parse the JSON string.");
+                    }
+                }
+                if ($scope.selectedStop && $scope.selectedStop.locid === stop) {
+                    $log.warn("This stop is already selected.  Doing nothing.");
+                } else {
+                    if (!stop.hasOwnProperty('desc')) {
+                        stop = _.find($scope.selectedDirection.stop, function (item) {
+                            if (item.locid === stop) {
+                                return stop = item;
+                            }
+                        });
+                        setStop(stop);
+                    } else {
+                        setStop(stop);
+                    }
+                }
+            }
+            updateRoute();
+        };
+
         // Initialization
         function getStreetcarRoutes() {
             var deferred = $q.defer();
@@ -236,24 +300,15 @@ angular.module('pdxStreetcarApp')
             getStreetcarRoutes()
                 .then(function (response) {
                     $scope.routes = response.resultSet.route;
+                    if ($state.params && $state.params.direction && $state.params.route && $state.params.stop) {
+                        setConfigurationVariables($state.params);
+                        goToRoute($state.params.route, $state.params.direction, $state.params.stop);
+                    } else {
+                        selectDefaulStateParams();
+                        goToRoute($scope.selectedRoute.route, $scope.selectedDirection.dir, $scope.selectedStop.locid);
+                    }
                 }, function () {
                     $log.error("Page could not be initialized.");
-                })
-                .then(function () {
-                    $scope.selectRoute($scope.routes[0]);
-                })
-                .then(function () {
-                    $scope.selectDirection($scope.selectedRoute.dir[0]);
-                })
-                .then(function () {
-                    $scope.selectStop($scope.selectedDirection.stop[0]);
-                })
-                .then(function () {
-                    $state.go('streetcar.line.direction.stop', {
-                        line: $scope.selectedRoute.route,
-                        direction: $scope.selectedDirection.dir,
-                        stop: $scope.selectedStop.locId
-                    });
                 });
         }
 
