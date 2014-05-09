@@ -29,16 +29,19 @@
                 <thead>
                 <tr>
                     <th>Name</th>
+                    <td>Arriving in...</td>
                     <th>Estimated</th>
-                    <th>Scheduled</th>
+                    <!--<th>Scheduled</th>-->
                 </tr>
                 </thead>
                 <tbody>
                 <tr ng-repeat="arrival in selectedStop.arrivalInfo.resultSet.arrival"
                     ng-class="{danger: arrival.imminent, warning: arrival.soon, info: arrivalInfo.enoughTimeForCoffee, success: arrivalInfo.aGoodAmountofTime}">
                     <td>{{arrival.shortSign}}</td>
+                    <td>{{arrival.remainingTime.minutes}} min,
+                        {{arrival.remainingTime.seconds}} sec</td>
                     <td>{{arrival.estimated | date:'h:mm a'}}</td>
-                    <td>{{arrival.scheduled | date:'h:mm a'}}</td>
+                    <!--<td>{{arrival.scheduled | date:'h:mm a'}}</td>-->
                 </tr>
                 </tbody>
             </table>
