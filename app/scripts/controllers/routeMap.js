@@ -10,6 +10,10 @@ angular.module('pdxStreetcarApp')
                 stopLatLng,
                 userLatLng,
                 userLocationMarker,
+                stopsForRouteDirection1,
+                stopsForRouteDirection2,
+                selectedRouteId,
+                selectedDirectionId,
                 transitLayer;
 
             function handleNoGeolocation(errorFlag) {
@@ -21,6 +25,7 @@ angular.module('pdxStreetcarApp')
             }
 
             function setStopMarkers() {
+
                 function createGoogleStopMarker(stop) {
                     stopLatLng =  new google.maps.LatLng(stop.lat, stop.lng);
                     stopMarker = new google.maps.Marker({
@@ -35,22 +40,45 @@ angular.module('pdxStreetcarApp')
                         title: stop.desc
                     });
 
-                    var infowindow = new google.maps.InfoWindow();
+                    var infoWindow = new google.maps.InfoWindow();
+
+                    var infoWindowContent = stop.desc +
+                        '<br>'+
+                        '<a href="#/streetcar/' +
+                        selectedRouteId + '/' +
+                        selectedDirectionId + '/' +
+                        stop.locid +
+                        '">' +
+                        'View Arrivals' +
+                        '</a>';
 
                     google.maps.event.addListener(stopMarker, 'click', function() {
-                        infowindow.close();
-                        infowindow.setContent(stop.desc);
-                        infowindow.open(map, this);
+                        infoWindow.close();
+                        infoWindow.setContent(infoWindowContent);
+                        infoWindow.open(map, this);
                         map.panTo(this.position);
                         map.setZoom(17);
                     });
 
                 }
-                _.forEach($scope.selectedRoute.dir[0].stop, createGoogleStopMarker);
-                _.forEach($scope.selectedRoute.dir[1].stop, createGoogleStopMarker);
 
+                function createMarkersForFirstDirection () {
+                    stopsForRouteDirection1 = $scope.selectedRoute.dir[0].stop;
+                    selectedRouteId = $scope.selectedRoute.route;
+                    selectedDirectionId = $scope.selectedRoute.dir[0].dir;
+                    _.forEach(stopsForRouteDirection1, createGoogleStopMarker);
+                }
+
+                function createMarketsForSecondDirection () {
+                    stopsForRouteDirection2 = $scope.selectedRoute.dir[1].stop;
+                    selectedRouteId = $scope.selectedRoute.route;
+                    selectedDirectionId = $scope.selectedRoute.dir[1].dir;
+                    _.forEach(stopsForRouteDirection2, createGoogleStopMarker);
+                }
+
+                createMarkersForFirstDirection();
+                createMarketsForSecondDirection();
             }
-
             function setUserLocationMarker() {
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(function (position) {

@@ -2,6 +2,8 @@ angular.module('pdxStreetcarApp')
     .controller('StreetcarviewCtrl', function ($scope, $log, trimet, $interval, $q, timeCalcService, $stateParams, $state) {
         'use strict';
 
+        // Scope Variables
+
         $scope.streetCarArrivalsView = true;
         $scope.timeTableView = false;
         $scope.routeMapView = false;
@@ -105,63 +107,7 @@ angular.module('pdxStreetcarApp')
             return deferred.promise;
         }
 
-        $scope.showRouteMap = function () {
-            $scope.streetCarArrivalsView = false;
-            $scope.timeTableView = false;
-            $scope.routeMapView = true;
-        };
-
-        $scope.showRouteSchedule = function () {
-            $scope.streetCarArrivalsView = false;
-            $scope.routeMapView = false;
-            $scope.timeTableView = false;
-        };
-
-        $scope.returnToAllStops = function () {
-            $scope.stopIsSelected = false;
-            $scope.selectedStop = null;
-        };
-
-        // State Scope Functions
-        $scope.isStopSelected = function (stop) {
-            if ($scope.selectedStop && stop) {
-                return stop.locid === $scope.selectedStop.locid;
-            }
-        };
-        $scope.isDirectionSelected = function (direction) {
-            if ($scope.selectedDirection && direction) {
-                return direction.dir === $scope.selectedDirection.dir;
-            }
-        };
-
-        $scope.refreshArrivals = function (stop) {
-            getArrivals(stop)
-                .then(function () {
-                    $log.log("Arrivals were refreshed.");
-                }, function () {
-                    $log.error("Could not get Arrivals.");
-                });
-        };
-        $scope.isArrivalImminent = function (arrival) {
-            timeCalcService.calculateDifferenceInTimes(arrival, $scope.queryTime)
-                .then(function (diff) {
-                    if (diff.minutes < 3) {
-                        return true;
-                    }
-                }, function () {
-                    $log.error("Could not calculate the difference in times.");
-                });
-        };
-        $scope.isArrivalSoon = function (arrival) {
-            timeCalcService.calculateDifferenceInTimes(arrival, $scope.queryTime)
-                .then(function (diff) {
-                    if (diff.minutes < 7) {
-                        return true;
-                    }
-                }, function () {
-                    $log.error("Could not calculate the difference in times.");
-                });
-        };
+        // State Change Functions
 
         function updateRoute() {
             $state.go('streetcar.route.direction.stop', {
@@ -203,6 +149,8 @@ angular.module('pdxStreetcarApp')
             });
         }
 
+        // Transit Info Param Setting Functions
+
         function setConfigurationVariables (stateParams) {
             var routeId = stateParams.route,
                 directionId = stateParams.direction,
@@ -219,18 +167,20 @@ angular.module('pdxStreetcarApp')
             $scope.selectStop($scope.selectedDirection.stop[0]);
         }
 
-        $scope.selectDirection = function (direction) {
-            $scope.selectedDirection = direction;
-            $scope.selectStop($scope.selectedDirection.stop[0]);
-            updateRoute();
-        };
+        // Transit Info Change Functions
 
-        $scope.selectRoute = function (route) {
+        function selectRoute(route) {
             $scope.selectedRoute = route;
             $scope.selectDirection($scope.selectedRoute.dir[0]);
             $scope.selectStop($scope.selectedDirection.stop[0]);
             updateRoute();
-        };
+        }
+
+        function selectDirection(direction) {
+            $scope.selectedDirection = direction;
+            $scope.selectStop($scope.selectedDirection.stop[0]);
+            updateRoute();
+        }
 
         function setStop(stop) {
             $log.log(stop);
@@ -240,11 +190,12 @@ angular.module('pdxStreetcarApp')
             $scope.selectedStopLocId = stop.locid;
             getArrivals(stop)
                 .then(function (arrivalInfo) {
+                    $scope.queryTime = arrivalInfo.resultSet.queryTime;
                     timeCalcService.calculateRelativeTimes(arrivalInfo, $scope.queryTime)
                         .then(function (arrivalInfo) {
-                            $scope.queryTime = arrivalInfo.resultSet.queryTime;
                             $scope.selectedStop.arrivalInfo = arrivalInfo;
-                            //                            $scope.remainingTime = remainingTime;
+                            $scope.remainingTime = $scope.selectedStop.arrivalInfo.resultSet.arrival[0].remainingTime;
+                            $scope.arrivalInfo = $scope.selectedStop.arrivalInfo.resultSet.arrival[0];
                             setMapForStop(stop);
                         }, function () {
                             $log.error("Could to calculate the relative Times.");
@@ -254,7 +205,7 @@ angular.module('pdxStreetcarApp')
                 });
         }
 
-        $scope.selectStop = function (stop) {
+        function selectStop (stop) {
             if (stop) {
                 if (_.isString(stop)) {
                     try {
@@ -279,6 +230,69 @@ angular.module('pdxStreetcarApp')
                 }
             }
             updateRoute();
+        }
+
+        // Public Functions
+
+        $scope.selectDirection = selectDirection;
+        $scope.selectRoute = selectRoute;
+        $scope.selectStop = selectStop;
+
+        $scope.showRouteMap = function () {
+            $scope.streetCarArrivalsView = false;
+            $scope.timeTableView = false;
+            $scope.routeMapView = true;
+        };
+        $scope.showRouteSchedule = function () {
+            $scope.streetCarArrivalsView = false;
+            $scope.routeMapView = false;
+            $scope.timeTableView = false;
+        };
+        $scope.returnToAllStops = function () {
+            $scope.stopIsSelected = false;
+            $scope.selectedStop = null;
+        };
+
+        // State Scope Functions
+
+        $scope.isStopSelected = function (stop) {
+            if ($scope.selectedStop && stop) {
+                return stop.locid === $scope.selectedStop.locid;
+            }
+        };
+        $scope.isDirectionSelected = function (direction) {
+            if ($scope.selectedDirection && direction) {
+                return direction.dir === $scope.selectedDirection.dir;
+            }
+        };
+
+        $scope.refreshArrivals = function (stop) {
+            getArrivals(stop)
+                .then(function () {
+                    $log.log("Arrivals were refreshed.");
+                }, function () {
+                    $log.error("Could not get Arrivals.");
+                });
+        };
+        $scope.isArrivalImminent = function (arrival) {
+            timeCalcService.calculateDifferenceInTimes(arrival, $scope.queryTime)
+                .then(function (diff) {
+                    if (diff.minutes < 3) {
+                        return true;
+                    }
+                }, function () {
+                    $log.error("Could not calculate the difference in times.");
+                });
+        };
+        $scope.isArrivalSoon = function (arrival) {
+            timeCalcService.calculateDifferenceInTimes(arrival, $scope.queryTime)
+                .then(function (diff) {
+                    if (diff.minutes < 7) {
+                        return true;
+                    }
+                }, function () {
+                    $log.error("Could not calculate the difference in times.");
+                });
         };
 
         // Initialization

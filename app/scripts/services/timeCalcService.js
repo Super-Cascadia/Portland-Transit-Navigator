@@ -40,26 +40,50 @@ angular.module('pdxStreetcarApp')
             return deferred.promise;
         }
 
+        function sortArrivalsArrayByDate(arrivals) {
+            arrivals.sort(function (a, b) {
+                var keyA = new Date(a.estimated),
+                    keyB = new Date(b.estimated);
+                if (keyA < keyB) {
+                    return -1;
+                }
+                if (keyA > keyB) {
+                    return 1;
+                }
+                return 0;
+            });
+            return arrivals;
+        }
+
         function calculateRelativeTimes(arrivalInfo, queryTime) {
             var deferred = $q.defer(),
                 arrivals = arrivalInfo.resultSet.arrival;
-
-            function calcTimeDiff(callback) {
-                _.each(arrivals, function (currentArrival) {
+                arrivals = sortArrivalsArrayByDate(arrivals);
+                _.forEach(arrivals, function (currentArrival, index, array) {
                     calculateDifferenceInTimes(currentArrival, queryTime)
                         .then(function (remainingTime) {
+                            if (remainingTime.days < 1 && remainingTime.hours < 1) {
+                                if (remainingTime.minutes <= 3) {
+                                    currentArrival.imminent = true;
+                                } else if (remainingTime.minutes <= 6) {
+                                    currentArrival.soon = true;
+                                } else if (remainingTime.minutes <= 15) {
+                                    currentArrival.enoughTimeForCoffee = true;
+                                } else if (remainingTime.minutes >= 16) {
+                                    currentArrival.aGoodAmountofTime = true;
+                                }
+                            } else {
+                                currentArrival.justWalk = true;
+                            }
                             currentArrival.remainingTime = remainingTime;
+                            if ((index + 1) === array.length) {
+                                deferred.resolve(arrivalInfo);
+                            }
                         }, function () {
                             $log.error("Could not calculate the difference in times.");
                             deferred.reject();
                         });
                 });
-                callback();
-            }
-            calcTimeDiff(function () {
-                deferred.resolve(arrivalInfo);
-
-            });
             return deferred.promise;
         }
 

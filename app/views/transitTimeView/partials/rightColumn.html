@@ -7,7 +7,8 @@
         </span>
     </div>
     <div class="panel-body">
-        <div class="panel panel-primary">
+        <div class="panel panel-primary"
+             ng-class="{'panel-danger': arrivalInfo.imminent, 'panel-warning': arrivalInfo.soon, 'panel-info': arrivalInfo.enoughTimeForCoffee, 'panel-success': arrivalInfo.aGoodAmountofTime}">
             <div class="panel-heading">
                 Next Arrival
             </div>
@@ -34,7 +35,7 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="arrival in selectedStop.arrivalInfo.resultSet.arrival"
-                    ng-class="{danger: arrival.imminent, warning: arrival.soon}">
+                    ng-class="{danger: arrival.imminent, warning: arrival.soon, info: arrivalInfo.enoughTimeForCoffee, success: arrivalInfo.aGoodAmountofTime}">
                     <td>{{arrival.shortSign}}</td>
                     <td>{{arrival.estimated | date:'h:mm a'}}</td>
                     <td>{{arrival.scheduled | date:'h:mm a'}}</td>
