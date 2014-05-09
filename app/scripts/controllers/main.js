@@ -1,6 +1,7 @@
 'use strict';
 angular.module('pdxStreetcarApp')
-    .controller('MainCtrl', function ($scope, $log, $location, geolocation) {
+    .controller('MainCtrl', function ($scope, $log, $location, geolocation, timeCalcService) {
+
         function geoLocate() {
             $log.log("Using Geolocation to find nearby stops.");
             geolocation.getLocation()
@@ -14,7 +15,18 @@ angular.module('pdxStreetcarApp')
                 });
         }
 
+        function determineIfServiceIsAvailable() {
+            timeCalcService.isStreetCarOutOfService()
+                .then(function () {
+
+                }, function () {
+
+                });
+        }
+
         $scope.geoLocate = function () {
             geoLocate();
         };
+
+        determineIfServiceIsAvailable();
     });

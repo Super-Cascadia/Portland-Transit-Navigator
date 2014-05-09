@@ -1,6 +1,36 @@
 'use strict';
 angular.module('pdxStreetcarApp')
     .factory('timeCalcService', function ($q, $log) {
+        // Variables
+        var streetCarOperatingHours;
+
+        // Utility Functions
+        function getNewDate(params) {
+            return moment(params);
+        }
+
+        streetCarOperatingHours = [
+            {
+                name: 'sunday',
+                daysOfWeek: [0],
+                startTime: getNewDate("January 1, 2014 07:30:00"),
+                endTime: getNewDate("January 1, 2014 22:30:00")
+            },
+            {
+                name: 'weekdays',
+                daysOfWeek: [1, 2, 3, 4, 5],
+                startTime: getNewDate("January 1, 2014 05:30:00"),
+                endTime: getNewDate("January 1, 2014 22:30:00")
+            },
+            {
+                name: 'saturday',
+                daysOfWeek: [6],
+                startTime: getNewDate("January 1, 2014 07:30:00"),
+                endTime: getNewDate("January 1, 2014 22:30:00")
+            }
+
+        ];
+
         // Service logic
         function getTimeDifference(earlierDate, laterDate) {
             var deferred = $q.defer(),
@@ -87,6 +117,37 @@ angular.module('pdxStreetcarApp')
             return deferred.promise;
         }
 
+        function isStreetCarOutOfService() {
+            var deferred = $q.defer(),
+                currentDate,
+                weekdayNumber,
+                currentDayOperatingSchedule,
+                currentTime;
+            currentDate = moment();
+            weekdayNumber = currentDate.getDay();
+            currentTime = currentDate.getTime();
+
+            function findScheduleForTodaysDate() {
+                _.forEach(streetCarOperatingHours, function (schedule, index, array) {
+                    return _.find(schedule.daysOfWeek, function (dayNumber) {
+                        if (dayNumber === weekdayNumber) {
+                            currentDayOperatingSchedule = schedule;
+                            return currentDayOperatingSchedule;
+                        }
+                    });
+                });
+            }
+
+            function determineIfCurrentTimeIsInRange() {
+                currentTime.diff(currentDayOperatingSchedule);
+            }
+
+            findScheduleForTodaysDate();
+            determineIfCurrentTimeIsInRange();
+            return deferred.promise;
+        }
+
+
         // Public API here
         return {
             calculateRelativeTimes: function (arrivalInfo, queryTime) {
@@ -94,6 +155,9 @@ angular.module('pdxStreetcarApp')
             },
             calculateDifferenceInTimes: function (arrival, queryTime) {
                 return calculateDifferenceInTimes(arrival, queryTime);
+            },
+            isStreetCarOutOfService: function () {
+                return isStreetCarOutOfService();
             }
         };
     });
