@@ -7,19 +7,19 @@
         </span>
     </div>
     <div class="panel-body">
-        <div class="panel panel-primary"
-             ng-class="{'panel-danger': arrivalInfo.imminent, 'panel-warning': arrivalInfo.soon, 'panel-info': arrivalInfo.enoughTimeForCoffee, 'panel-success': arrivalInfo.aGoodAmountofTime}">
-            <div class="panel-heading">
-                Next Arrival
-            </div>
-            <div class="panel-body">
-                <div class="well well-sm">
-                    <h1>{{remainingTime.minutes}} min, {{remainingTime.seconds}} sec @
-                        {{selectedStop.arrivalInfo.resultSet.arrival[0].estimated ||
-                        selectedStop.arrivalInfo.resultSet.arrival[0].scheduled | date:'h:mm a'}}</h1>
-                </div>
-            </div>
-        </div>
+        <!--<div class="panel panel-primary"-->
+             <!--ng-class="{'panel-danger': arrivalInfo.imminent, 'panel-warning': arrivalInfo.soon, 'panel-info': arrivalInfo.enoughTimeForCoffee, 'panel-success': arrivalInfo.aGoodAmountofTime}">-->
+            <!--<div class="panel-heading">-->
+                <!--Next Arrival-->
+            <!--</div>-->
+            <!--<div class="panel-body">-->
+                <!--<div class="well well-sm">-->
+                    <!--<h1>{{remainingTime.minutes}} min, {{remainingTime.seconds}} sec @-->
+                        <!--{{selectedStop.arrivalInfo.resultSet.arrival[0].estimated ||-->
+                        <!--selectedStop.arrivalInfo.resultSet.arrival[0].scheduled | date:'h:mm a'}}</h1>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
         <div class="panel panel-default">
             <!-- Default panel contents -->
             <div class="panel-heading">Arrivals
