@@ -60,9 +60,18 @@
      ng-controller="topNavigationCtrl"
      ng-include="'views/navigation/top-navigation/top-navigation.html'"></nav>
 <!--Service End Indicator-->
-<section class="service-over">
-
-</section>
+<div class="container-fluid">
+    <section class="service-over" ng-if="showStreetcarServiceWarning">
+        <div class="alert alert-danger alert-dismissable">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>{{streetcarScheduleMessage}}
+        </div>
+    </section>
+    <section class="service-over" ng-if="!showStreetcarServiceWarning">
+        <div class="alert alert-success alert-dismissable">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>{{streetcarScheduleMessage}}
+        </div>
+    </section>
+</div>
 <!-- Add your site or application content here -->
 <div class="container-fluid"
      ui-view></div>

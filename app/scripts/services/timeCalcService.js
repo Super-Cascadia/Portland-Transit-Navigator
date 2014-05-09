@@ -5,28 +5,32 @@ angular.module('pdxStreetcarApp')
         var streetCarOperatingHours;
 
         // Utility Functions
-        function getNewDate(params) {
-            return moment(params);
+        function getNewDate(hour, minute) {
+            var constructedDate;
+            constructedDate = moment();
+            constructedDate.hours(hour);
+            constructedDate.minutes(minute);
+            return constructedDate;
         }
 
         streetCarOperatingHours = [
             {
                 name: 'sunday',
                 daysOfWeek: [0],
-                startTime: getNewDate("January 1, 2014 07:30:00"),
-                endTime: getNewDate("January 1, 2014 22:30:00")
+                startTime: getNewDate(7, 30),
+                endTime: getNewDate(23, 30)
             },
             {
                 name: 'weekdays',
                 daysOfWeek: [1, 2, 3, 4, 5],
-                startTime: getNewDate("January 1, 2014 05:30:00"),
-                endTime: getNewDate("January 1, 2014 22:30:00")
+                startTime: getNewDate(5, 30),
+                endTime: getNewDate(23, 30)
             },
             {
                 name: 'saturday',
                 daysOfWeek: [6],
-                startTime: getNewDate("January 1, 2014 07:30:00"),
-                endTime: getNewDate("January 1, 2014 22:30:00")
+                startTime: getNewDate(7, 30),
+                endTime: getNewDate(23, 30)
             }
 
         ];
@@ -120,26 +124,48 @@ angular.module('pdxStreetcarApp')
         function isStreetCarOutOfService() {
             var deferred = $q.defer(),
                 currentDate,
-                weekdayNumber,
-                currentDayOperatingSchedule,
-                currentTime;
+                currentDay,
+                operatingSchedule;
             currentDate = moment();
-            weekdayNumber = currentDate.getDay();
-            currentTime = currentDate.getTime();
+            currentDay = currentDate.day();
 
             function findScheduleForTodaysDate() {
                 _.forEach(streetCarOperatingHours, function (schedule, index, array) {
                     return _.find(schedule.daysOfWeek, function (dayNumber) {
-                        if (dayNumber === weekdayNumber) {
-                            currentDayOperatingSchedule = schedule;
-                            return currentDayOperatingSchedule;
+                        if (dayNumber === currentDay) {
+                            operatingSchedule = schedule;
+                            return operatingSchedule;
                         }
                     });
                 });
             }
 
+            function currentTimeAfterStartTime(differenceInTime) {
+                if (differenceInTime > 0) {
+                    return true;
+                }
+            }
+
+            function currentTimeBeforeEndTime(differenceInTime) {
+                if (differenceInTime < 0) {
+                    return true;
+                }
+            }
+
             function determineIfCurrentTimeIsInRange() {
-                currentTime.diff(currentDayOperatingSchedule);
+                var differenceToStartTime,
+                    differenceToEndTime;
+                differenceToStartTime = currentDate.diff(operatingSchedule.startTime, 'minutes');
+                differenceToEndTime = currentDate.diff(operatingSchedule.endTime, 'minutes');
+                if (currentTimeAfterStartTime(differenceToStartTime)) {
+                    if (currentTimeBeforeEndTime(differenceToEndTime)) {
+                        deferred.resolve(differenceToStartTime, differenceToEndTime);
+                    }
+                } else {
+                    if (currentTimeBeforeEndTime(differenceToEndTime)) {
+                        deferred.reject(differenceToStartTime, differenceToEndTime);
+                    }
+                }
             }
 
             findScheduleForTodaysDate();

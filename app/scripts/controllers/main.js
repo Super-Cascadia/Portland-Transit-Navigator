@@ -2,6 +2,10 @@
 angular.module('pdxStreetcarApp')
     .controller('MainCtrl', function ($scope, $log, $location, geolocation, timeCalcService) {
 
+        // Variables
+        $scope.showStreetcarServiceWarning = false;
+        $scope.streetcarScheduleMessage = "";
+
         function geoLocate() {
             $log.log("Using Geolocation to find nearby stops.");
             geolocation.getLocation()
@@ -17,10 +21,14 @@ angular.module('pdxStreetcarApp')
 
         function determineIfServiceIsAvailable() {
             timeCalcService.isStreetCarOutOfService()
-                .then(function () {
-
-                }, function () {
-
+                .then(function (differenceToStartTime, differenceToEndTime) {
+                    $log.info("Streetcar is currently available.  Time is within schedule.");
+                    $scope.streetcarScheduleMessage = "The Streetcar is currently in service.";
+                    $scope.showStreetcarServiceWarning = false;
+                }, function (differenceToStartTime, differenceToEndTime) {
+                    $log.warn("Streetcar not currently available.  Time is outside of schedule.");
+                    $scope.streetcarScheduleMessage = "The Streetcar is currently out of service.";
+                    $scope.showStreetcarServiceWarning = true;
                 });
         }
 
