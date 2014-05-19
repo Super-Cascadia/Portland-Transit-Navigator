@@ -1,10 +1,11 @@
 <!--Stop Info-->
 <div class="panel panel-primary"
      ng-if="stopIsSelected">
-    <div class="panel-heading">{{selectedStop.desc}}
-        <span class="pull-right">
-          <span class="pull-left">{{queryTime | date: 'medium'}}</span>
-        </span>
+    <div class="panel-heading">
+        <h3 class="panel-title">{{selectedStop.desc}}</h3>
+        <!--<span class="pull-right">-->
+          <!--<span class="pull-left">{{queryTime | date: 'medium'}}</span>-->
+        <!--</span>-->
     </div>
     <div class="panel-body">
         <!--<div class="panel panel-primary"-->
@@ -28,6 +29,7 @@
             <table class="table">
                 <thead>
                 <tr>
+                    <th>Type</th>
                     <th>Name</th>
                     <td>Arriving in...</td>
                     <th>Estimated</th>
@@ -37,6 +39,11 @@
                 <tbody>
                 <tr ng-repeat="arrival in selectedStop.arrivalInfo.resultSet.arrival"
                     ng-class="{danger: arrival.imminent, warning: arrival.soon, info: arrivalInfo.enoughTimeForCoffee, success: arrivalInfo.aGoodAmountofTime}">
+                    <td class="arrival-icon">
+                        <img src="images/street_car.svg"
+                             style="height: 40px; width: 30px;"
+                             alt=""/>
+                    </td>
                     <td>{{arrival.shortSign}}</td>
                     <td>{{arrival.remainingTime.minutes}} min,
                         {{arrival.remainingTime.seconds}} sec</td>

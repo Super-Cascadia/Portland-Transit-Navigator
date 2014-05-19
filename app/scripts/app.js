@@ -12,6 +12,7 @@ angular.module('pdxStreetcarApp', [
     'geolocation',
     'ui.select2',
     'ui.router'
+//    'trimet.api'
 ])
     .config(function ($stateProvider, $urlRouterProvider) {
         $stateProvider

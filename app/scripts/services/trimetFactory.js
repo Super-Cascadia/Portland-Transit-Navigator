@@ -83,7 +83,7 @@ angular.module('pdxStreetcarApp')
         // Public API here
         return {
             getStopsAroundLocation: function (lat, lng, radiusFeet, success, error) {
-                getStopsAroundLocation(lat, lng, radiusFeet, success, error)
+                getStopsAroundLocation(lat, lng, radiusFeet, success, error);
             },
             getArrivalsForStop: function (stop, success, error) {
                 return getArrivals(stop, success, error);
