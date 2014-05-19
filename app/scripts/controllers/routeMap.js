@@ -62,11 +62,31 @@ angular.module('pdxStreetcarApp')
 
                 }
 
+                function createPolylineForPoints(stops) {
+                    var stopCoordinates = [],
+                        stopsPolyline,
+                        stopLatLng;
+                    _.forEach(stops, function (stop) {
+                        stopLatLng =  new google.maps.LatLng(stop.lat, stop.lng);
+                        stopCoordinates.push(stopLatLng);
+                    });
+                    stopsPolyline = new google.maps.Polyline({
+                        path: stopCoordinates,
+                        geodesic: true,
+                        strokeColor: '#FF0000',
+                        strokeOpacity: 1.0,
+                        strokeWeight: 2
+                    });
+
+                    stopsPolyline.setMap(map);
+                }
+
                 function createMarkersForFirstDirection () {
                     stopsForRouteDirection1 = $scope.selectedRoute.dir[0].stop;
                     selectedRouteId = $scope.selectedRoute.route;
                     selectedDirectionId = $scope.selectedRoute.dir[0].dir;
                     _.forEach(stopsForRouteDirection1, createGoogleStopMarker);
+                    createPolylineForPoints(stopsForRouteDirection1);
                 }
 
                 function createMarketsForSecondDirection () {
@@ -74,6 +94,7 @@ angular.module('pdxStreetcarApp')
                     selectedRouteId = $scope.selectedRoute.route;
                     selectedDirectionId = $scope.selectedRoute.dir[1].dir;
                     _.forEach(stopsForRouteDirection2, createGoogleStopMarker);
+                    createPolylineForPoints(stopsForRouteDirection2);
                 }
 
                 createMarkersForFirstDirection();
