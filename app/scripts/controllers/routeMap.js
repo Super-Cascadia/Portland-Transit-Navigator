@@ -126,7 +126,7 @@ angular.module('pdxStreetcarApp')
             latLng = new google.maps.LatLng(45.5200, -122.6819);
             mapOptions = {
                 center: latLng,
-                zoom: 15,
+                zoom: 13,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             };
             map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
@@ -149,7 +149,7 @@ angular.module('pdxStreetcarApp')
         };
 
         function getStreetCarRoutes() {
-            trimet.streetcar.getRoutes(function getSuccess(response) {
+            trimet.streetcar.getRoutes().then(function getSuccess(response) {
                 $scope.routes = response.resultSet.route;
                 $scope.selectRoute($scope.routes[0]);
                 createMap();

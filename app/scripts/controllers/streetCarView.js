@@ -1,21 +1,19 @@
 angular.module('pdxStreetcarApp')
     .controller('StreetcarviewCtrl', function ($scope, $log, trimet, $interval, $q, timeCalcService, $stateParams, $state) {
         'use strict';
-
         // Scope Variables
-
         $scope.streetCarArrivalsView = true;
         $scope.timeTableView = false;
         $scope.routeMapView = false;
-
         function getArrivals(stop) {
             var deferred = $q.defer();
-            trimet.getArrivalsForStop(stop, function arrivalSuccess(arrivalInfo) {
-                deferred.resolve(arrivalInfo);
-            }, function arrivalError(response) {
-                $log.error("Could not get arrivals for streetcar stop.");
-                deferred.reject();
-            });
+            trimet.getArrivalsForStop(stop)
+                .then(function arrivalSuccess(arrivalInfo) {
+                    deferred.resolve(arrivalInfo);
+                }, function arrivalError(response) {
+                    $log.error("Could not get arrivals for streetcar stop.");
+                    deferred.reject();
+                });
             return deferred.promise;
         }
 
@@ -108,7 +106,6 @@ angular.module('pdxStreetcarApp')
         }
 
         // State Change Functions
-
         function updateRoute() {
             $state.go('streetcar.route.direction.stop', {
                 route: $scope.selectedRoute.route,
@@ -117,7 +114,7 @@ angular.module('pdxStreetcarApp')
             });
         }
 
-        function goToRoute(route, direction , stop) {
+        function goToRoute(route, direction, stop) {
             $state.go('streetcar.route.direction.stop', {
                 route: route,
                 direction: direction,
@@ -125,7 +122,7 @@ angular.module('pdxStreetcarApp')
             });
         }
 
-        function findRouteById (routes, routeId) {
+        function findRouteById(routes, routeId) {
             return _.find(routes, function (route) {
                 if (route.route == routeId) {
                     return route;
@@ -150,8 +147,7 @@ angular.module('pdxStreetcarApp')
         }
 
         // Transit Info Param Setting Functions
-
-        function setConfigurationVariables (stateParams) {
+        function setConfigurationVariables(stateParams) {
             var routeId = stateParams.route,
                 directionId = stateParams.direction,
                 stopId = stateParams.stop;
@@ -168,7 +164,6 @@ angular.module('pdxStreetcarApp')
         }
 
         // Transit Info Change Functions
-
         function selectRoute(route) {
             $scope.selectedRoute = route;
             $scope.selectDirection($scope.selectedRoute.dir[0]);
@@ -205,7 +200,7 @@ angular.module('pdxStreetcarApp')
                 });
         }
 
-        function selectStop (stop) {
+        function selectStop(stop) {
             if (stop) {
                 if (_.isString(stop)) {
                     try {
@@ -233,11 +228,9 @@ angular.module('pdxStreetcarApp')
         }
 
         // Public Functions
-
         $scope.selectDirection = selectDirection;
         $scope.selectRoute = selectRoute;
         $scope.selectStop = selectStop;
-
         $scope.showRouteMap = function () {
             $scope.streetCarArrivalsView = false;
             $scope.timeTableView = false;
@@ -252,9 +245,7 @@ angular.module('pdxStreetcarApp')
             $scope.stopIsSelected = false;
             $scope.selectedStop = null;
         };
-
         // State Scope Functions
-
         $scope.isStopSelected = function (stop) {
             if ($scope.selectedStop && stop) {
                 return stop.locid === $scope.selectedStop.locid;
@@ -265,7 +256,6 @@ angular.module('pdxStreetcarApp')
                 return direction.dir === $scope.selectedDirection.dir;
             }
         };
-
         $scope.refreshArrivals = function (stop) {
             getArrivals(stop)
                 .then(function () {
@@ -294,16 +284,16 @@ angular.module('pdxStreetcarApp')
                     $log.error("Could not calculate the difference in times.");
                 });
         };
-
         // Initialization
         function getStreetcarRoutes() {
             var deferred = $q.defer();
-            trimet.streetcar.getRoutes(function getSuccess(response) {
-                deferred.resolve(response);
-            }, function getError(response) {
-                $log.error("Could not get routes for streetcar.");
-                deferred.reject();
-            });
+            trimet.streetcar.getRoutes()
+                .then(function getSuccess(response) {
+                    deferred.resolve(response);
+                }, function getError(response) {
+                    $log.error("Could not get routes for streetcar.");
+                    deferred.reject();
+                });
             return deferred.promise;
         }
 
