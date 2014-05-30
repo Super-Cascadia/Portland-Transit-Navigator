@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/wintermuted/portland-streetcar-app.png?label=ready&title=Ready)](https://waffle.io/wintermuted/portland-streetcar-app)
 Portland-Streetcar-App
 ======================
 
