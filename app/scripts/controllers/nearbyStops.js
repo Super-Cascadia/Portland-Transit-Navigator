@@ -57,7 +57,7 @@ angular.module('pdxStreetcarApp')
                 var currentArrival = arrivals[i];
                 calculateDifferenceInTimes(currentArrival, function (response) {
                     $scope.remainingTime = response;
-                })
+                });
             }
         }
 
