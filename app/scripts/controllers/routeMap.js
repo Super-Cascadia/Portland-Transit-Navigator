@@ -13,7 +13,8 @@ angular.module('pdxStreetcarApp')
         'use strict';
 
         var map,
-            markers = {};
+            markers = {},
+            polylines = {};
 
         $scope.streetcar = {
             '193': {
@@ -128,7 +129,17 @@ angular.module('pdxStreetcarApp')
             markers[routeId][directionId].push(stopMarker);
         }
 
-        function setAllMap(map, route, direction) {
+        function addPolylineToPolylineModel(routeId, directionId, polyline) {
+            if (!polylines[routeId]) {
+                polylines[routeId] = {};
+            }
+            if (!polylines[routeId][directionId]) {
+                polylines[routeId][directionId] = [];
+            }
+            polylines[routeId][directionId].push(polyline);
+        }
+
+        function setAllMapMarkers(map, route, direction) {
             if (markers[route][direction]) {
                 _.forEach(markers[route][direction], function (marker) {
                     marker.setMap(map);
@@ -136,30 +147,38 @@ angular.module('pdxStreetcarApp')
             }
         }
 
-        function hideRouteMarkers(route, direction) {
-            setAllMap(null, route, direction);
+        function setAllMapPolylines(map, route, direction) {
+            if (polylines[route][direction]) {
+                _.forEach(polylines[route][direction], function (polyline) {
+                    polyline.setMap(map);
+                });
+            }
         }
 
-        function hideRoutePolyline(route) {
+        function hideRouteMarkers(route, direction) {
+            setAllMapMarkers(null, route, direction);
+        }
 
+        function hideRoutePolyline(route, direction) {
+            setAllMapPolylines(null, route, direction);
         }
 
         function hideRoute (route, direction) {
             hideRouteMarkers(route, direction);
-            hideRoutePolyline(route);
+            hideRoutePolyline(route, direction);
         }
 
         function showRouteMarkers(route, direction) {
-            setAllMap(map, route, direction);
+            setAllMapMarkers(map, route, direction);
         }
 
-        function showRoutePolyline(route) {
-
+        function showRoutePolyline(route, direction) {
+            setAllMapPolylines(map, route, direction);
         }
 
         function showRoute(route, direction) {
             showRouteMarkers(route, direction);
-            showRoutePolyline(route);
+            showRoutePolyline(route, direction);
         }
 
         function createGoogleStopMarker(routeId, directionId, stops) {
@@ -226,6 +245,7 @@ angular.module('pdxStreetcarApp')
                 strokeWeight: 5
             });
             stopsPolyline.setMap(map);
+            addPolylineToPolylineModel(routeId, directionId, stopsPolyline);
         }
 
         function setStopMarkers(routes) {
