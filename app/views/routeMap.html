@@ -1,28 +1,19 @@
-    <!--<li ng-class="{active: isRouteSelected(route)}"-->
-        <!--ng-repeat="route in routes">-->
-        <!--<a ng-click="selectRoute(route)">{{route.desc}}</a>-->
-    <!--</li>-->
-    <div class="btn-group">
-        <label class="btn btn-primary"
-               ng-model="streetcarRoutes.nsToSouthWaterfront" btn-checkbox>NS to SW</label>
-        <label class="btn btn-primary"
-               ng-model="streetcarRoutes.nsToNw23rd" btn-checkbox>NS to NW</label>
-        <label class="btn btn-primary"
-               ng-model="streetcarRoutes.clToPsu" btn-checkbox>CL to W</label>
-        <label class="btn btn-primary"
-               ng-model="streetcarRoutes.clToConventionCenter" btn-checkbox>CL to E</label>
-    </div>
-    <!--<button class="btn primary btn-default btn-sm"-->
-            <!--ng-click="showRouteMap()">Route Map-->
-    <!--</button>-->
-    <!--<button class="btn btn-default btn-sm"-->
-            <!--ng-click="showRouteSchedule()">Schedule-->
-    <!--</button>-->
-    <!--<button type="button"-->
-            <!--class="btn btn-default btn-sm"-->
-            <!--ng-click="refreshArrivals(selectedStop)">-->
-        <!--<span class="glyphicon glyphicon-refresh"></span>-->
-    <!--</button>-->
+<div class="btn-group" ng-repeat="route in streetcar">
+    <label class="btn btn-primary"
+           ng-repeat="direction in route"
+           ng-model="direction.enabled"
+           ng-click="toggleRoute(direction)"
+           btn-checkbox>{{direction.displayName}}
+                        </label>
+</div>
+<div class="btn-group" ng-repeat="route in maxRail">
+    <label class="btn btn-primary"
+           ng-repeat="direction in route"
+           ng-model="direction.enabled"
+           ng-click="toggleRoute(direction)"
+           btn-checkbox>{{direction.displayName}}
+    </label>
+</div>
 <hr>
 <section class="map route-map"
          ng-if="selectedRoute !== null">

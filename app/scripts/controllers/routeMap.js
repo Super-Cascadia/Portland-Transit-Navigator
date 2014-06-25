@@ -12,17 +12,97 @@ angular.module('pdxStreetcarApp')
     .controller('RouteMapCtrl', function ($scope, $log, $q, trimet, RouteColors) {
         'use strict';
 
-        var map;
+        var map,
+            markers = {};
 
-        $scope.streetcarRoutes = {
-            nsToSouthWaterfront: false,
-            nsToNw23rd: false,
-            clToPsu: false,
-            clToConventionCenter: false
+        $scope.streetcar = {
+            '193': {
+                '0': {
+                    routeId: 193,
+                    directionId: 0,
+                    enabled: false,
+                    displayName: "NS to SW"
+                },
+                '1': {
+                    routeId: 193,
+                    directionId: 1,
+                    enabled: false,
+                    displayName: "NS to NW"
+                }
+            },
+            '194': {
+                '0': {
+                    routeId: 194,
+                    directionId: 0,
+                    enabled: false,
+                    displayName: "CL to W"
+                },
+                '1': {
+                    routeId: 194,
+                    directionId: 1,
+                    enabled: false,
+                    displayName: "CL to E"
+                }
+            }
         };
 
-        $scope.railRoutes = {
-
+        $scope.maxRail = {
+            '100': {
+                '0': {
+                    routeId: 100,
+                    directionId: 0,
+                    enabled: false,
+                    displayName: "Blue Line to Gresham"
+                },
+                '1': {
+                    routeId: 100,
+                    directionId: 1,
+                    enabled: false,
+                    displayName: "Blue Line to Hillsboro"
+                }
+            },
+            '200': {
+                '0': {
+                    routeId: 200,
+                    directionId: 0,
+                    enabled: false,
+                    displayName: "Green Line To Clackamas Town Center"
+                },
+                '1': {
+                    routeId: 200,
+                    directionId: 1,
+                    enabled: false,
+                    displayName: "Green Line To Portland City Center/PSU"
+                }
+            },
+            '90': {
+                '0': {
+                    routeId: 90,
+                    directionId: 0,
+                    enabled: false,
+                    displayName: "Red Line to Portland International Airport"
+                },
+                '1': {
+                    routeId: 90,
+                    directionId: 1,
+                    enabled: false,
+                    displayName: "Red line to Beaverton TC"
+                }
+            },
+            '190': {
+                '0': {
+                    routeId: 190,
+                    directionId: 0,
+                    enabled: false,
+                    displayName: "Yellow Line to Expo Center"
+                },
+                '1': {
+                    routeId: 190,
+                    directionId: 1,
+                    enabled: false,
+                    displayName: "Yellow Line to Portland City Center/PSU"
+                }
+            }
         };
 
         $scope.busRoutes = {
@@ -38,7 +118,51 @@ angular.module('pdxStreetcarApp')
             }
         }
 
-        function createGoogleStopMarker(routeId, stops) {
+        function addMarkerToMarkerModel(routeId, directionId, stopMarker) {
+            if (!markers[routeId]) {
+                markers[routeId] = {};
+            }
+            if (!markers[routeId][directionId]) {
+                markers[routeId][directionId] = [];
+            }
+            markers[routeId][directionId].push(stopMarker);
+        }
+
+        function setAllMap(map, route, direction) {
+            if (markers[route][direction]) {
+                _.forEach(markers[route][direction], function (marker) {
+                    marker.setMap(map);
+                });
+            }
+        }
+
+        function hideRouteMarkers(route, direction) {
+            setAllMap(null, route, direction);
+        }
+
+        function hideRoutePolyline(route) {
+
+        }
+
+        function hideRoute (route, direction) {
+            hideRouteMarkers(route, direction);
+            hideRoutePolyline(route);
+        }
+
+        function showRouteMarkers(route, direction) {
+            setAllMap(map, route, direction);
+        }
+
+        function showRoutePolyline(route) {
+
+        }
+
+        function showRoute(route, direction) {
+            showRouteMarkers(route, direction);
+            showRoutePolyline(route);
+        }
+
+        function createGoogleStopMarker(routeId, directionId, stops) {
             var selectedRouteId,
                 selectedDirectionId,
                 stopMarker,
@@ -82,12 +206,11 @@ angular.module('pdxStreetcarApp')
                     map.panTo(this.position);
                     map.setZoom(17);
                 });
+                addMarkerToMarkerModel(routeId, directionId, stopMarker);
             });
-
-
         }
 
-        function createPolylineForPoints(routeId, stops) {
+        function createPolylineForPoints(routeId, directionId, stops) {
             var stopCoordinates = [],
                 stopsPolyline,
                 stopLatLng;
@@ -106,14 +229,16 @@ angular.module('pdxStreetcarApp')
         }
 
         function setStopMarkers(routes) {
-            var routeId;
+            var routeId,
+                directionId;
             _.forEach(routes, function iterateOverRoutes(route, index, collection) {
                 routeId = route.route;
                 if (route.dir && route.dir.length > 0) {
                     _.forEach(route.dir, function iterateOverDirections(direction) {
+                        directionId = direction.dir;
                         if (direction.stop && direction.stop.length > 0) {
-                            createGoogleStopMarker(routeId, direction.stop);
-                            createPolylineForPoints(routeId, direction.stop);
+                            createGoogleStopMarker(routeId, directionId, direction.stop);
+                            createPolylineForPoints(routeId, directionId, direction.stop);
                         }
                     });
                 }
@@ -186,9 +311,21 @@ angular.module('pdxStreetcarApp')
 //            setStopMarkers(data.resultSet.route);
         }
 
+        function setMaxRailEnabled() {
+            $scope.maxRail[100][0].enabled = true;
+            $scope.maxRail[100][1].enabled = true;
+            $scope.maxRail[200][0].enabled = true;
+            $scope.maxRail[200][1].enabled = true;
+            $scope.maxRail[90][0].enabled = true;
+            $scope.maxRail[90][1].enabled = true;
+            $scope.maxRail[190][0].enabled = true;
+            $scope.maxRail[190][1].enabled = true;
+        }
+
         function onRailRoutesRetrievedSuccess(data) {
             $scope.railRoutes = data;
             setStopMarkers(data.resultSet.route);
+            setMaxRailEnabled();
         }
 
         function retrieveRemainingRoutes() {
@@ -198,10 +335,40 @@ angular.module('pdxStreetcarApp')
                 .then(onRailRoutesRetrievedSuccess);
         }
 
+        function toggleRoute(route) {
+            if (route) {
+                if (route.enabled === true) {
+                    route.enabled = false;
+                    hideRoute(route.routeId, route.directionId);
+                    if (_.contains(route.routeId, [193, 194])) {
+                        $scope.streetcar[route.routeId][route.directionId].enabled = true;
+                    } else {
+                        $scope.maxRail[route.routeId][route.directionId].enabled = true;
+                    }
+                } else {
+                    route.enabled = true;
+                    showRoute(route.routeId, route.directionId);
+                    if (_.contains(route.routeId, [193, 194])) {
+                        $scope.streetcar[route.routeId][route.directionId].enabled = false;
+                    } else {
+                        $scope.maxRail[route.routeId][route.directionId].enabled = false;
+                    }
+                }
+            }
+        }
+
+        function setStreetcarToEnabled() {
+            $scope.streetcar[193][0].enabled = true;
+            $scope.streetcar[193][1].enabled = true;
+            $scope.streetcar[194][0].enabled = true;
+            $scope.streetcar[194][1].enabled = true;
+        }
+
         function onStreetCarRouteRetrievalSuccess(data) {
             $scope.routes = data.resultSet.route;
             createMap();
             setStopMarkers(data.resultSet.route);
+            setStreetcarToEnabled();
         }
 
         function onStreetCarRouteRetrievalError(error) {
@@ -223,4 +390,5 @@ angular.module('pdxStreetcarApp')
 
         $scope.isRouteSelected = isRouteSelected;
         $scope.selectRoute = selectRoute;
+        $scope.toggleRoute = toggleRoute;
     });
