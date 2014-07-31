@@ -3,24 +3,8 @@
      ng-if="stopIsSelected">
     <div class="panel-heading">
         <h3 class="panel-title">{{selectedStop.desc}}</h3>
-        <!--<span class="pull-right">-->
-          <!--<span class="pull-left">{{queryTime | date: 'medium'}}</span>-->
-        <!--</span>-->
     </div>
     <div class="panel-body">
-        <!--<div class="panel panel-primary"-->
-             <!--ng-class="{'panel-danger': arrivalInfo.imminent, 'panel-warning': arrivalInfo.soon, 'panel-info': arrivalInfo.enoughTimeForCoffee, 'panel-success': arrivalInfo.aGoodAmountofTime}">-->
-            <!--<div class="panel-heading">-->
-                <!--Next Arrival-->
-            <!--</div>-->
-            <!--<div class="panel-body">-->
-                <!--<div class="well well-sm">-->
-                    <!--<h1>{{remainingTime.minutes}} min, {{remainingTime.seconds}} sec @-->
-                        <!--{{selectedStop.arrivalInfo.resultSet.arrival[0].estimated ||-->
-                        <!--selectedStop.arrivalInfo.resultSet.arrival[0].scheduled | date:'h:mm a'}}</h1>-->
-                <!--</div>-->
-            <!--</div>-->
-        <!--</div>-->
         <div class="panel panel-default">
             <!-- Default panel contents -->
             <div class="panel-heading">Arrivals
@@ -33,7 +17,6 @@
                     <th>Name</th>
                     <td>Arriving in...</td>
                     <th>Estimated</th>
-                    <!--<th>Scheduled</th>-->
                 </tr>
                 </thead>
                 <tbody>
@@ -48,7 +31,6 @@
                     <td>{{arrival.remainingTime.minutes}} min,
                         {{arrival.remainingTime.seconds}} sec</td>
                     <td>{{arrival.estimated | date:'h:mm a'}}</td>
-                    <!--<td>{{arrival.scheduled | date:'h:mm a'}}</td>-->
                 </tr>
                 </tbody>
             </table>

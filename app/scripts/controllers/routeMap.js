@@ -19,30 +19,34 @@ angular.module('pdxStreetcarApp')
         $scope.streetcar = {
             '193': {
                 '0': {
+                    color: '#' + RouteColors[193],
                     routeId: 193,
                     directionId: 0,
                     enabled: false,
-                    displayName: "NS to SW"
+                    displayName: "To South Waterfront"
                 },
                 '1': {
+                    color: '#' + RouteColors[193],
                     routeId: 193,
                     directionId: 1,
                     enabled: false,
-                    displayName: "NS to NW"
+                    displayName: "To NW 23rd St"
                 }
             },
             '194': {
                 '0': {
+                    color: '#' + RouteColors[194],
                     routeId: 194,
                     directionId: 0,
                     enabled: false,
-                    displayName: "CL to W"
+                    displayName: "Portland City Center/PSU"
                 },
                 '1': {
+                    color: '#' + RouteColors[194],
                     routeId: 194,
                     directionId: 1,
                     enabled: false,
-                    displayName: "CL to E"
+                    displayName: "To Rose Quarter/OMSI"
                 }
             }
         };
@@ -50,58 +54,66 @@ angular.module('pdxStreetcarApp')
         $scope.maxRail = {
             '100': {
                 '0': {
+                    color: '#' + RouteColors[100],
                     routeId: 100,
                     directionId: 0,
                     enabled: false,
-                    displayName: "Blue Line to Gresham"
+                    displayName: "To Gresham"
                 },
                 '1': {
+                    color: '#' + RouteColors[100],
                     routeId: 100,
                     directionId: 1,
                     enabled: false,
-                    displayName: "Blue Line to Hillsboro"
+                    displayName: "To Hillsboro"
                 }
             },
             '200': {
                 '0': {
+                    color: '#' + RouteColors[200],
                     routeId: 200,
                     directionId: 0,
                     enabled: false,
-                    displayName: "Green Line To Clackamas Town Center"
+                    displayName: "To Clackamas Town Center"
                 },
                 '1': {
+                    color: '#' + RouteColors[200],
                     routeId: 200,
                     directionId: 1,
                     enabled: false,
-                    displayName: "Green Line To Portland City Center/PSU"
+                    displayName: "To Portland City Center/PSU"
                 }
             },
             '90': {
                 '0': {
+                    color: '#' + RouteColors[90],
                     routeId: 90,
                     directionId: 0,
                     enabled: false,
-                    displayName: "Red Line to Portland International Airport"
+                    displayName: "To Portland International Airport"
                 },
                 '1': {
+                    color: '#' + RouteColors[90],
                     routeId: 90,
                     directionId: 1,
                     enabled: false,
-                    displayName: "Red line to Beaverton TC"
+                    displayName: "To Beaverton TC"
                 }
             },
             '190': {
                 '0': {
+                    color: '#' + RouteColors[190],
                     routeId: 190,
                     directionId: 0,
                     enabled: false,
-                    displayName: "Yellow Line to Expo Center"
+                    displayName: "To Expo Center"
                 },
                 '1': {
+                    color: '#' + RouteColors[190],
                     routeId: 190,
                     directionId: 1,
                     enabled: false,
-                    displayName: "Yellow Line to Portland City Center/PSU"
+                    displayName: "To Portland City Center/PSU"
                 }
             }
         };
