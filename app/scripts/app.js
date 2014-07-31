@@ -25,24 +25,24 @@ angular.module('pdxStreetcarApp', [
                 templateUrl: 'views/main.html',
                 controller: 'MainCtrl'
             })
-            .state('streetcar', {
-                url: '/streetcar',
-                templateUrl: 'views/streetCarView.html',
-                controller: 'StreetcarviewCtrl'
+            .state('arrivals', {
+                url: '/arrivals',
+                templateUrl: 'views/arrivalsView.html',
+                controller: 'ArrivalsMainCtrl'
             })
-            .state('streetcar.route', {
+            .state('arrivals.route', {
                 url: '/:route',
                 templateUrl: 'views/transitTimeView/partials/primaryView.html',
                 controller: 'PrimaryViewCtrl'
             })
-            .state('streetcar.route.direction', {
+            .state('arrivals.route.direction', {
                 url: '/:direction',
                 templateUrl: 'views/transitTimeView/partials/leftColumn.html',
-                controller: 'StreetCarRouteDirectionCtrl'
+                controller: 'RouteDirectionCtrl'
             })
-            .state('streetcar.route.direction.stop', {
+            .state('arrivals.route.direction.stop', {
                 url: '/:stop',
-                controller: 'StreetCarStopCtrl',
+                controller: 'StopCtrl',
                 templateUrl: 'views/transitTimeView/partials/stopSelector.html'
             })
             .state('routeMap', {

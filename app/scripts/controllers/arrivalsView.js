@@ -1,5 +1,5 @@
 angular.module('pdxStreetcarApp')
-    .controller('StreetcarviewCtrl', function ($scope, $log, trimet, $interval, $q, timeCalcService, $stateParams, $state) {
+    .controller('ArrivalsMainCtrl', function ($scope, $log, trimet, $interval, $q, timeCalcService, $stateParams, $state) {
         'use strict';
         // Scope Variables
         $scope.streetCarArrivalsView = true;
@@ -108,7 +108,7 @@ angular.module('pdxStreetcarApp')
 
         // State Change Functions
         function updateRoute() {
-            $state.go('streetcar.route.direction.stop', {
+            $state.go('arrivals.route.direction.stop', {
                 route: $scope.selectedRoute.route,
                 direction: $scope.selectedDirection.dir,
                 stop: $scope.selectedStop.locid
@@ -116,7 +116,7 @@ angular.module('pdxStreetcarApp')
         }
 
         function goToRoute(route, direction, stop) {
-            $state.go('streetcar.route.direction.stop', {
+            $state.go('arrivals.route.direction.stop', {
                 route: route,
                 direction: direction,
                 stop: stop
@@ -318,4 +318,20 @@ angular.module('pdxStreetcarApp')
         }
 
         initializeStreetCarView();
+    })
+
+    .controller('PrimaryViewCtrl', function ($scope, $stateParams) {
+        $scope.isRouteSelected = function (route) {
+            if ($scope.selectedRoute && route) {
+                return route.route === $stateParams.route;
+            }
+        };
+    })
+
+    .controller('StopCtrl', function ($scope, $state, $stateParams) {
+        //        $scope.goToSpecifiedRoute($stateParams.line, $stateParams.direction, $stateParams.stop);
+    })
+
+    .controller('RouteDirectionCtrl', function ($scope, $state, $stateParams) {
+        //        $scope.selectedDirection = $stateParams.direction;
     });

@@ -24,7 +24,7 @@ angular.module('pdxStreetcarApp')
             },
             {
                 displayName: "Arrivals",
-                route: "/streetcar"
+                route: "/arrivals"
             },
             {
                 displayName: "Map",
