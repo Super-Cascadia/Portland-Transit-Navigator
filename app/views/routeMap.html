@@ -4,49 +4,53 @@
         <div class="col-md-3">
 
             <tabset>
+                <!--Streetcar Tab-->
                 <tab heading="Streetcar">
                     <ul class="nav nav-pills nav-stacked"
-                        ng-repeat="(route, routeData) in streetcar">
-                        <h6 ng-if="route == 193">North-South (NS) Line</h6>
-                        <h6 ng-if="route == 194">Central (CL) Line</h6>
-                        <li ng-repeat="direction in routeData"
+                        ng-repeat="(route, routeData) in routeMap.streetcar">
+                        <h6>{{routeData.name}}</h6>
+                        <li ng-repeat="direction in routeData.directions"
                             ng-class="{directionEnabled: direction.enabled, active: direction.enabled}"
                             ng-model="direction.enabled"
-                            ng-click="toggleRoute(direction)">
+                            ng-click="routeMap.toggleRoute(direction)">
                             <a ng-style="{'background-color': direction.color}">
-                                <div class="checkbox">
-                                    <label>
-                                        <input type="checkbox" ng-checked="direction.enabled === true">{{direction.displayName}}
-                                    </label>
-                                </div>
+                                <input type="checkbox"
+                                       ng-checked="direction.enabled === true">  {{direction.displayName}}
                             </a>
                         </li>
                     </ul>
                 </tab>
+                <!--Trimet Tab-->
                 <tab heading="Trimet">
                     <ul class="nav nav-pills nav-stacked"
-                        ng-repeat="(route, routeData) in maxRail">
-                        <h6 ng-if="route == 100">Blue Line</h6>
-                        <h6 ng-if="route == 200">Green Line</h6>
-                        <h6 ng-if="route == 90">Red Line</h6>
-                        <h6 ng-if="route == 190">Yellow Line</h6>
-                        <li ng-repeat="direction in routeData"
+                        ng-repeat="(route, routeData) in routeMap.maxRail">
+                        <h6>{{routeData.name}}</h6>
+                        <li ng-repeat="direction in routeData.directions"
                             ng-class="{directionEnabled: direction.enabled, active: direction.enabled}"
                             ng-model="direction.enabled"
-                            ng-click="toggleRoute(direction)"
-                            btn-checkbox>
+                            ng-click="routeMap.toggleRoute(direction)">
                             <a ng-style="{'background-color': direction.color}">
-                                <div class="checkbox">
-                                    <label>
-                                        <input type="checkbox" ng-checked="direction.enabled === true">{{direction.displayName}}
-                                    </label>
-                                </div>
+                                <input type="checkbox"
+                                       ng-checked="direction.enabled === true">  {{direction.displayName}}
                             </a>
                         </li>
                     </ul>
                 </tab>
+                <!--Bus Tab-->
                 <tab heading="Bus">
-                    <h6>Coming soon...</h6>
+                    <ul class="nav nav-pills nav-stacked"
+                        ng-repeat="(route, routeData) in routeMap.busRoutes">
+                        <h6>{{routeData.name}}</h6>
+                        <li ng-repeat="direction in routeData.directions"
+                            ng-class="{directionEnabled: direction.enabled, active: direction.enabled}"
+                            ng-model="direction.enabled"
+                            ng-click="routeMap.toggleRoute(direction)">
+                            <a ng-style="{'background-color': direction.color}">
+                                <input type="checkbox"
+                                       ng-checked="direction.enabled === true">  {{direction.displayName}}
+                            </a>
+                        </li>
+                    </ul>
                 </tab>
             </tabset>
         </div>

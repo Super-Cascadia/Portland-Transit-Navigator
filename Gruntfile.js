@@ -15,18 +15,6 @@ module.exports = function (grunt) {
             dist: 'dist'
         },
         watch: {
-            coffee: {
-                files: ['<%= yeoman.app %>/scripts/{,*/}*.coffee'],
-                tasks: ['coffee:dist']
-            },
-            coffeeTest: {
-                files: ['test/spec/{,*/}*.coffee'],
-                tasks: ['coffee:test']
-            },
-            compass: {
-                files: ['<%= yeoman.app %>/styles/{,*/}*.{scss,sass}'],
-                tasks: ['compass:server', 'autoprefixer']
-            },
             styles: {
                 files: ['<%= yeoman.app %>/styles/{,*/}*.css'],
                 tasks: ['copy:styles', 'autoprefixer']
@@ -245,18 +233,12 @@ module.exports = function (grunt) {
         },
         concurrent: {
             server: [
-                'coffee:dist',
-                'compass:server',
                 'copy:styles'
             ],
             test: [
-                'coffee',
-                'compass',
                 'copy:styles'
             ],
             dist: [
-                'coffee',
-                'compass:dist',
                 'copy:styles',
                 'imagemin',
                 'svgmin',

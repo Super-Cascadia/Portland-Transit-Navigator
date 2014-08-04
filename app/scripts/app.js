@@ -48,7 +48,7 @@ angular.module('pdxStreetcarApp', [
             .state('routeMap', {
                 url: '/routeMap',
                 templateUrl: 'views/routeMap.html',
-                controller: 'RouteMapCtrl'
+                controller: 'RouteMapCtrl as routeMap'
             })
             .state('routeSchedule', {
                 url: '/routeSchedule',
