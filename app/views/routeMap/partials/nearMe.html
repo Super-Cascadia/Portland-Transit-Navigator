@@ -1,0 +1,36 @@
+<br>
+<div class="form-group">
+    <button class="btn btn-primary"
+            ng-click="routeMap.getNearbyRoutes()">Nearby Routes</button>
+    <input type="text"
+           class="form-control"
+           id="streetcarSeach"
+           ng-model="nearbyStopsSearch"
+           placeholder="Search Streetcar Routes">
+</div>
+<div class="left-column-container"
+     ps-full-height-left-col>
+    <accordion close-others="false">
+        <accordion-group ng-repeat="stop in routeMap.nearbyStops | filter: nearbyStopsSearch"
+                         is-open="true">
+            <accordion-heading>
+                <h6>{{stop.desc}} | <span class="label label-default">{{stop.dir}}</span>
+                    <i class="pull-right glyphicon"
+                       ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
+                </h6>
+
+            </accordion-heading>
+            <ul class="nav nav-pills nav-stacked">
+                <li ng-repeat="route in stop.route"
+                    ng-model="route.enabled"
+                    ng-click="routeMap.toggleRoute(direction)">
+                    <a>
+                        <input type="checkbox"
+                               ng-checked="direction.enabled === true"> {{route.desc}}
+                    </a>
+                </li>
+            </ul>
+        </accordion-group>
+    </accordion>
+</div>
+

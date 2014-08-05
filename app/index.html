@@ -33,14 +33,14 @@
     <style>
         .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
     </style>
-    <style>
-        #map-canvas {
-            height: 400px;
-        }
-        .map.route-map #map-canvas {
-            height: 600px;
-        }
-    </style>
+    <!--<style>-->
+        <!--#map-canvas {-->
+            <!--height: 400px;-->
+        <!--}-->
+        <!--.map.route-map #map-canvas {-->
+            <!--height: 600px;-->
+        <!--}-->
+    <!--</style>-->
     <!-- endbuild -->
 </head>
 <body ng-app="pdxStreetcarApp"
@@ -60,18 +60,18 @@
      ng-controller="topNavigationCtrl"
      ng-include="'views/navigation/top-navigation/top-navigation.html'"></nav>
 <!--Service End Indicator-->
-<div class="container-fluid">
-    <section class="service-over" ng-if="showStreetcarServiceWarning">
-        <div class="alert alert-danger alert-dismissable">
-            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>{{streetcarScheduleMessage}}
-        </div>
-    </section>
-    <section class="service-over" ng-if="!showStreetcarServiceWarning">
-        <div class="alert alert-success alert-dismissable">
-            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>{{streetcarScheduleMessage}}
-        </div>
-    </section>
-</div>
+<!--<div class="container-fluid">-->
+    <!--<section class="service-over" ng-if="showStreetcarServiceWarning">-->
+        <!--<div class="alert alert-danger alert-dismissable">-->
+            <!--<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>{{streetcarScheduleMessage}}-->
+        <!--</div>-->
+    <!--</section>-->
+    <!--<section class="service-over" ng-if="!showStreetcarServiceWarning">-->
+        <!--<div class="alert alert-success alert-dismissable">-->
+            <!--<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>{{streetcarScheduleMessage}}-->
+        <!--</div>-->
+    <!--</section>-->
+<!--</div>-->
 <!-- Add your site or application content here -->
 <div class="container-fluid"
      ui-view></div>
@@ -96,13 +96,12 @@
     ga('create', 'UA-XXXXX-X');
     ga('send', 'pageview');
 </script>
-<!--<script src="bower_components/jquery/jquery.js"></script>-->
+<script src="bower_components/jquery/jquery.js"></script>
 <script src="bower_components/lodash/dist/lodash.js"></script>
 <script src="bower_components/angular/angular.js"></script>
 <!-- build:js scripts/plugins.js -->
 <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
 <script src="bower_components/angular-ui-utils/ui-utils.js"></script>
-<script src="bower_components/angular-ui-map/ui-map.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=onGoogleReady"></script>
 <script src="bower_components/angularjs-geolocation/src/geolocation.js"></script>
 <script src="bower_components/select2/select2.js"></script>
@@ -120,11 +119,6 @@
 <script src="bower_components/moment/moment.js"></script>
 <script src="bower_components/angular-pdxTrimetApi/trimet-api/src/trimetFactory.js"></script>
 <!-- endbuild -->
-<script>
-    function onGoogleReady() {
-        angular.bootstrap(document.getElementById("map"), ['ui.map']);
-    }
-</script>
 <!-- build:js({.tmp,app}) scripts/scripts.js -->
 <script src="scripts/app.js"></script>
 <script src="scripts/controllers/main.js"></script>

@@ -1,0 +1,17 @@
+<section class="map route-map"
+         ng-if="selectedRoute !== null">
+    <div class="row">
+        <!--Left Column-->
+        <div class="col-md-3">
+            <ng-include src="'views/routeMap/partials/leftColumn.html'"></ng-include>
+        </div>
+        <!--Right Column-->
+        <div class="col-md-9">
+            <div class="map-container" ps-full-height-right-col>
+                <div id="map-canvas"
+                     ps-full-height-right-col></div>
+            </div>
+        </div>
+    </div>
+</section>
+

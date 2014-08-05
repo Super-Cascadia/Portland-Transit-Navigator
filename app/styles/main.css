@@ -23,9 +23,16 @@ body {
   line-height: 1;
   letter-spacing: -1px;
 }
-.angular-google-map-container {
-  height: 400px;
-}
 .directionEnabled {
   color: white;
+}
+.nav,
+.pagination,
+.carousel,
+.panel-title a {
+  cursor: pointer;
+}
+div.left-column-container,
+div.map-container {
+  overflow-y: auto;
 }

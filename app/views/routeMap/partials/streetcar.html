@@ -1,0 +1,32 @@
+<br>
+<div class="form-group">
+    <input type="text"
+           class="form-control"
+           id="streetcarSeach"
+           ng-model="streetCarSearch"
+           placeholder="Search Streetcar Routes">
+</div>
+<div class="left-column-container"
+     ps-full-height-left-col>
+    <accordion close-others="false">
+        <accordion-group ng-repeat="(route, routeData) in routeMap.streetcar | filter: streetCarSearch"
+                         is-open="true">
+            <accordion-heading>
+                {{routeData.name}}
+                <i class="pull-right glyphicon"
+                   ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
+            </accordion-heading>
+            <ul class="nav nav-pills nav-stacked">
+                <li ng-repeat="direction in routeData.directions | filter:streetCarSearch"
+                    ng-class="{directionEnabled: direction.enabled, active: direction.enabled}"
+                    ng-model="direction.enabled"
+                    ng-click="routeMap.toggleRoute(direction)">
+                    <a>
+                        <input type="checkbox"
+                               ng-checked="direction.enabled === true"> {{direction.displayName}}
+                    </a>
+                </li>
+            </ul>
+        </accordion-group>
+    </accordion>
+</div>

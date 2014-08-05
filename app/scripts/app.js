@@ -5,7 +5,6 @@ angular.module('pdxStreetcarApp', [
     'ngSanitize',
     'ngRoute',
     'ui.bootstrap',
-    'ui.map',
     'ui.utils',
     'ngAnimate',
     'geolocation',
@@ -47,7 +46,7 @@ angular.module('pdxStreetcarApp', [
             })
             .state('routeMap', {
                 url: '/routeMap',
-                templateUrl: 'views/routeMap.html',
+                templateUrl: 'views/routeMap/routeMap.html',
                 controller: 'RouteMapCtrl as routeMap'
             })
             .state('routeSchedule', {
