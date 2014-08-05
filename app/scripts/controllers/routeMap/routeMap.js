@@ -65,15 +65,27 @@ angular.module('pdxStreetcarApp')
         }
     ])
 
-    .controller('RouteMapCtrl', function ($scope, $log, $q, trimet, RouteColors, $timeout) {
+    .service('feetToMeters', function () {
+        "use strict";
+        var conversionToMeters = 0.3048;
+        return function (feet) {
+            return feet * conversionToMeters;
+        };
+    })
+
+    .controller('RouteMapCtrl', function ($scope, $log, $q, trimet, RouteColors, $timeout, feetToMeters) {
         'use strict';
         var self = this,
             userLatitude,
             userLongitude,
             userLatLng,
+            userLocationMarker,
             map,
+            userLocationCircle,
             markers = {},
             polylines = {};
+
+        self.distanceFromLocation = 660;
 
         function setRouteMarkers(route) {
             function createGoogleStopMarker(routeId, directionId, stops) {
@@ -244,6 +256,8 @@ angular.module('pdxStreetcarApp')
 
         function getNearbyRoutes() {
 
+            var radiusInFeet = self.distanceFromLocation;
+
             function extractListOfRoutes(data) {
 
             }
@@ -253,30 +267,48 @@ angular.module('pdxStreetcarApp')
                 return data;
             }
 
-            trimet.getStopsAroundLocation(userLatitude, userLongitude, 1000)
+            function setRadiusAroundUser() {
+
+                if (userLocationCircle) {
+                    userLocationCircle.setMap(null);
+                }
+
+                userLocationCircle = new google.maps.Circle({
+                    map: map,
+                    radius: feetToMeters(radiusInFeet),    // 10 miles in metres
+                    strokeColor: '#AA0000',
+                    fillColor: '#AA0000'
+                });
+                userLocationCircle.bindTo('center', userLocationMarker, 'position');
+            }
+
+            setRadiusAroundUser();
+
+            trimet.getStopsAroundLocation(userLatitude, userLongitude, radiusInFeet)
                 .then(provideListOfNearbyStops)
                 .then(extractListOfRoutes);
         }
 
         function toggleRoute(route) {
-            var origEnabledValue = route.enabled;
-
-
-            function correctEnabledValue(route) {
-                if (route.enabled !== origEnabledValue) {
-                    route.enabled = origEnabledValue;
+            var origEnabledValue;
+            if (route) {
+                origEnabledValue = route.enabled;
+                function correctEnabledValue(route) {
+                    if (route.enabled !== origEnabledValue) {
+                        route.enabled = origEnabledValue;
+                    }
                 }
-            }
 
-            correctEnabledValue(route);
+                correctEnabledValue(route);
 
-            if (!markers[route.routeId]) {
-                markers[route.routeId] = {};
+                if (!markers[route.routeId]) {
+                    markers[route.routeId] = {};
+                }
+                if (!markers[route.routeId][route.directionId]) {
+                    setRouteMarkers(route);
+                }
+                toggleEnabledFlags(route);
             }
-            if (!markers[route.routeId][route.directionId]) {
-                setRouteMarkers(route);
-            }
-            toggleEnabledFlags(route);
         }
 
         self.toggleRoute = toggleRoute;
@@ -288,7 +320,6 @@ angular.module('pdxStreetcarApp')
         function init() {
 
             function setUserLocationMarker() {
-                var userLocationMarker;
 
                 function handleNoGeolocation(errorFlag) {
                     var content;

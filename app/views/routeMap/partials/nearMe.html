@@ -2,6 +2,18 @@
 <div class="form-group">
     <button class="btn btn-primary"
             ng-click="routeMap.getNearbyRoutes()">Nearby Routes</button>
+
+    <select id="stopSelector"
+            class="form-control"
+            ui-select2
+            ng-model="routeMap.distanceFromLocation">
+        <option value="660">1/8 Mile</option>
+        <option value="1320">1/4 Mile</option>
+        <option value="2640">1/2 Mile</option>
+        <option value="3960">3/4 Mile</option>
+        <option value="5280">1 Mile</option>
+    </select>
+
     <input type="text"
            class="form-control"
            id="streetcarSeach"
@@ -23,7 +35,7 @@
             <ul class="nav nav-pills nav-stacked">
                 <li ng-repeat="route in stop.route"
                     ng-model="route.enabled"
-                    ng-click="routeMap.toggleRoute(direction)">
+                    ng-click="routeMap.toggleRoute(route)">
                     <a>
                         <input type="checkbox"
                                ng-checked="direction.enabled === true"> {{route.desc}}
