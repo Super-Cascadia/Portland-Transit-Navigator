@@ -65,11 +65,14 @@ angular.module('pdxStreetcarApp')
         }
     ])
 
-    .service('feetToMeters', function () {
+    .constant('distanceConversions', {
+        FEET_TO_METERS: 0.3048
+    })
+
+    .service('feetToMeters', function (distanceConversions) {
         "use strict";
-        var conversionToMeters = 0.3048;
         return function (feet) {
-            return feet * conversionToMeters;
+            return feet * distanceConversions.FEET_TO_METERS;
         };
     })
 
@@ -263,6 +266,9 @@ angular.module('pdxStreetcarApp')
             }
 
             function provideListOfNearbyStops(data) {
+                _.forEach(data.resultSet.location, function (location) {
+                    location.enabled = false;
+                });
                 self.nearbyStops = data.resultSet.location;
                 return data;
             }
@@ -291,13 +297,15 @@ angular.module('pdxStreetcarApp')
 
         function toggleRoute(route) {
             var origEnabledValue;
+
+            function correctEnabledValue(route) {
+                if (route.enabled !== origEnabledValue) {
+                    route.enabled = origEnabledValue;
+                }
+            }
+
             if (route) {
                 origEnabledValue = route.enabled;
-                function correctEnabledValue(route) {
-                    if (route.enabled !== origEnabledValue) {
-                        route.enabled = origEnabledValue;
-                    }
-                }
 
                 correctEnabledValue(route);
 
