@@ -393,15 +393,46 @@ angular.module('pdxStreetcarApp')
             }
         }
 
+        function getStreetCarData() {
+            trimet.streetcar.getRoutes()
+                .then(formateRetrievedRoutes)
+                .then(function (result) {
+                    self.streetcar = result;
+                });
+        }
+
+        function getTrimetData() {
+            trimet.rail.getRoutes()
+                .then(formateRetrievedRoutes)
+                .then(function (result) {
+                    self.maxRail = result;
+                });
+        }
+
+        function getBusData() {
+            trimet.bus.getRoutes()
+                .then(formateRetrievedRoutes)
+                .then(function (result) {
+                    self.busRoutes = result;
+                });
+        }
+
         self.toggleRoute = toggleRoute;
 
         self.getNearbyRoutes = getNearbyRoutes;
+
+        self.getStreetCarData = getStreetCarData();
+
+        self.getTrimetData = getTrimetData();
+
+        self.getBusData = getBusData();
 
         // Init
 
         function init() {
 
             function setUserLocationMarker() {
+                var deferred = $q.defer();
 
                 function handleNoGeolocation(errorFlag) {
                     var content;
@@ -412,34 +443,46 @@ angular.module('pdxStreetcarApp')
                     }
                 }
 
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(function (position) {
-                        userLatitude = position.coords.latitude;
-                        userLongitude = position.coords.longitude;
-                        userLatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-                        userLocationMarker = new google.maps.Marker({
-                            map: map,
-                            position: userLatLng,
-                            animation: google.maps.Animation.DROP,
-                            clickable: true,
-                            title: "Current Location"
+                function checkForGeolocation() {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function (position) {
+                            userLatitude = position.coords.latitude;
+                            userLongitude = position.coords.longitude;
+                            userLatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                            userLocationMarker = new google.maps.Marker({
+                                map: map,
+                                position: userLatLng,
+                                animation: google.maps.Animation.DROP,
+                                clickable: true,
+                                title: "Current Location"
+                            });
+                            google.maps.event.addListener(userLocationMarker, 'click', function () {
+                                map.panTo(userLatLng);
+                            });
+                            deferred.resolve();
+                        }, function () {
+                            handleNoGeolocation(true);
+                            deferred.reject();
                         });
-                        google.maps.event.addListener(userLocationMarker, 'click', function () {
-                            map.panTo(userLatLng);
-                        });
-                    }, function () {
-                        handleNoGeolocation(true);
-                    });
-                } else {
-                    // Browser doesn't support Geolocation
-                    handleNoGeolocation(false);
+                    } else {
+                        // Browser doesn't support Geolocation
+                        handleNoGeolocation(false);
+                        deferred.reject();
+                    }
                 }
+
+                checkForGeolocation();
+
+                return deferred.promise;
             }
 
             function createMap() {
+                var deferred = $q.defer();
+
                 var latLng,
                     mapOptions,
                     transitLayer;
+
                 latLng = new google.maps.LatLng(45.5200, -122.6819);
                 mapOptions = {
                     center: latLng,
@@ -488,29 +531,19 @@ angular.module('pdxStreetcarApp')
                 };
                 map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
                 transitLayer = new google.maps.TransitLayer();
+
                 transitLayer.setMap(map);
+
+                deferred.resolve();
+
+                return deferred.promise;
             }
 
             $timeout(function () {
-                createMap();
-                setUserLocationMarker();
+                createMap()
+                    .then(setUserLocationMarker)
+                    .then(getNearbyRoutes);
             }, 500);
-
-            trimet.bus.getRoutes()
-                .then(formateRetrievedRoutes)
-                .then(function (result) {
-                    self.busRoutes = result;
-                });
-            trimet.rail.getRoutes()
-                .then(formateRetrievedRoutes)
-                .then(function (result) {
-                    self.maxRail = result;
-                });
-            trimet.streetcar.getRoutes()
-                .then(formateRetrievedRoutes)
-                .then(function (result) {
-                    self.streetcar = result;
-                });
         }
 
         init();
