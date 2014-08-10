@@ -92,6 +92,12 @@ angular.module('pdxStreetcarApp')
 
         self.distanceFromLocation = 660;
 
+        function clearNearbyStopMarkers() {
+            _.forEach(nearbyStopMarkers, function (marker) {
+                marker.setMap(null);
+            });
+        }
+
         function createGoogleStopMarker(routeId, directionId, stops) {
             var selectedRouteId,
                 selectedDirectionId,
@@ -326,6 +332,10 @@ angular.module('pdxStreetcarApp')
 
             var radiusInFeet = self.distanceFromLocation;
 
+            clearNearbyStopMarkers();
+
+            nearbyStopMarkers = {};
+
             function provideListOfNearbyStops(data) {
                 _.forEach(data.resultSet.location, function (location) {
                     location.enabled = true;
@@ -421,11 +431,11 @@ angular.module('pdxStreetcarApp')
 
         self.getNearbyRoutes = getNearbyRoutes;
 
-        self.getStreetCarData = getStreetCarData();
+        self.getStreetCarData = getStreetCarData;
 
-        self.getTrimetData = getTrimetData();
+        self.getTrimetData = getTrimetData;
 
-        self.getBusData = getBusData();
+        self.getBusData = getBusData;
 
         // Init
 

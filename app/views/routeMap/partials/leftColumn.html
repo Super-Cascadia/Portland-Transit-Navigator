@@ -7,21 +7,21 @@
         <ng-include src="'views/routeMap/partials/nearMe.html'"></ng-include>
     </tab>
     <!--Streetcar Tab-->
-    <tab select="getStreetCarData()">
+    <tab select="routeMap.getStreetCarData()">
         <tab-heading>
             Streetcar
         </tab-heading>
         <ng-include src="'views/routeMap/partials/streetcar.html'"></ng-include>
     </tab>
     <!--Trimet Tab-->
-    <tab select="getTrimetData()">
+    <tab select="routeMap.getTrimetData()">
         <tab-heading>
             Trimet
         </tab-heading>
         <ng-include src="'views/routeMap/partials/trimet.html'"></ng-include>
     </tab>
     <!--Bus Tab-->
-    <tab select="getBusData()">
+    <tab select="routeMap.getBusData()">
         <tab-heading>
             Bus
         </tab-heading>
