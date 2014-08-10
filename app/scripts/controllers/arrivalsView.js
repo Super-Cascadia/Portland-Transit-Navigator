@@ -5,6 +5,7 @@ angular.module('pdxStreetcarApp')
         $scope.streetCarArrivalsView = true;
         $scope.timeTableView = false;
         $scope.routeMapView = false;
+
         function getArrivals(stop) {
             var deferred = $q.defer();
             trimet.getArrivalsForStop(stop)

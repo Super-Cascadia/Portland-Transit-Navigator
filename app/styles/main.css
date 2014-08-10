@@ -36,3 +36,9 @@ div.left-column-container,
 div.map-container {
   overflow-y: auto;
 }
+div.map-container {
+  height: 700px;
+}
+div.map-container div#map-canvas {
+  height: 700px;
+}

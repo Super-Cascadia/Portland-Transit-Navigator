@@ -2,14 +2,64 @@
          ng-if="selectedRoute !== null">
     <div class="row">
         <!--Left Column-->
-        <div class="col-md-3">
+        <div class="col-md-4">
             <ng-include src="'views/routeMap/partials/leftColumn.html'"></ng-include>
         </div>
         <!--Right Column-->
-        <div class="col-md-9">
-            <div class="map-container" ps-full-height-right-col>
-                <div id="map-canvas"
-                     ps-full-height-right-col></div>
+        <div class="col-md-8">
+            <!--Map-->
+            <div class="row">
+                <div class="map-container">
+                    <div id="map-canvas"></div>
+                </div>
+            </div>
+            <br>
+            <!--Arrivals-->
+            <div class="row"
+                 id="arrivals-slideup">
+                <!--Empty State-->
+                <div class="well well-lg"
+                     ng-if="!routeMap.stopIsSelected">Please select a stop to see arrival times.
+                </div>
+                <!--Stop Info-->
+                <div class="panel panel-primary"
+                     ng-if="routeMap.stopIsSelected">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            {{routeMap.selectedStop.resultSet.location[0].desc}}: {{routeMap.selectedStop.resultSet.location[0].dir}}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="panel panel-default">
+                            <!-- Default panel contents -->
+                            <div class="panel-heading">Arrivals</div>
+                            <!-- Table -->
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Name</th>
+                                        <td>Arriving in...</td>
+                                        <th>Estimated</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="arrival in routeMap.selectedStop.resultSet.arrival"
+                                        ng-class="{danger: arrival.imminent, warning: arrival.soon, info: arrivalInfo.enoughTimeForCoffee, success: arrivalInfo.aGoodAmountofTime}">
+                                        <td class="arrival-icon">
+                                            <img src="images/street_car.svg"
+                                                 style="height: 40px; width: 30px;"
+                                                 alt=""/>
+                                        </td>
+                                        <td>{{arrival.shortSign}}</td>
+                                        <td>{{arrival.remainingTime.minutes}} min,
+                                            {{arrival.remainingTime.seconds}} sec</td>
+                                        <td>{{arrival.estimated | date:'h:mm a'}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

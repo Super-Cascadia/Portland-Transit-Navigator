@@ -1,6 +1,6 @@
 'use strict';
 angular.module('pdxStreetcarApp')
-    .controller('topNavigationCtrl', function ($scope, $routeParams, $log, $route, $location, geolocation) {
+    .controller('topNavigationCtrl', function ($scope, $routeParams, $log, $route, $location, geolocation, $state, $stateParams) {
         function geoLocate() {
             $log.log("Using Geolocation to find nearby stops.");
             geolocation.getLocation()
@@ -23,24 +23,16 @@ angular.module('pdxStreetcarApp')
                 route: "/"
             },
             {
-                displayName: "Arrivals",
-                route: "/arrivals"
-            },
-            {
                 displayName: "Map",
                 route: "/routeMap"
-            },
-            {
-                displayName: "Schedule",
-                route: "/routeSchedule"
             }
         ];
         $scope.topNavItemClick = function (navItem) {
             $log.log(navItem);
         };
         $scope.isActive = function (navItem) {
-//            if (navItem.route === $route.current.$$route.originalPath) {
-//                return true;
-//            }
+            if (navItem.route === $state.current.url) {
+                return true;
+            }
         };
     });
