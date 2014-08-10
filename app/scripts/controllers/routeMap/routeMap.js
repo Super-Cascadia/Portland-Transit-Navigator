@@ -97,8 +97,8 @@ angular.module('pdxStreetcarApp')
         function setRouteMarkers(route) {
 
             function createGoogleStopMarker(routeId, directionId, stops) {
-                var selectedRouteId,
-                    selectedDirectionId,
+                var infoWindow,
+                    infoWindowContent,
                     stopMarker,
                     stopLatLng,
                     pinColor = RouteColors[routeId];
@@ -135,17 +135,27 @@ angular.module('pdxStreetcarApp')
                         shadow: pinShadow,
                         animation: google.maps.Animation.DROP,
                         clickable: true,
-                        title: stop.desc
+                        title: stop.desc + ":" + stop.dir
                     });
-                    var infoWindow = new google.maps.InfoWindow();
-                    var infoWindowContent = stop.desc;
+
+                    infoWindow = new google.maps.InfoWindow();
+                    infoWindowContent = stop.desc;
+
                     google.maps.event.addListener(stopMarker, 'click', function () {
-                        infoWindow.close();
+                        if (previouslyOpenedInfoWindow) {
+                            previouslyOpenedInfoWindow.close();
+                        }
                         infoWindow.setContent(infoWindowContent);
                         infoWindow.open(map, this);
                         map.panTo(this.position);
                         map.setZoom(17);
+                        previouslyOpenedInfoWindow = infoWindow;
+
+                        showArrivalsForStop(stopMarker);
                     });
+
+                    stopMarker.stopMetaData = stop;
+
                     addMarkerToMarkerModel(routeId, directionId, stopMarker);
                 });
             }
@@ -270,6 +280,14 @@ angular.module('pdxStreetcarApp')
                 });
         }
 
+        self.isStreetCarRoute = function (arrival) {
+            return _.contains([193, 194], arrival.route);
+        };
+
+        self.isTrimetRoute = function (arrival) {
+            return _.contains([100,200,90,190], arrival.route);
+        };
+
         // User Interaction
 
         function getNearbyStops() {
@@ -316,6 +334,7 @@ angular.module('pdxStreetcarApp')
                             clickable: true,
                             title: location.desc + ":" + location.dir
                         }),
+
                         infoWindow = new google.maps.InfoWindow(),
                         infoWindowContent = location.desc +
                             ": " +

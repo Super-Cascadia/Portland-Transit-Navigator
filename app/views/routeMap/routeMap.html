@@ -33,12 +33,12 @@
                             <!-- Default panel contents -->
                             <div class="panel-heading">Arrivals</div>
                             <!-- Table -->
-                            <table class="table">
+                            <table class="table table-condensed">
                                 <thead>
                                     <tr>
-                                        <th>Type</th>
+                                        <th></th>
                                         <th>Name</th>
-                                        <td>Arriving in...</td>
+                                        <th>Arriving in...</th>
                                         <th>Estimated</th>
                                     </tr>
                                 </thead>
@@ -46,11 +46,20 @@
                                     <tr ng-repeat="arrival in routeMap.selectedStop.resultSet.arrival"
                                         ng-class="{danger: arrival.imminent, warning: arrival.soon, info: arrivalInfo.enoughTimeForCoffee, success: arrivalInfo.aGoodAmountofTime}">
                                         <td class="arrival-icon">
-                                            <img src="images/street_car.svg"
+                                            <img ng-if="routeMap.isStreetCarRoute(arrival)"
+                                                 src="images/street_car.svg"
+                                                 style="height: 40px; width: 30px;"
+                                                 alt=""/>
+                                            <img ng-if="routeMap.isTrimetRoute(arrival)"
+                                                 src="images/rail.svg"
+                                                 style="height: 40px; width: 30px;"
+                                                 alt=""/>
+                                            <img ng-if="!routeMap.isStreetCarRoute(arrival) && !routeMap.isTrimetRoute(arrival)"
+                                                 src="images/bus.svg"
                                                  style="height: 40px; width: 30px;"
                                                  alt=""/>
                                         </td>
-                                        <td>{{arrival.shortSign}}</td>
+                                        <td>{{arrival.fullSign}}</td>
                                         <td>{{arrival.remainingTime.minutes}} min,
                                             {{arrival.remainingTime.seconds}} sec</td>
                                         <td>{{arrival.estimated | date:'h:mm a'}}</td>
