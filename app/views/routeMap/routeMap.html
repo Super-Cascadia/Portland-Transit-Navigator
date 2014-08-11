@@ -2,11 +2,37 @@
          ng-if="selectedRoute !== null">
     <div class="row">
         <!--Left Column-->
-        <div class="col-md-4">
+        <div class="col-xs-4">
             <ng-include src="'views/routeMap/partials/leftColumn.html'"></ng-include>
         </div>
         <!--Right Column-->
-        <div class="col-md-8">
+        <div class="col-xs-8">
+            <!--Overlay Menu-->
+            <small>Overlays</small>
+            <form class="form-inline"
+                  role="form">
+                <div class="form-row">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox"
+                                   ng-click="routeMap.toggleServiceBoundaryOverlay()"> Service Boundary
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox"
+                                   ng-click="routeMap.toggleTransitCenterOverlay()"> Transit Centers
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox"
+                                   ng-click="routeMap.toggleParkAndRidesOverlay()"> Park & Ride
+                        </label>
+                    </div>
+                </div>
+            </form>
+            <br>
             <!--Map-->
             <div class="row">
                 <div class="map-container">
@@ -22,53 +48,7 @@
                      ng-if="!routeMap.stopIsSelected">Please select a stop to see arrival times.
                 </div>
                 <!--Stop Info-->
-                <div class="panel panel-primary"
-                     ng-if="routeMap.stopIsSelected">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">
-                            {{routeMap.selectedStop.resultSet.location[0].desc}}: {{routeMap.selectedStop.resultSet.location[0].dir}}</h3>
-                    </div>
-                    <div class="panel-body">
-                        <div class="panel panel-default">
-                            <!-- Default panel contents -->
-                            <div class="panel-heading">Arrivals</div>
-                            <!-- Table -->
-                            <table class="table table-condensed">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>Name</th>
-                                        <th>Arriving in...</th>
-                                        <th>Estimated</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr ng-repeat="arrival in routeMap.selectedStop.resultSet.arrival"
-                                        ng-class="{danger: arrival.imminent, warning: arrival.soon, info: arrivalInfo.enoughTimeForCoffee, success: arrivalInfo.aGoodAmountofTime}">
-                                        <td class="arrival-icon">
-                                            <img ng-if="routeMap.isStreetCarRoute(arrival)"
-                                                 src="images/street_car.svg"
-                                                 style="height: 40px; width: 30px;"
-                                                 alt=""/>
-                                            <img ng-if="routeMap.isTrimetRoute(arrival)"
-                                                 src="images/rail.svg"
-                                                 style="height: 40px; width: 30px;"
-                                                 alt=""/>
-                                            <img ng-if="!routeMap.isStreetCarRoute(arrival) && !routeMap.isTrimetRoute(arrival)"
-                                                 src="images/bus.svg"
-                                                 style="height: 40px; width: 30px;"
-                                                 alt=""/>
-                                        </td>
-                                        <td>{{arrival.fullSign}}</td>
-                                        <td>{{arrival.remainingTime.minutes}} min,
-                                            {{arrival.remainingTime.seconds}} sec</td>
-                                        <td>{{arrival.estimated | date:'h:mm a'}}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                <ng-include src="'views/routeMap/partials/arrivals.html'"></ng-include>
             </div>
         </div>
     </div>

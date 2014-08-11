@@ -56,6 +56,6 @@ angular.module('pdxStreetcarApp', [
             });
     })
 
-    .config(['$httpProvider', function ($httpProvider) {
+    .config(['$httpProvider', function ($httpProvider, $state) {
         delete $httpProvider.defaults.headers.common['X-Requested-With']; //Fixes cross domain requests
     }]);

@@ -1,13 +1,35 @@
 // Generated on 2014-02-23 using generator-angular 0.5.1
+
 'use strict';
-// # Globbing
-// for performance reasons we're only matching one level down:
-// 'test/spec/{,*/}*.js'
-// use this if you want to recursively match all subfolders:
-// 'test/spec/**/*.js'
+
+var fs = require('fs');
+
+var environments = {
+    local: {},
+    'pdxtransit.jamesonnyeholt.com': {
+        server: "pdxtransit.jamesonnyeholt.com",
+        s3Bucket: "pdxtransit.jamesonnyeholt.com"
+    }
+};
+
+function readAWSConfig(grunt) {
+    var file = '.aws-credentials.json';
+    if(fs.existsSync(file)) {
+        return grunt.file.readJSON(file);
+    } else {
+        grunt.log.error('No AWS credentials file, deploy task will not work');
+    }
+}
+
 module.exports = function (grunt) {
     require('load-grunt-tasks')(grunt);
     require('time-grunt')(grunt);
+
+    var environmentName = grunt.option('environment') || 'pdxtransit.jamesonnyeholt.com';
+    var currentEnvironment = environments[environmentName];
+
+    console.log('Using the ' + environmentName + ' environment');
+
     grunt.initConfig({
         yeoman: {
             // configurable paths
@@ -276,6 +298,24 @@ module.exports = function (grunt) {
                     ]
                 }
             }
+        },
+        awsConfig: readAWSConfig(grunt),
+        aws_s3: {
+            options: {
+                accessKeyId: '<%= awsConfig.accessKeyId %>',
+                secretAccessKey: '<%= awsConfig.secretAccessKey %>',
+                region: 'us-west-2',
+                uploadConcurrency: 5, // 5 simultaneous uploads
+                downloadConcurrency: 5 // 5 simultaneous downloads
+            },
+            currentEnvironment: {
+                options: {
+                    bucket: currentEnvironment.s3Bucket
+                },
+                files: [
+                    {expand: true, cwd: 'app/', src: ['**'], dest: ''}
+                ]
+            }
         }
     });
     grunt.loadNpmTasks('grunt-contrib-less');
@@ -317,4 +357,6 @@ module.exports = function (grunt) {
         'test',
         'build'
     ]);
+    grunt.registerTask('deploy', ['aws_s3']);
+    grunt.registerTask('deployPlaceholder', ['aws_s3:currentEnvironment']);
 };

@@ -42,3 +42,6 @@ div.map-container {
 div.map-container div#map-canvas {
   height: 700px;
 }
+.container {
+  width: 1024px !important;
+}

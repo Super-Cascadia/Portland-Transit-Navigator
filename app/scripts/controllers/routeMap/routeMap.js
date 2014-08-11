@@ -77,7 +77,63 @@ angular.module('pdxStreetcarApp')
         };
     })
 
-    .controller('RouteMapCtrl', function ($scope, $log, $q, trimet, RouteColors, $timeout, feetToMeters, timeCalcService) {
+    .factory('formatRetrievedRoutes', function () {
+        "use strict";
+        return function (data) {
+            var result = {};
+            _.forEach(data.resultSet.route, function (route) {
+                var routeId = route.route;
+                var template = {
+                    name: route.desc,
+                    detour: route.detour,
+                    routeId: routeId,
+                    type: route.type,
+                    directions: []
+                };
+                if (route.dir && _.isArray(route.dir)) {
+                    if (route.dir[0]) {
+                        template.directions[0] = {
+                            routeId: routeId,
+                            directionId: route.dir[0].dir || 0,
+                            stops: route.dir[0].stop || [],
+                            displayName: route.dir[0].desc || route.desc,
+                            enabled: false
+                        };
+                    }
+                    if (route.dir[1]) {
+                        template.directions[1] = {
+                            routeId: routeId,
+                            directionId: route.dir[1].dir || 1,
+                            stops: route.dir[1].stop || [],
+                            displayName: route.dir[1].desc || route.desc,
+                            enabled: false
+                        };
+                    }
+                }
+                result[routeId] = template;
+            });
+            return result;
+        };
+    })
+
+    .factory('trimetUtilities', function () {
+        "use strict";
+
+        function isStreetCarRoute (arrival) {
+            return _.contains([193, 194], arrival.route);
+        }
+
+        function isTrimetRoute (arrival) {
+            return _.contains([100,200,90,190], arrival.route);
+        }
+
+        return {
+            isStreetCarRoute: isStreetCarRoute,
+            isTrimetRoute: isTrimetRoute
+        };
+    })
+
+    .controller('RouteMapCtrl', function ($scope, $log, $q, trimet, RouteColors, $timeout, feetToMeters, timeCalcService, formatRetrievedRoutes, trimetUtilities) {
         'use strict';
         var self = this,
             userLatitude,
@@ -85,6 +141,12 @@ angular.module('pdxStreetcarApp')
             userLatLng,
             userLocationMarker,
             stopRadiusIndicator,
+            trimetBoundaryLayer,
+            trimetTransitCenterLayer,
+            trimetParkAndRidesLayer,
+            showParkAndRidesLayer = false,
+            showTransitCenterLayer = false,
+            showBoundaryLayer = false,
             map,
             markers = {},
             previouslyOpenedInfoWindow,
@@ -231,42 +293,6 @@ angular.module('pdxStreetcarApp')
             }
         }
 
-        function formatRetrieveRoutes(data) {
-            var result = {};
-            _.forEach(data.resultSet.route, function (route) {
-                var routeId = route.route;
-                var template = {
-                    name: route.desc,
-                    detour: route.detour,
-                    routeId: routeId,
-                    type: route.type,
-                    directions: []
-                };
-                if (route.dir && _.isArray(route.dir)) {
-                    if (route.dir[0]) {
-                        template.directions[0] = {
-                            routeId: routeId,
-                            directionId: route.dir[0].dir || 0,
-                            stops: route.dir[0].stop || [],
-                            displayName: route.dir[0].desc || route.desc,
-                            enabled: false
-                        };
-                    }
-                    if (route.dir[1]) {
-                        template.directions[1] = {
-                            routeId: routeId,
-                            directionId: route.dir[1].dir || 1,
-                            stops: route.dir[1].stop || [],
-                            displayName: route.dir[1].desc || route.desc,
-                            enabled: false
-                        };
-                    }
-                }
-                result[routeId] = template;
-            });
-            return result;
-        }
-
         function showArrivalsForStop(stopMarker) {
             return trimet.getArrivalsForStop(stopMarker.stopMetaData.locid)
                 .then(function (data) {
@@ -279,14 +305,6 @@ angular.module('pdxStreetcarApp')
                         });
                 });
         }
-
-        self.isStreetCarRoute = function (arrival) {
-            return _.contains([193, 194], arrival.route);
-        };
-
-        self.isTrimetRoute = function (arrival) {
-            return _.contains([100,200,90,190], arrival.route);
-        };
 
         // User Interaction
 
@@ -433,7 +451,7 @@ angular.module('pdxStreetcarApp')
 
         function getStreetCarData() {
             trimet.streetcar.getRoutes()
-                .then(formatRetrieveRoutes)
+                .then(formatRetrievedRoutes)
                 .then(function (result) {
                     self.streetcar = result;
                 });
@@ -441,7 +459,7 @@ angular.module('pdxStreetcarApp')
 
         function getTrimetData() {
             trimet.rail.getRoutes()
-                .then(formatRetrieveRoutes)
+                .then(formatRetrievedRoutes)
                 .then(function (result) {
                     self.maxRail = result;
                 });
@@ -449,11 +467,51 @@ angular.module('pdxStreetcarApp')
 
         function getBusData() {
             trimet.bus.getRoutes()
-                .then(formatRetrieveRoutes)
+                .then(formatRetrievedRoutes)
                 .then(function (result) {
                     self.busRoutes = result;
                 });
         }
+
+        function toggleServiceBoundaryOverlay() {
+            if (!showTransitCenterLayer) {
+                showTransitCenterLayer = true;
+                trimetBoundaryLayer.setMap(map);
+            } else {
+                showTransitCenterLayer = false;
+                trimetBoundaryLayer.setMap(null);
+            }
+        }
+
+        function toggleTransitCenterOverlay() {
+            if (!showBoundaryLayer) {
+                showBoundaryLayer = true;
+                trimetTransitCenterLayer.setMap(map);
+            } else {
+                showBoundaryLayer = false;
+                trimetTransitCenterLayer.setMap(null);
+            }
+        }
+
+        function toggleParkAndRidesOverlay() {
+            if (!showParkAndRidesLayer) {
+                showParkAndRidesLayer = true;
+                trimetParkAndRidesLayer.setMap(map);
+            } else {
+                showParkAndRidesLayer = false;
+                trimetParkAndRidesLayer.setMap(null);
+            }
+        }
+
+        self.isStreetCarRoute = trimetUtilities.isStreetCarRoute;
+
+        self.isTrimetRoute = trimetUtilities.isTrimetRoute;
+
+        self.toggleServiceBoundaryOverlay = toggleServiceBoundaryOverlay;
+
+        self.toggleTransitCenterOverlay = toggleTransitCenterOverlay;
+
+        self.toggleParkAndRidesOverlay = toggleParkAndRidesOverlay;
 
         self.toggleRoute = toggleRoute;
 
@@ -570,15 +628,36 @@ angular.module('pdxStreetcarApp')
                 map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
                 transitLayer = new google.maps.TransitLayer();
 
-                transitLayer.setMap(map);
+//                transitLayer.setMap(map);
 
                 deferred.resolve();
 
                 return deferred.promise;
             }
 
+            function setTrimetBoundaryLayer() {
+                trimetBoundaryLayer = new google.maps.KmlLayer({
+                    url: 'http://developer.trimet.org/gis/data/tm_boundary.kml'
+                });
+            }
+
+            function setTransitCenterLayer() {
+                trimetTransitCenterLayer = new google.maps.KmlLayer({
+                    url: 'http://developer.trimet.org/gis/data/tm_tran_cen.kml'
+                });
+            }
+
+            function setTrimetParkAndRides() {
+                trimetParkAndRidesLayer = new google.maps.KmlLayer({
+                    url: 'http://developer.trimet.org/gis/data/tm_parkride.kml'
+                });
+            }
+
             $timeout(function () {
                 createMap()
+                    .then(setTrimetBoundaryLayer)
+                    .then(setTransitCenterLayer)
+                    .then(setTrimetParkAndRides)
                     .then(setUserLocationMarker)
                     .then(getNearbyStops);
             }, 500);
