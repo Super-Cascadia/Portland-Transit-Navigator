@@ -31,14 +31,6 @@
     <style>
         .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
     </style>
-    <!--<style>-->
-        <!--#map-canvas {-->
-            <!--height: 400px;-->
-        <!--}-->
-        <!--.map.route-map #map-canvas {-->
-            <!--height: 600px;-->
-        <!--}-->
-    <!--</style>-->
     <!-- endbuild -->
 </head>
 <body ng-app="pdxStreetcarApp"
@@ -55,7 +47,7 @@
 <![endif]-->
 <nav class="navbar navbar-default"
      role="navigation"
-     ng-controller="topNavigationCtrl"
+     ng-controller="topNavigationCtrl as nav"
      ng-include="'views/navigation/top-navigation/top-navigation.html'"></nav>
 <!--Service End Indicator-->
 <!--<div class="container-fluid">-->
@@ -119,11 +111,9 @@
 <script src="scripts/controllers/arrivalsView.js"></script>
 <script src="scripts/controllers/trimetView.js"></script>
 <script src="scripts/services/xmlConverter.js"></script>
-<script src="scripts/controllers/topNavigationController.js"></script>
 <script src="scripts/controllers/transitTimeView.js"></script>
 <script src="scripts/controllers/nearbyStops.js"></script>
 <script src="scripts/services/timeCalcService.js"></script>
-<script src="scripts/controllers/routeMap/routeMap.js"></script>
 <script src="scripts/controllers/routeSchedule.js"></script>
 <!-- endbuild -->
 </body>

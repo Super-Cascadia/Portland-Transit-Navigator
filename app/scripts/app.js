@@ -16,13 +16,18 @@ angular.module('pdxStreetcarApp', [
         $stateProvider
             .state('root', {
                 url: '',
-                templateUrl: 'views/main.html',
-                controller: 'MainCtrl'
+                templateUrl: 'views/routeMap/routeMap.html',
+                controller: 'RouteMapCtrl as routeMap'
             })
             .state('home', {
                 url: '/',
-                templateUrl: 'views/main.html',
-                controller: 'MainCtrl'
+                templateUrl: 'views/routeMap/routeMap.html',
+                controller: 'RouteMapCtrl as routeMap'
+            })
+            .state('about', {
+                url: '/about',
+                templateUrl: 'views/about/about.html',
+                controller: 'AboutCtrl as about'
             })
             .state('arrivals', {
                 url: '/arrivals',
@@ -43,11 +48,6 @@ angular.module('pdxStreetcarApp', [
                 url: '/:stop',
                 controller: 'StopCtrl',
                 templateUrl: 'views/transitTimeView/partials/stopSelector.html'
-            })
-            .state('routeMap', {
-                url: '/routeMap',
-                templateUrl: 'views/routeMap/routeMap.html',
-                controller: 'RouteMapCtrl as routeMap'
             })
             .state('routeSchedule', {
                 url: '/routeSchedule',
