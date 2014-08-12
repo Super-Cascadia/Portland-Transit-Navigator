@@ -4,44 +4,42 @@
         <h3 class="panel-title">
             {{routeMap.selectedStop.resultSet.location[0].desc}}: {{routeMap.selectedStop.resultSet.location[0].dir}}</h3>
     </div>
-    <div class="panel-body">
-        <div class="panel panel-default">
-            <!-- Default panel contents -->
-            <div class="panel-heading">Arrivals</div>
-            <!-- Table -->
-            <table class="table table-condensed">
-                <thead>
-                <tr>
-                    <th></th>
-                    <th>Name</th>
-                    <th>Arriving in...</th>
-                    <th>Estimated</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="arrival in routeMap.selectedStop.resultSet.arrival"
-                    ng-class="{danger: arrival.imminent, warning: arrival.soon, info: arrivalInfo.enoughTimeForCoffee, success: arrivalInfo.aGoodAmountofTime}">
-                    <td class="arrival-icon">
-                        <img ng-if="routeMap.isStreetCarRoute(arrival)"
-                             src="images/street_car.svg"
-                             style="height: 40px; width: 30px;"
-                             alt=""/>
-                        <img ng-if="routeMap.isTrimetRoute(arrival)"
-                             src="images/rail.svg"
-                             style="height: 40px; width: 30px;"
-                             alt=""/>
-                        <img ng-if="!routeMap.isStreetCarRoute(arrival) && !routeMap.isTrimetRoute(arrival)"
-                             src="images/bus.svg"
-                             style="height: 40px; width: 30px;"
-                             alt=""/>
-                    </td>
-                    <td>{{arrival.fullSign}}</td>
-                    <td>{{arrival.remainingTime.minutes}} min,
-                        {{arrival.remainingTime.seconds}} sec</td>
-                    <td>{{arrival.estimated | date:'h:mm a'}}</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <!-- Table -->
+    <table class="table table-condensed">
+        <thead>
+        <tr>
+            <th><small>Type</small></th>
+            <th><small>Name</small></th>
+            <th><small>Arriving in...</small></th>
+            <th><small>Estimated</small></th>
+            <th><small>Scheduled</small></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="arrival in routeMap.selectedStop.resultSet.arrival"
+            ng-class="{danger: arrival.imminent, warning: arrival.soon, info: arrivalInfo.enoughTimeForCoffee, success: arrivalInfo.aGoodAmountofTime}">
+            <td class="arrival-icon">
+                <img ng-if="routeMap.isStreetCarRoute(arrival)"
+                     src="images/street_car.svg"
+                     style="height: 20px; width: 20px;"
+                     alt=""/>
+                <img ng-if="routeMap.isTrimetRoute(arrival)"
+                     src="images/rail.svg"
+                     style="height: 20px; width: 20px;"
+                     alt=""/>
+                <img ng-if="!routeMap.isStreetCarRoute(arrival) && !routeMap.isTrimetRoute(arrival)"
+                     src="images/bus.svg"
+                     style="height: 20px; width: 20px;"
+                     alt=""/>
+            </td>
+            <td><small>{{arrival.fullSign}}</small></td>
+            <td><small>
+                        <span ng-if="arrival.remainingTime.hours">{{arrival.remainingTime.hours}} hr,</span>
+                        {{arrival.remainingTime.minutes}} min,
+                       {{arrival.remainingTime.seconds}} sec</small></td>
+            <td><small>{{arrival.estimated | date:'h:mm a'}}</small></td>
+            <td><small>{{arrival.scheduled | date:'h:mm a'}}</small></td>
+        </tr>
+        </tbody>
+    </table>
 </div>

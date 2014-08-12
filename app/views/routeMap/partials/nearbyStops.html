@@ -6,8 +6,7 @@
            placeholder="Search Streetcar Routes">
 </div>
 
-<div class="left-column-container"
-     ps-full-height-left-col>
+<div class="left-column-container">
 
     <div ng-show="!routeMap.nearbyStops">
         <div class="well well-lg">Loading nearby stops...</div>
@@ -20,9 +19,9 @@
             <div class="panel-heading">
                 {{stop.desc}} | <span class="label label-default">{{stop.dir}}</span>
             </div>
-            <table class="table-condensed">
+            <table class="table table-condensed">
                 <thead>
-                    <td><small>Stop ID</small></td>
+                    <td><small>Route</small></td>
                     <td><small>Name</small></td>
                     <td><small>Type</small></td>
                 </thead>
