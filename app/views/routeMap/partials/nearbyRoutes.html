@@ -2,7 +2,7 @@
     <input type="text"
            class="form-control"
            id="streetcarSeach"
-           ng-model="nearbyStopsSearch"
+           ng-model="nearbyRouteSearch"
            placeholder="Search Streetcar Routes">
 </div>
 
@@ -14,25 +14,30 @@
     </div>
 
     <div ng-show="routeMap.nearbyStops">
-        <accordion close-others="false">
-            <accordion-group ng-repeat="route in routeMap.nearbyRoutes | filter: nearbyStopsSearch"
-                             is-open="true">
-                <accordion-heading>
-                    <h6>{{route.desc}} | <span class="label label-default">{{route.route}}</span>
-                        <i class="pull-right glyphicon"
-                           ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
-                    </h6>
-                </accordion-heading>
-                <ul class="nav nav-pills nav-stacked">
-                    <li ng-repeat="stop in route.stops"
-                        ng-model="stops.enabled"
+
+        <div class="panel panel-default"
+             ng-repeat="route in routeMap.nearbyRoutes | filter: nearbyRouteSearch">
+            <!-- Default panel contents -->
+            <div class="panel-heading">
+                <input type="checkbox"
+                       ng-checked="direction.enabled === true">  {{route.desc}} | <span class="label label-default">{{route.route}}</span>
+            </div>
+            <!-- Table -->
+            <table class="table table-condensed">
+                <thead>
+                    <td><small>ID</small></td>
+                    <td><small>Name</small></td>
+                    <td><small>Dir</small></td>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="stop in route.stops"
                         ng-click="routeMap.toggleRoute(route)">
-                        <a>
-                            {{stop.locid}} | {{stop.desc}} | {{stop.dir}}
-                        </a>
-                    </li>
-                </ul>
-            </accordion-group>
-        </accordion>
+                        <td><small><span class="label label-default">{{stop.locid}}</span></small></td>
+                        <td><small>{{stop.desc}}</small></td>
+                        <td><small>{{stop.dir}}</small></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

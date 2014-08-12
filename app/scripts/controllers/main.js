@@ -412,102 +412,101 @@ angular.module('pdxStreetcarApp')
         self.stopIsSelected = false;
         self.distanceFromLocation = 660;
 
+        function createGoogleStopMarker(routeId, directionId, stops) {
+            var infoWindow,
+                infoWindowContent,
+                stopMarker,
+                stopLatLng,
+                pinColor = RouteColors[routeId];
+
+            if (!pinColor) {
+                pinColor = RouteColors['default'];
+            }
+
+            var pinImage = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColor,
+                    new google.maps.Size(21, 34),
+                    new google.maps.Point(0, 0),
+                    new google.maps.Point(10, 34)),
+                pinShadow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
+                    new google.maps.Size(40, 37),
+                    new google.maps.Point(0, 0),
+                    new google.maps.Point(12, 35));
+
+            function addMarkerToMarkerModel(routeId, directionId, stopMarker) {
+                if (!markers[routeId]) {
+                    markers[routeId] = {};
+                }
+                if (!markers[routeId][directionId]) {
+                    markers[routeId][directionId] = [];
+                }
+                markers[routeId][directionId].push(stopMarker);
+            }
+
+            _.forEach(stops, function (stop) {
+                stopLatLng = new google.maps.LatLng(stop.lat, stop.lng);
+                stopMarker = new google.maps.Marker({
+                    map: map,
+                    position: stopLatLng,
+                    icon: pinImage,
+                    shadow: pinShadow,
+                    animation: google.maps.Animation.DROP,
+                    clickable: true,
+                    title: stop.desc + ":" + stop.dir
+                });
+
+                infoWindow = new google.maps.InfoWindow();
+                infoWindowContent = stop.desc;
+
+                google.maps.event.addListener(stopMarker, 'click', function () {
+                    if (previouslyOpenedInfoWindow) {
+                        previouslyOpenedInfoWindow.close();
+                    }
+                    infoWindow.setContent(infoWindowContent);
+                    infoWindow.open(map, this);
+                    map.panTo(this.position);
+                    map.setZoom(17);
+                    previouslyOpenedInfoWindow = infoWindow;
+
+                    showArrivalsForStop(stopMarker);
+                });
+
+                stopMarker.stopMetaData = stop;
+
+                addMarkerToMarkerModel(routeId, directionId, stopMarker);
+            });
+        }
+
+        function createPolylineForPoints(routeId, directionId, stops) {
+            var stopCoordinates = [],
+                stopsPolyline,
+                stopLatLng;
+
+            function addPolylineToPolylineModel(routeId, directionId, polyline) {
+                if (!polylines[routeId]) {
+                    polylines[routeId] = {};
+                }
+                if (!polylines[routeId][directionId]) {
+                    polylines[routeId][directionId] = [];
+                }
+                polylines[routeId][directionId].push(polyline);
+            }
+
+            _.forEach(stops, function (stop) {
+                stopLatLng = new google.maps.LatLng(stop.lat, stop.lng);
+                stopCoordinates.push(stopLatLng);
+            });
+            stopsPolyline = new google.maps.Polyline({
+                path: stopCoordinates,
+                geodesic: true,
+                strokeColor: RouteColors[routeId],
+                strokeOpacity: 1.0,
+                strokeWeight: 5
+            });
+            stopsPolyline.setMap(map);
+            addPolylineToPolylineModel(routeId, directionId, stopsPolyline);
+        }
+
         function setRouteMarkers(route) {
-
-            function createGoogleStopMarker(routeId, directionId, stops) {
-                var infoWindow,
-                    infoWindowContent,
-                    stopMarker,
-                    stopLatLng,
-                    pinColor = RouteColors[routeId];
-
-                if (!pinColor) {
-                    pinColor = RouteColors['default'];
-                }
-
-                var pinImage = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColor,
-                        new google.maps.Size(21, 34),
-                        new google.maps.Point(0, 0),
-                        new google.maps.Point(10, 34)),
-                    pinShadow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
-                        new google.maps.Size(40, 37),
-                        new google.maps.Point(0, 0),
-                        new google.maps.Point(12, 35));
-
-                function addMarkerToMarkerModel(routeId, directionId, stopMarker) {
-                    if (!markers[routeId]) {
-                        markers[routeId] = {};
-                    }
-                    if (!markers[routeId][directionId]) {
-                        markers[routeId][directionId] = [];
-                    }
-                    markers[routeId][directionId].push(stopMarker);
-                }
-
-                _.forEach(stops, function (stop) {
-                    stopLatLng = new google.maps.LatLng(stop.lat, stop.lng);
-                    stopMarker = new google.maps.Marker({
-                        map: map,
-                        position: stopLatLng,
-                        icon: pinImage,
-                        shadow: pinShadow,
-                        animation: google.maps.Animation.DROP,
-                        clickable: true,
-                        title: stop.desc + ":" + stop.dir
-                    });
-
-                    infoWindow = new google.maps.InfoWindow();
-                    infoWindowContent = stop.desc;
-
-                    google.maps.event.addListener(stopMarker, 'click', function () {
-                        if (previouslyOpenedInfoWindow) {
-                            previouslyOpenedInfoWindow.close();
-                        }
-                        infoWindow.setContent(infoWindowContent);
-                        infoWindow.open(map, this);
-                        map.panTo(this.position);
-                        map.setZoom(17);
-                        previouslyOpenedInfoWindow = infoWindow;
-
-                        showArrivalsForStop(stopMarker);
-                    });
-
-                    stopMarker.stopMetaData = stop;
-
-                    addMarkerToMarkerModel(routeId, directionId, stopMarker);
-                });
-            }
-
-            function createPolylineForPoints(routeId, directionId, stops) {
-                var stopCoordinates = [],
-                    stopsPolyline,
-                    stopLatLng;
-
-                function addPolylineToPolylineModel(routeId, directionId, polyline) {
-                    if (!polylines[routeId]) {
-                        polylines[routeId] = {};
-                    }
-                    if (!polylines[routeId][directionId]) {
-                        polylines[routeId][directionId] = [];
-                    }
-                    polylines[routeId][directionId].push(polyline);
-                }
-
-                _.forEach(stops, function (stop) {
-                    stopLatLng = new google.maps.LatLng(stop.lat, stop.lng);
-                    stopCoordinates.push(stopLatLng);
-                });
-                stopsPolyline = new google.maps.Polyline({
-                    path: stopCoordinates,
-                    geodesic: true,
-                    strokeColor: RouteColors[routeId],
-                    strokeOpacity: 1.0,
-                    strokeWeight: 5
-                });
-                stopsPolyline.setMap(map);
-                addPolylineToPolylineModel(routeId, directionId, stopsPolyline);
-            }
-
             createGoogleStopMarker(route.routeId, route.directionId, route.stops);
             createPolylineForPoints(route.routeId, route.directionId, route.stops);
         }
@@ -661,6 +660,27 @@ angular.module('pdxStreetcarApp')
                 return data;
             }
 
+            function retrieveRouteStops(route) {
+                return trimet.getStops(route.route);
+            }
+
+            function drawRoute(data) {
+                _.forEach(data, function (route) {
+                    _.forEach(route.directions, function (direction) {
+                        setRouteMarkers(direction);
+                        toggleEnabledFlags(direction);
+                    });
+                });
+            }
+
+            function displayRoutesOnMap(data) {
+                _.forEach(self.nearbyRoutes, function (route) {
+                    retrieveRouteStops(route)
+                        .then(formatRetrievedRoutes)
+                        .then(drawRoute);
+                });
+            }
+
             function setRadiusAroundUser() {
                 if (stopRadiusIndicator) {
                     stopRadiusIndicator.setMap(null);
@@ -698,6 +718,7 @@ angular.module('pdxStreetcarApp')
             trimet.getStopsAroundLocation(userLatitude, userLongitude, radiusInFeet)
                 .then(provideListOfNearbyStops)
                 .then(provideListOfNearbyRoutes)
+                .then(displayRoutesOnMap)
                 .then(displayRoutesAndStops)
                 .then(enableStopMarkers);
         }
