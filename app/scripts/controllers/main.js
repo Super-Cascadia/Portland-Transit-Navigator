@@ -668,6 +668,7 @@ angular.module('pdxStreetcarApp')
                 _.forEach(data, function (route) {
                     _.forEach(route.directions, function (direction) {
                         setRouteMarkers(direction);
+//                        createPolylineForPoints(direction.routeId, direction.directionId, direction.stops);
                         toggleEnabledFlags(direction);
                     });
                 });

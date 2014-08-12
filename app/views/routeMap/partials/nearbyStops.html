@@ -14,25 +14,26 @@
     </div>
 
     <div ng-show="routeMap.nearbyStops">
-        <accordion close-others="false">
-            <accordion-group ng-repeat="stop in routeMap.nearbyStops | filter: nearbyStopsSearch"
-                             is-open="true">
-                <accordion-heading>
-                    <h6>{{stop.desc}} | <span class="label label-default">{{stop.dir}}</span>
-                        <i class="pull-right glyphicon"
-                           ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
-                    </h6>
-                </accordion-heading>
-                <ul class="nav nav-pills nav-stacked">
-                    <li ng-repeat="route in stop.route"
-                        ng-model="route.enabled"
-                        ng-click="routeMap.toggleRoute(route)">
-                        <a>
-                            {{route.desc}}
-                        </a>
-                    </li>
-                </ul>
-            </accordion-group>
-        </accordion>
+
+        <div class="panel panel-default"
+             ng-repeat="stop in routeMap.nearbyStops | filter: nearbyStopsSearch">
+            <div class="panel-heading">
+                {{stop.desc}} | <span class="label label-default">{{stop.dir}}</span>
+            </div>
+            <table class="table-condensed">
+                <thead>
+                    <td><small>Stop ID</small></td>
+                    <td><small>Name</small></td>
+                    <td><small>Type</small></td>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="route in stop.route">
+                        <td><small><span class="label label-default">{{route.route}}</span></small></td>
+                        <td><small>{{route.desc}}</small></td>
+                        <td><small>{{route.type}}</small></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
