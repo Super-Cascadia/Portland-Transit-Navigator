@@ -23,6 +23,24 @@ angular.module('pdxStreetcarApp')
         };
     })
 
+    .service('routeMapInstance', function () {
+        var self = this;
+
+        self.map = null;
+
+        self.set = function (map) {
+            self.map = map;
+        };
+
+        self.get = function () {
+            return self.map;
+        };
+
+        self.clear = function () {
+            self.map = null;
+        };
+    })
+
 
     .factory('timeCalcService', function ($q, $log) {
         // Variables
@@ -370,7 +388,8 @@ angular.module('pdxStreetcarApp')
 
     })
 
-    .controller('RouteMapCtrl', function ($scope, $log, $q, trimet, RouteColors, $timeout, feetToMeters, timeCalcService, formatRetrievedRoutes, trimetUtilities) {
+
+    .controller('RouteMapCtrl', function ($scope, $log, $q, trimet, RouteColors, $timeout, feetToMeters, timeCalcService, formatRetrievedRoutes, trimetUtilities, routeMapInstance) {
         'use strict';
         var self = this,
             userLatitude,
@@ -622,6 +641,26 @@ angular.module('pdxStreetcarApp')
                 return data;
             }
 
+            function provideListOfNearbyRoutes(data) {
+                var routes = {};
+                _.forEach(data.resultSet.location, function (location) {
+                    _.forEach(location.route, function (route) {
+                        if (!routes[route.route]) {
+                            routes[route.route] = route;
+                            routes[route.route].stops = {};
+                        }
+                        if (!routes[route.route].stops) {
+                            routes[route.route].stops = {};
+                        }
+                        if (!routes[route.route].stops[location.locid]) {
+                            routes[route.route].stops[location.locid] = location;
+                        }
+                    });
+                });
+                self.nearbyRoutes = routes;
+                return data;
+            }
+
             function setRadiusAroundUser() {
                 if (stopRadiusIndicator) {
                     stopRadiusIndicator.setMap(null);
@@ -658,6 +697,7 @@ angular.module('pdxStreetcarApp')
 
             trimet.getStopsAroundLocation(userLatitude, userLongitude, radiusInFeet)
                 .then(provideListOfNearbyStops)
+                .then(provideListOfNearbyRoutes)
                 .then(displayRoutesAndStops)
                 .then(enableStopMarkers);
         }
@@ -823,7 +863,7 @@ angular.module('pdxStreetcarApp')
                     mapTypeId: google.maps.MapTypeId.ROADMAP,
                     styles: [
                         {featureType: "administrative", stylers: [
-                            {visibility: "off"}
+                            {visibility: "on"}
                         ]},
                         {featureType: "poi", stylers: [
                             {visibility: "simplified"}
@@ -862,9 +902,12 @@ angular.module('pdxStreetcarApp')
                         ]}
                     ]
                 };
+                if (routeMapInstance.map) {
+                    routeMapInstance.clear();
+                }
                 map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+                routeMapInstance.set(map);
                 transitLayer = new google.maps.TransitLayer();
-
                 //                transitLayer.setMap(map);
 
                 deferred.resolve();

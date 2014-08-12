@@ -1,30 +1,36 @@
-<tabset>
-    <!--Nearby Routes-->
-    <tab>
-        <tab-heading>
-            Nearby
-        </tab-heading>
-        <ng-include src="'views/routeMap/partials/nearMe.html'"></ng-include>
-    </tab>
-    <!--Streetcar Tab-->
-    <tab select="routeMap.getStreetCarData()">
-        <tab-heading>
-            Streetcar
-        </tab-heading>
-        <ng-include src="'views/routeMap/partials/streetcar.html'"></ng-include>
-    </tab>
-    <!--Trimet Tab-->
-    <tab select="routeMap.getTrimetData()">
-        <tab-heading>
-            Trimet
-        </tab-heading>
-        <ng-include src="'views/routeMap/partials/trimet.html'"></ng-include>
-    </tab>
-    <!--Bus Tab-->
-    <tab select="routeMap.getBusData()">
-        <tab-heading>
-            Bus
-        </tab-heading>
-        <ng-include src="'views/routeMap/partials/bus.html'"></ng-include>
-    </tab>
-</tabset>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <tabset justified="true">
+            <!--Nearby Routes-->
+            <tab>
+                <tab-heading>
+                    Nearby
+                </tab-heading>
+                <ng-include src="'views/routeMap/partials/nearMe.html'"></ng-include>
+            </tab>
+            <!--Streetcar Tab-->
+            <tab select="routeMap.getStreetCarData()">
+                <tab-heading>
+                    Streetcar
+                </tab-heading>
+                <ng-include src="'views/routeMap/partials/streetcar.html'"></ng-include>
+            </tab>
+            <!--Trimet Tab-->
+            <tab select="routeMap.getTrimetData()">
+                <tab-heading>
+                    Trimet
+                </tab-heading>
+                <ng-include src="'views/routeMap/partials/trimet.html'"></ng-include>
+            </tab>
+            <!--Bus Tab-->
+            <tab select="routeMap.getBusData()">
+                <tab-heading>
+                    Bus
+                </tab-heading>
+                <ng-include src="'views/routeMap/partials/bus.html'"></ng-include>
+            </tab>
+        </tabset>
+    </div>
+</div>
+
+
