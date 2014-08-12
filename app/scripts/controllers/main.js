@@ -16,16 +16,12 @@ angular.module('pdxStreetcarApp')
     })
 
 
-
-
-
     .service('feetToMeters', function (distanceConversions) {
         "use strict";
         return function (feet) {
             return feet * distanceConversions.FEET_TO_METERS;
         };
     })
-
 
 
     .factory('timeCalcService', function ($q, $log) {
