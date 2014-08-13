@@ -957,21 +957,31 @@ angular.module('pdxStreetcarApp')
             }
 
             function getRouteGeoJson() {
+                var deferred = $q.defer();
                 $.ajax({
                     type: 'GET',
                     url:'data/kml/tm_routes.kml'
                 })
                     .done(function(xml) {
-                        var geoJSON = toGeoJSON.kml(xml);
-//                        _.forEach(geoJSON.features, function (feature) {
-//                            if (feature.properties) {
-//                                if (feature.properties.route_number === 12) {
-//                                    console.log("Found 12");
-//                                }
-//                            }
-//                        });
-                        map.data.addGeoJson(geoJSON);
+                        var geoJson = toGeoJSON.kml(xml);
+                        deferred.resolve(geoJson);
                     });
+                return deferred.promise;
+            }
+
+            function parseGeoJson(geoJson) {
+                _.forEach(geoJson.features, function (feature) {
+                    if (feature.properties) {
+                        if (feature.properties.route_number === '193') {
+                            var featureCollection = {
+                                "type": "FeatureCollection",
+                                "features": []
+                            };
+                            featureCollection.features.push(feature);
+                            map.data.addGeoJson(featureCollection);
+                        }
+                    }
+                });
             }
 
             $timeout(function () {
@@ -980,7 +990,8 @@ angular.module('pdxStreetcarApp')
                     .then(setTransitCenterLayer)
                     .then(setTrimetParkAndRides)
                     .then(setUserLocationMarker)
-                    .then(getRouteGeoJson);
+                    .then(getRouteGeoJson)
+                    .then(parseGeoJson);
             }, 500);
         }
 
