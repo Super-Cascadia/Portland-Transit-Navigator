@@ -389,7 +389,7 @@ angular.module('pdxStreetcarApp')
     })
 
 
-    .controller('RouteMapCtrl', function ($scope, $log, $q, trimet, RouteColors, $timeout, feetToMeters, timeCalcService, formatRetrievedRoutes, trimetUtilities, routeMapInstance) {
+    .controller('RouteMapCtrl', function ($scope, $log, $q, $http, trimet, RouteColors, $timeout, feetToMeters, timeCalcService, formatRetrievedRoutes, trimetUtilities, routeMapInstance) {
         'use strict';
         var self = this,
             userLatitude,
@@ -956,13 +956,31 @@ angular.module('pdxStreetcarApp')
                 });
             }
 
+            function getRouteGeoJson() {
+                $.ajax({
+                    type: 'GET',
+                    url:'data/kml/tm_routes.kml'
+                })
+                    .done(function(xml) {
+                        var geoJSON = toGeoJSON.kml(xml);
+//                        _.forEach(geoJSON.features, function (feature) {
+//                            if (feature.properties) {
+//                                if (feature.properties.route_number === 12) {
+//                                    console.log("Found 12");
+//                                }
+//                            }
+//                        });
+                        map.data.addGeoJson(geoJSON);
+                    });
+            }
+
             $timeout(function () {
                 createMap()
                     .then(setTrimetBoundaryLayer)
                     .then(setTransitCenterLayer)
                     .then(setTrimetParkAndRides)
                     .then(setUserLocationMarker)
-                    .then(getNearbyStops);
+                    .then(getRouteGeoJson);
             }, 500);
         }
 
