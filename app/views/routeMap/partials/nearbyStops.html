@@ -17,9 +17,11 @@
         <div class="panel panel-default"
              ng-repeat="stop in routeMap.nearbyStops | filter: nearbyStopsSearch">
             <div class="panel-heading">
-                {{stop.desc}} | <span class="label label-default">{{stop.dir}}</span>
+                <small>
+                    <strong>{{stop.desc}}</strong> | <span class="label label-default">{{stop.dir}}</span>
+                </small>
             </div>
-            <table class="table table-condensed">
+            <table class="table table-condensed table-hover">
                 <thead>
                     <td><small>Route</small></td>
                     <td><small>Name</small></td>

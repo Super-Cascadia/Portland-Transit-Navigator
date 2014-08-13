@@ -18,11 +18,16 @@
              ng-repeat="route in routeMap.nearbyRoutes | filter: nearbyRouteSearch">
             <!-- Default panel contents -->
             <div class="panel-heading">
-                <input type="checkbox"
-                       ng-checked="direction.enabled === true">  {{route.desc}} | <span class="label label-default">{{route.route}}</span>
+                <small>
+                    <strong>{{route.desc}}</strong> | <span class="label label-default">{{route.route}}</span>
+                </small>
+                <div class="pull-right">
+                    <input type="checkbox"
+                           ng-checked="direction.enabled === true">
+                </div>
             </div>
             <!-- Table -->
-            <table class="table table-condensed">
+            <table class="table table-condensed table-hover">
                 <thead>
                     <td><small>Stop</small></td>
                     <td><small>Name</small></td>

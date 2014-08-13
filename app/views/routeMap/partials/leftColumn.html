@@ -4,28 +4,28 @@
             <!--Nearby Routes-->
             <tab>
                 <tab-heading>
-                    Nearby
+                    <small>Nearby</small>
                 </tab-heading>
                 <ng-include src="'views/routeMap/partials/nearMe.html'"></ng-include>
             </tab>
             <!--Streetcar Tab-->
             <tab select="routeMap.getStreetCarData()">
                 <tab-heading>
-                    Streetcar
+                    <small>Streetcar</small>
                 </tab-heading>
                 <ng-include src="'views/routeMap/partials/streetcar.html'"></ng-include>
             </tab>
             <!--Trimet Tab-->
             <tab select="routeMap.getTrimetData()">
                 <tab-heading>
-                    Trimet
+                    <small>Trimet</small>
                 </tab-heading>
                 <ng-include src="'views/routeMap/partials/trimet.html'"></ng-include>
             </tab>
             <!--Bus Tab-->
             <tab select="routeMap.getBusData()">
                 <tab-heading>
-                    Bus
+                    <small>Bus</small>
                 </tab-heading>
                 <ng-include src="'views/routeMap/partials/bus.html'"></ng-include>
             </tab>

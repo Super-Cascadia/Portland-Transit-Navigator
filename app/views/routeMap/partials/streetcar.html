@@ -13,26 +13,31 @@
     </div>
 
     <div ng-show="routeMap.streetcar">
-        <accordion close-others="false">
-            <accordion-group ng-repeat="(route, routeData) in routeMap.streetcar | filter: streetCarSearch"
-                             is-open="true">
-                <accordion-heading>
-                    {{routeData.name}}
-                    <i class="pull-right glyphicon"
-                       ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
-                </accordion-heading>
-                <ul class="nav nav-pills nav-stacked">
-                    <li ng-repeat="direction in routeData.directions | filter:streetCarSearch"
-                        ng-class="{directionEnabled: direction.enabled, active: direction.enabled}"
-                        ng-model="direction.enabled"
-                        ng-click="routeMap.toggleRoute(direction)">
-                        <a>
-                            <input type="checkbox"
-                                   ng-checked="direction.enabled === true"> {{direction.displayName}}
-                        </a>
-                    </li>
-                </ul>
-            </accordion-group>
-        </accordion>
+
+        <div class="panel panel-default"
+             ng-repeat="route in routeMap.streetcar | filter:busSearch">
+            <div class="panel-heading">
+                <small>
+                    <strong>{{route.name}}</strong>  <span class="label label-default">{{route.routeId}}</span>
+                </small>
+            </div>
+            <table class="table table-condensed table-hover">
+                <thead>
+                <td></td>
+                <td><small>Direction</small></td>
+                </thead>
+                <tbody>
+                <tr ng-repeat="direction in route.directions | filter:busSearch"
+                    ng-class="{info: direction.enabled}"
+                    ng-click="routeMap.toggleRoute(direction)">
+                    <td>
+                        <input type="checkbox"
+                               ng-checked="direction.enabled === true">
+                    </td>
+                    <td><small>{{direction.displayName}}</small></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

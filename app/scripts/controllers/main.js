@@ -680,6 +680,7 @@ angular.module('pdxStreetcarApp')
                         .then(formatRetrievedRoutes)
                         .then(drawRoute);
                 });
+                return data;
             }
 
             function setRadiusAroundUser() {
