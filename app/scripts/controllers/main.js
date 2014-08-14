@@ -404,6 +404,8 @@ angular.module('pdxStreetcarApp')
             showTransitCenterLayer = false,
             showBoundaryLayer = false,
             map,
+            geoJsonRoutes,
+            activeRouteLines = {},
             markers = {},
             previouslyOpenedInfoWindow,
             nearbyStopMarkers = {},
@@ -506,9 +508,44 @@ angular.module('pdxStreetcarApp')
             addPolylineToPolylineModel(routeId, directionId, stopsPolyline);
         }
 
+        function addActiveRouteLine(route) {
+            var routeId = route.properties.route_number;
+            var directionId = route.properties.direction;
+
+            if (!activeRouteLines[routeId]) {
+                activeRouteLines[routeId] = {};
+            }
+
+            var routeInstance = activeRouteLines[routeId];
+
+            if (!routeInstance[directionId]) {
+                routeInstance[directionId] = route;
+            }
+        }
+
+        function enableRouteLine(routeId, directionId) {
+            var routeInstance = activeRouteLines[routeId][directionId];
+
+            var featureCollection = {
+                "type": "FeatureCollection",
+                "features": []
+            };
+            featureCollection.features.push(routeInstance);
+            map.data.addGeoJson(featureCollection);
+        }
+
+        function showRouteLine(routeId, directionId) {
+            _.forEach(geoJsonRoutes.features, function (route) {
+                if (parseInt(route.properties.route_number) === routeId) {
+                    addActiveRouteLine(route);
+                }
+            });
+            enableRouteLine(routeId, directionId);
+        }
+
         function setRouteMarkers(route) {
             createGoogleStopMarker(route.routeId, route.directionId, route.stops);
-            createPolylineForPoints(route.routeId, route.directionId, route.stops);
+            showRouteLine(route.routeId, route.directionId);
         }
 
         function toggleEnabledFlags(route) {
@@ -668,8 +705,7 @@ angular.module('pdxStreetcarApp')
                 _.forEach(data, function (route) {
                     _.forEach(route.directions, function (direction) {
                         setRouteMarkers(direction);
-//                        createPolylineForPoints(direction.routeId, direction.directionId, direction.stops);
-                        toggleEnabledFlags(direction);
+//                        toggleEnabledFlags(direction);
                     });
                 });
             }
@@ -963,8 +999,8 @@ angular.module('pdxStreetcarApp')
                     url:'data/kml/tm_routes.kml'
                 })
                     .done(function(xml) {
-                        var geoJson = toGeoJSON.kml(xml);
-                        deferred.resolve(geoJson);
+                        geoJsonRoutes = toGeoJSON.kml(xml);
+                        deferred.resolve(geoJsonRoutes);
                     });
                 return deferred.promise;
             }
@@ -980,6 +1016,15 @@ angular.module('pdxStreetcarApp')
                             featureCollection.features.push(feature);
                             map.data.addGeoJson(featureCollection);
                         }
+
+                        if (feature.properties.route_number === '194') {
+                            var featureCollection2 = {
+                                "type": "FeatureCollection",
+                                "features": []
+                            };
+                            featureCollection2.features.push(feature);
+                            map.data.addGeoJson(featureCollection2);
+                        }
                     }
                 });
             }
@@ -991,8 +1036,8 @@ angular.module('pdxStreetcarApp')
                     .then(setTrimetParkAndRides)
                     .then(setUserLocationMarker)
                     .then(getRouteGeoJson)
-                    .then(parseGeoJson);
-            }, 500);
+                    .then(getNearbyStops);
+            }, 100);
         }
 
         init();
