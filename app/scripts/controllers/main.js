@@ -478,69 +478,22 @@ angular.module('pdxStreetcarApp')
             });
         }
 
-        function createPolylineForPoints(routeId, directionId, stops) {
-            var stopCoordinates = [],
-                stopsPolyline,
-                stopLatLng;
-
-            function addPolylineToPolylineModel(routeId, directionId, polyline) {
-                if (!polylines[routeId]) {
-                    polylines[routeId] = {};
-                }
-                if (!polylines[routeId][directionId]) {
-                    polylines[routeId][directionId] = [];
-                }
-                polylines[routeId][directionId].push(polyline);
-            }
-
-            _.forEach(stops, function (stop) {
-                stopLatLng = new google.maps.LatLng(stop.lat, stop.lng);
-                stopCoordinates.push(stopLatLng);
-            });
-            stopsPolyline = new google.maps.Polyline({
-                path: stopCoordinates,
-                geodesic: true,
-                strokeColor: RouteColors[routeId],
-                strokeOpacity: 1.0,
-                strokeWeight: 5
-            });
-            stopsPolyline.setMap(map);
-            addPolylineToPolylineModel(routeId, directionId, stopsPolyline);
-        }
-
-        function addActiveRouteLine(route) {
-            var routeId = route.properties.route_number;
-            var directionId = route.properties.direction;
-
-            if (!activeRouteLines[routeId]) {
-                activeRouteLines[routeId] = {};
-            }
-
-            var routeInstance = activeRouteLines[routeId];
-
-            if (!routeInstance[directionId]) {
-                routeInstance[directionId] = route;
-            }
-        }
-
-        function enableRouteLine(routeId, directionId) {
-            var routeInstance = activeRouteLines[routeId][directionId];
-
-            var featureCollection = {
-                "type": "FeatureCollection",
-                "features": []
-            };
-            featureCollection.features.push(routeInstance);
-            map.data.addGeoJson(featureCollection);
-        }
-
         function showRouteLine(routeId, directionId) {
+
+            function enableRouteLine(route) {
+                var featureCollection = {
+                    "type": "FeatureCollection",
+                    "features": []
+                };
+                featureCollection.features.push(route);
+                map.data.addGeoJson(featureCollection);
+            }
+
             _.forEach(geoJsonRoutes.features, function (route) {
-                if (parseInt(route.properties.route_number) === routeId) {
-                    addActiveRouteLine(route);
+                if (parseInt(route.properties.route_number) === routeId && parseInt(route.properties.direction) === directionId) {
+                    enableRouteLine(route);
                 }
             });
-            enableRouteLine(routeId, directionId);
         }
 
         function setRouteMarkers(route) {
@@ -691,31 +644,12 @@ angular.module('pdxStreetcarApp')
                         if (!routes[route.route].stops[location.locid]) {
                             routes[route.route].stops[location.locid] = location;
                         }
+                        if (routes[route.route].dir[0].dir !== route.dir[0].dir) {
+                            routes[route.route].dir.push(route.dir[0]);
+                        }
                     });
                 });
                 self.nearbyRoutes = routes;
-                return data;
-            }
-
-            function retrieveRouteStops(route) {
-                return trimet.getStops(route.route);
-            }
-
-            function drawRoute(data) {
-                _.forEach(data, function (route) {
-                    _.forEach(route.directions, function (direction) {
-                        setRouteMarkers(direction);
-//                        toggleEnabledFlags(direction);
-                    });
-                });
-            }
-
-            function displayRoutesOnMap(data) {
-                _.forEach(self.nearbyRoutes, function (route) {
-                    retrieveRouteStops(route)
-                        .then(formatRetrievedRoutes)
-                        .then(drawRoute);
-                });
                 return data;
             }
 
@@ -734,16 +668,17 @@ angular.module('pdxStreetcarApp')
                 stopRadiusIndicator.bindTo('center', userLocationMarker, 'position');
             }
 
-            function displayRoutesAndStops(data) {
+            function displayNearbyStops(data) {
                 _.forEach(data.resultSet.location, function (location) {
                     location.enabled = true;
                     createNearbyStopMarker(location);
                 });
+                return data;
             }
 
-            function enableStopMarkers() {
-                _.forEach(nearbyStopMarkers, function (stopMarker) {
-                    stopMarker.setMap(map);
+            function displayFirstRouteLine(data) {
+                _.forEach(self.nearbyRoutes, function (route) {
+                    showRouteLine(route.route, route.dir[0].dir);
                 });
             }
 
@@ -756,9 +691,8 @@ angular.module('pdxStreetcarApp')
             trimet.getStopsAroundLocation(userLatitude, userLongitude, radiusInFeet)
                 .then(provideListOfNearbyStops)
                 .then(provideListOfNearbyRoutes)
-                .then(displayRoutesOnMap)
-                .then(displayRoutesAndStops)
-                .then(enableStopMarkers);
+                .then(displayNearbyStops)
+                .then(displayFirstRouteLine);
         }
 
         function toggleRoute(route) {
@@ -974,19 +908,13 @@ angular.module('pdxStreetcarApp')
                 return deferred.promise;
             }
 
-            function setTrimetBoundaryLayer() {
+            function loadLayers() {
                 trimetBoundaryLayer = new google.maps.KmlLayer({
                     url: 'http://developer.trimet.org/gis/data/tm_boundary.kml'
                 });
-            }
-
-            function setTransitCenterLayer() {
                 trimetTransitCenterLayer = new google.maps.KmlLayer({
                     url: 'http://developer.trimet.org/gis/data/tm_tran_cen.kml'
                 });
-            }
-
-            function setTrimetParkAndRides() {
                 trimetParkAndRidesLayer = new google.maps.KmlLayer({
                     url: 'http://developer.trimet.org/gis/data/tm_parkride.kml'
                 });
@@ -1005,39 +933,15 @@ angular.module('pdxStreetcarApp')
                 return deferred.promise;
             }
 
-            function parseGeoJson(geoJson) {
-                _.forEach(geoJson.features, function (feature) {
-                    if (feature.properties) {
-                        if (feature.properties.route_number === '193') {
-                            var featureCollection = {
-                                "type": "FeatureCollection",
-                                "features": []
-                            };
-                            featureCollection.features.push(feature);
-                            map.data.addGeoJson(featureCollection);
-                        }
-
-                        if (feature.properties.route_number === '194') {
-                            var featureCollection2 = {
-                                "type": "FeatureCollection",
-                                "features": []
-                            };
-                            featureCollection2.features.push(feature);
-                            map.data.addGeoJson(featureCollection2);
-                        }
-                    }
-                });
-            }
-
-            $timeout(function () {
+            function runAfterTimeout() {
                 createMap()
-                    .then(setTrimetBoundaryLayer)
-                    .then(setTransitCenterLayer)
-                    .then(setTrimetParkAndRides)
+                    .then(loadLayers)
                     .then(setUserLocationMarker)
                     .then(getRouteGeoJson)
                     .then(getNearbyStops);
-            }, 100);
+            }
+
+            $timeout(runAfterTimeout, 100);
         }
 
         init();
