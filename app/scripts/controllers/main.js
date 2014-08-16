@@ -405,7 +405,8 @@ angular.module('pdxStreetcarApp')
             showBoundaryLayer = false,
             map,
             geoJsonRoutes,
-            activeRouteLines = {},
+            geoJsonLayer,
+            geoJsonRouteLayers = {},
             markers = {},
             previouslyOpenedInfoWindow,
             nearbyStopMarkers = {},
@@ -413,6 +414,15 @@ angular.module('pdxStreetcarApp')
 
         self.stopIsSelected = false;
         self.distanceFromLocation = 660;
+
+        function toggleNearbyRoute(route) {
+            if (geoJsonRouteLayers[route.route]) {
+                var directions = geoJsonRouteLayers[route.route];
+                _.forEach(directions, function (direction) {
+                    map.data.remove(direction[0]);
+                });
+            }
+        }
 
         function createGoogleStopMarker(routeId, directionId, stops) {
             var infoWindow,
@@ -480,20 +490,37 @@ angular.module('pdxStreetcarApp')
 
         function showRouteLine(routeId, directionId) {
 
+            var route;
+
             function enableRouteLine(route) {
                 var featureCollection = {
-                    "type": "FeatureCollection",
-                    "features": []
-                };
+                        "type": "FeatureCollection",
+                        "features": []
+                    },
+                    layer;
+
+                function memoizeGeoJsonLayer(routeId, directionId, layer) {
+                    if (!geoJsonRouteLayers[routeId]) {
+                        geoJsonRouteLayers[routeId] = {};
+                    }
+                    if (!geoJsonRouteLayers[routeId][directionId]) {
+                        geoJsonRouteLayers[routeId][directionId] = layer;
+                    }
+                }
+
                 featureCollection.features.push(route);
-                map.data.addGeoJson(featureCollection);
+                layer = map.data.addGeoJson(featureCollection);
+                memoizeGeoJsonLayer(routeId, directionId, layer);
             }
 
-            _.forEach(geoJsonRoutes.features, function (route) {
-                if (parseInt(route.properties.route_number) === routeId && parseInt(route.properties.direction) === directionId) {
-                    enableRouteLine(route);
-                }
-            });
+            function getGeoJsonFeature() {
+                return _.find(geoJsonRoutes.features, function (route) {
+                    return parseInt(route.properties.route_number) === routeId && parseInt(route.properties.direction) === directionId;
+                });
+            }
+
+            route = getGeoJsonFeature(routeId, directionId);
+            enableRouteLine(route);
         }
 
         function setRouteMarkers(route) {
@@ -676,10 +703,13 @@ angular.module('pdxStreetcarApp')
                 return data;
             }
 
-            function displayFirstRouteLine(data) {
+            function displayNearbyRouteLines(data) {
                 _.forEach(self.nearbyRoutes, function (route) {
-                    showRouteLine(route.route, route.dir[0].dir);
+                    _.forEach(route.dir, function (direction) {
+                        showRouteLine(route.route, direction.dir);
+                    });
                 });
+                return data;
             }
 
             setRadiusAroundUser();
@@ -692,7 +722,7 @@ angular.module('pdxStreetcarApp')
                 .then(provideListOfNearbyStops)
                 .then(provideListOfNearbyRoutes)
                 .then(displayNearbyStops)
-                .then(displayFirstRouteLine);
+                .then(displayNearbyRouteLines);
         }
 
         function toggleRoute(route) {
@@ -773,6 +803,8 @@ angular.module('pdxStreetcarApp')
             }
         }
 
+
+
         self.isStreetCarRoute = trimetUtilities.isStreetCarRoute;
 
         self.isTrimetRoute = trimetUtilities.isTrimetRoute;
@@ -784,6 +816,8 @@ angular.module('pdxStreetcarApp')
         self.toggleParkAndRidesOverlay = toggleParkAndRidesOverlay;
 
         self.toggleRoute = toggleRoute;
+
+        self.toggleNearbyRoute = toggleNearbyRoute;
 
         self.getNearbyRoutes = getNearbyStops;
 
@@ -942,6 +976,8 @@ angular.module('pdxStreetcarApp')
             }
 
             $timeout(runAfterTimeout, 100);
+
+
         }
 
         init();

@@ -37,11 +37,11 @@ div.left-column-container {
   height: 600px;
 }
 div.map-container {
-  height: 600px;
+  height: 450px;
 }
 div.map-container div#map-canvas {
-  height: 600px;
+  height: 450px;
 }
 .container {
-  width: 1150px !important;
+  width: 970px !important;
 }
