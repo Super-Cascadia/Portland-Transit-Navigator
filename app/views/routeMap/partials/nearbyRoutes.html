@@ -13,11 +13,8 @@
     </div>
 
     <div ng-show="routeMap.nearbyStops">
-
-        <button id="removeBtn">Remove</button>
-        <div id="map-canvas"></div>
-
         <div class="panel panel-default"
+             ng-class="{'panel-primary': route.enabled}"
              ng-repeat="route in routeMap.nearbyRoutes | filter: nearbyRouteSearch">
             <!-- Default panel contents -->
             <div class="panel-heading"

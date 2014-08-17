@@ -405,7 +405,6 @@ angular.module('pdxStreetcarApp')
             showBoundaryLayer = false,
             map,
             geoJsonRoutes,
-            geoJsonLayer,
             geoJsonRouteLayers = {},
             markers = {},
             previouslyOpenedInfoWindow,
@@ -415,13 +414,59 @@ angular.module('pdxStreetcarApp')
         self.stopIsSelected = false;
         self.distanceFromLocation = 660;
 
+        function setRouteDisabled(routeId, directionId) {
+            self.nearbyRoutes[routeId].enabled = false;
+            self.nearbyRoutes[routeId].dir[directionId].enabled = false;
+        }
+
+        function setRouteEnabled(routeId, directionId) {
+            self.nearbyRoutes[routeId].enabled = true;
+            self.nearbyRoutes[routeId].dir[directionId].enabled = true;
+        }
+
+        function getGeoJsonFeature(routeId, directionId) {
+            return _.find(geoJsonRoutes.features, function (route) {
+                return parseInt(route.properties.route_number) === routeId && parseInt(route.properties.direction) === directionId;
+            });
+        }
+
+        function removeMapDataLayer(layer) {
+            map.data.remove(layer);
+        }
+
+        function setMapDataLayer(routeId, directionId) {
+            var layer;
+
+            var featureCollection = getGeoJsonFeature(routeId, directionId);
+            layer = map.data.addGeoJson(featureCollection);
+        }
+
         function toggleNearbyRoute(route) {
-            if (geoJsonRouteLayers[route.route]) {
+            var routeId = route.route,
+                directionId;
+            if (geoJsonRouteLayers[routeId]) {
                 var directions = geoJsonRouteLayers[route.route];
-                _.forEach(directions, function (direction) {
-                    map.data.remove(direction[0]);
+                _.forEach(directions, function (direction, key) {
+                    directionId = parseInt(key);
+                    if (direction.enabled === false) {
+                        setRouteEnabled(routeId, directionId);
+                        setMapDataLayer(routeId, directionId);
+                    } else if (direction.enabled === true) {
+                        direction.enabled = false;
+                        removeMapDataLayer(direction.layer[0]);
+                        setRouteDisabled(routeId, directionId);
+                    }
                 });
             }
+        }
+
+        function compriseFeatureCollection(feature) {
+            var featureCollection = {
+                    "type": "FeatureCollection",
+                    "features": []
+                };
+            featureCollection.features.push(feature);
+            return featureCollection;
         }
 
         function createGoogleStopMarker(routeId, directionId, stops) {
@@ -488,39 +533,31 @@ angular.module('pdxStreetcarApp')
             });
         }
 
+        function memoizeGeoJsonLayer(routeId, directionId, layer) {
+            if (!geoJsonRouteLayers[routeId]) {
+                geoJsonRouteLayers[routeId] = {};
+            }
+            if (!geoJsonRouteLayers[routeId][directionId]) {
+                geoJsonRouteLayers[routeId][directionId] = {
+                    layer: layer,
+                    enabled: true
+                };
+            }
+        }
+
+        function enableRouteLine(routeId, directionId, feature) {
+            var featureCollection,
+                layer;
+
+            featureCollection = compriseFeatureCollection(feature);
+            layer = map.data.addGeoJson(featureCollection);
+            memoizeGeoJsonLayer(routeId, directionId, layer);
+            setRouteEnabled(routeId, directionId);
+        }
+
         function showRouteLine(routeId, directionId) {
-
-            var route;
-
-            function enableRouteLine(route) {
-                var featureCollection = {
-                        "type": "FeatureCollection",
-                        "features": []
-                    },
-                    layer;
-
-                function memoizeGeoJsonLayer(routeId, directionId, layer) {
-                    if (!geoJsonRouteLayers[routeId]) {
-                        geoJsonRouteLayers[routeId] = {};
-                    }
-                    if (!geoJsonRouteLayers[routeId][directionId]) {
-                        geoJsonRouteLayers[routeId][directionId] = layer;
-                    }
-                }
-
-                featureCollection.features.push(route);
-                layer = map.data.addGeoJson(featureCollection);
-                memoizeGeoJsonLayer(routeId, directionId, layer);
-            }
-
-            function getGeoJsonFeature() {
-                return _.find(geoJsonRoutes.features, function (route) {
-                    return parseInt(route.properties.route_number) === routeId && parseInt(route.properties.direction) === directionId;
-                });
-            }
-
-            route = getGeoJsonFeature(routeId, directionId);
-            enableRouteLine(route);
+            var feature = getGeoJsonFeature(routeId, directionId);
+            enableRouteLine(routeId, directionId, feature);
         }
 
         function setRouteMarkers(route) {
