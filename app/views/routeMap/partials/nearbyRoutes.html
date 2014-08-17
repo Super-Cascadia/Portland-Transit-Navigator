@@ -17,14 +17,14 @@
              ng-class="{'panel-primary': route.enabled}"
              ng-repeat="route in routeMap.nearbyRoutes | filter: nearbyRouteSearch">
             <!-- Default panel contents -->
-            <div class="panel-heading"
-                 ng-click="routeMap.toggleNearbyRoute(route)">
+            <div class="panel-heading">
                 <small>
                     <strong>{{route.desc}}</strong> | <span class="label label-default">{{route.route}}</span>
                 </small>
                 <div class="pull-right">
                     <input type="checkbox"
-                           ng-checked="direction.enabled === true">
+                           ng-click="routeMap.toggleNearbyRoute(route)"
+                           ng-checked="route.enabled === true">
                 </div>
             </div>
             <!-- Table -->

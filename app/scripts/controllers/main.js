@@ -23,13 +23,14 @@ angular.module('pdxStreetcarApp')
         };
     })
 
-    .service('routeMapInstance', function () {
+    .service('routeMapInstance', function ($q) {
         var self = this;
 
         self.map = null;
 
         self.set = function (map) {
             self.map = map;
+            return map;
         };
 
         self.get = function () {
@@ -39,8 +40,470 @@ angular.module('pdxStreetcarApp')
         self.clear = function () {
             self.map = null;
         };
+
+        self.init = function () {
+            var deferred = $q.defer();
+
+            var latLng,
+                mapOptions,
+                map;
+
+            function setMap() {
+                latLng = new google.maps.LatLng(45.5200, -122.6819);
+                mapOptions = {
+                    center: latLng,
+                    zoom: 10,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    styles: [
+                        {featureType: "administrative", stylers: [
+                            {visibility: "on"}
+                        ]},
+                        {featureType: "poi", stylers: [
+                            {visibility: "simplified"}
+                        ]},
+                        {featureType: "road", elementType: "labels", stylers: [
+                            {visibility: "simplified"}
+                        ]},
+                        {featureType: "water", stylers: [
+                            {visibility: "simplified"}
+                        ]},
+                        {featureType: "transit", stylers: [
+                            {visibility: "simplified"}
+                        ]},
+                        {featureType: "landscape", stylers: [
+                            {visibility: "simplified"}
+                        ]},
+                        {featureType: "road.highway", stylers: [
+                            {visibility: "off"}
+                        ]},
+                        {featureType: "road.local", stylers: [
+                            {visibility: "on"}
+                        ]},
+                        {featureType: "road.highway", elementType: "geometry", stylers: [
+                            {visibility: "on"}
+                        ]},
+                        {featureType: "water", stylers: [
+                            {color: "#84afa3"},
+                            {lightness: 52}
+                        ]},
+                        {stylers: [
+                            {saturation: -17},
+                            {gamma: 0.36}
+                        ]},
+                        {featureType: "transit.line", elementType: "geometry", stylers: [
+                            {color: "#3f518c"}
+                        ]}
+                    ]
+                };
+                if (self.map) {
+                    self.clear();
+                }
+                map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+                if (map) {
+                    self.set(map);
+                    deferred.resolve(map);
+                }
+            }
+
+            setMap();
+
+            return deferred.promise;
+        };
     })
 
+    .service('userLocation', function (routeMapInstance, $q) {
+        var self = this,
+            exports;
+
+        self.setMarker = function () {
+
+            var deferred = $q.defer();
+
+            function handleNoGeolocation(errorFlag) {
+                var content;
+                if (errorFlag) {
+                    content = 'Error: The Geolocation service failed.';
+                } else {
+                    content = 'Error: Your browser doesn\'t support geolocation.';
+                }
+            }
+
+            function checkForGeolocation() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        self.userLatitude = position.coords.latitude;
+                        self.userLongitude = position.coords.longitude;
+                        self.userLatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                        self.userLocationMarker = new google.maps.Marker({
+                            map: routeMapInstance.map,
+                            position: self.userLatLng,
+                            animation: google.maps.Animation.DROP,
+                            clickable: true,
+                            title: "Current Location"
+                        });
+                        google.maps.event.addListener(self.userLocationMarker, 'click', function () {
+                            routeMapInstance.map.panTo(self.userLatitude, self.userLong);
+                        });
+                        deferred.resolve();
+                    }, function () {
+                        handleNoGeolocation(true);
+                    });
+                } else {
+                    // Browser doesn't support Geolocation
+                    handleNoGeolocation(false);
+                }
+            }
+
+            checkForGeolocation();
+
+            return deferred.promise;
+        };
+
+        self.set = function (marker) {
+            self.marker = marker;
+        };
+    })
+
+    .service('RouteData', function ($q, routeMapInstance) {
+        var self = this;
+
+        self.geoJsonRouteData = null;
+        self.routeLayers = {};
+
+        self.retrieveRouteGeoJson = function () {
+                var deferred = $q.defer();
+                $.ajax({
+                    type: 'GET',
+                    url:'data/kml/tm_routes.kml'
+                })
+                    .done(function(xml) {
+                        var geoJson = toGeoJSON.kml(xml);
+                        self.set(geoJson);
+                        deferred.resolve(geoJson);
+                    });
+                return deferred.promise;
+        };
+
+        self.set = function set(data) {
+            self.geoJsonRouteData = data;
+            return data;
+        };
+
+        self.memoizeRouteLayer = function (routeId, directionId, layer) {
+            if (!self.routeLayers[routeId]) {
+                self.routeLayers[routeId] = {};
+            }
+            if (!self.routeLayers[routeId][directionId]) {
+                self.routeLayers[routeId][directionId] = {
+                    layer: layer,
+                    enabled: true
+                };
+            }
+            return layer;
+        };
+
+        self.overwriteRouteLayer = function (routeId, directionId, layer) {
+            if (self.routeLayers[routeId][directionId]) {
+                self.routeLayers[routeId][directionId] = {
+                    layer: layer,
+                    enabled: true
+                };
+            }
+            return layer;
+        };
+
+        self.overwriteRouteLayerOnMap = function (routeId, directionId) {
+            var layer,
+                featureCollection;
+
+            featureCollection = self.findFeature(routeId, directionId);
+            layer = routeMapInstance.map.data.addGeoJson(featureCollection);
+            self.overwriteRouteLayer(routeId, directionId, layer);
+        };
+
+        self.clearRoutelayerOnMap = function (layer) {
+            return routeMapInstance.map.data.remove(layer);
+        };
+
+        self.clear = function clear() {
+            self.geoJsonRouteData = null;
+        };
+
+        self.findFeature = function (routeId, directionId) {
+            return _.find(self.geoJsonRouteData.features, function (route) {
+                return parseInt(route.properties.route_number) === routeId && parseInt(route.properties.direction) === directionId;
+            });
+        };
+
+        function compriseFeatureCollection (feature) {
+            var featureCollection = {
+                "type": "FeatureCollection",
+                "features": []
+            };
+            featureCollection.features.push(feature);
+            return featureCollection;
+        }
+
+        self.initRouteLineDisplay = function(routeId, directionId) {
+            var featureCollection,
+                layer;
+
+            var feature = self.findFeature(routeId, directionId);
+            featureCollection = compriseFeatureCollection(feature);
+            layer = routeMapInstance.map.data.addGeoJson(featureCollection);
+            self.memoizeRouteLayer(routeId, directionId, layer);
+        };
+    })
+
+    .service('StopData', function ($q, trimet, routeMapInstance, RouteColors, RouteData, timeCalcService, feetToMeters, userLocation) {
+        var self = this,
+            nearbyStopsList,
+            nearbyRoutesList,
+            previouslyOpenedInfoWindow,
+            nearbyStopMarkers,
+            stopRadiusIndicator,
+            markers = {};
+
+        function setRouteEnabled(routeId, directionId) {
+            self.nearbyRoutes[routeId].enabled = true;
+            self.nearbyRoutes[routeId].dir[directionId].enabled = true;
+        }
+
+        function showRouteLine(routeId, directionId) {
+            RouteData.initRouteLineDisplay(routeId, directionId);
+            setRouteEnabled(routeId, directionId);
+        }
+
+        self.showArrivalsForStop = function showArrivalsForStop(stopMarker) {
+            return trimet.getArrivalsForStop(stopMarker.stopMetaData.locid)
+                .then(function (data) {
+                    return timeCalcService.calculateRelativeTimes(data, data.resultSet.queryTime)
+                        .then(function (arrivalInfo) {
+                            self.selectedStop = arrivalInfo;
+                            self.remainingTime = self.selectedStop.resultSet.arrival[0].remainingTime;
+                            self.arrivalInfo = self.selectedStop.resultSet.arrival[0];
+                            self.stopIsSelected = true;
+                        });
+                });
+        };
+
+        self.createGoogleStopMarker = function (routeId, directionId, stops) {
+            var infoWindow,
+                infoWindowContent,
+                stopMarker,
+                stopLatLng,
+                pinColor = RouteColors[routeId];
+
+            if (!pinColor) {
+                pinColor = RouteColors['default'];
+            }
+
+            var pinImage = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColor,
+                    new google.maps.Size(21, 34),
+                    new google.maps.Point(0, 0),
+                    new google.maps.Point(10, 34)),
+                pinShadow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
+                    new google.maps.Size(40, 37),
+                    new google.maps.Point(0, 0),
+                    new google.maps.Point(12, 35));
+
+            function addMarkerToMarkerModel(routeId, directionId, stopMarker) {
+                if (!markers[routeId]) {
+                    markers[routeId] = {};
+                }
+                if (!markers[routeId][directionId]) {
+                    markers[routeId][directionId] = [];
+                }
+                markers[routeId][directionId].push(stopMarker);
+            }
+
+            _.forEach(stops, function (stop) {
+                stopLatLng = new google.maps.LatLng(stop.lat, stop.lng);
+                stopMarker = new google.maps.Marker({
+                    map: routeMapInstance.map,
+                    position: stopLatLng,
+                    icon: pinImage,
+                    shadow: pinShadow,
+                    animation: google.maps.Animation.DROP,
+                    clickable: true,
+                    title: stop.desc + ":" + stop.dir
+                });
+
+                infoWindow = new google.maps.InfoWindow();
+                infoWindowContent = stop.desc;
+
+                google.maps.event.addListener(stopMarker, 'click', function () {
+                    if (previouslyOpenedInfoWindow) {
+                        previouslyOpenedInfoWindow.close();
+                    }
+                    infoWindow.setContent(infoWindowContent);
+                    infoWindow.open(routeMapInstance.map, this);
+                    routeMapInstance.map.panTo(this.position);
+                    routeMapInstance.map.setZoom(17);
+                    previouslyOpenedInfoWindow = infoWindow;
+
+                    self.showArrivalsForStop(stopMarker);
+                });
+
+                stopMarker.stopMetaData = stop;
+
+                addMarkerToMarkerModel(routeId, directionId, stopMarker);
+            });
+        };
+
+        self.getNearbyStops = function getNearbyStops(latitude, longitude, distanceFromLocation) {
+            var radiusInFeet = distanceFromLocation || 660;
+
+            function clearNearbyStopMarkers() {
+                _.forEach(nearbyStopMarkers, function (marker) {
+                    marker.setMap(null);
+                });
+            }
+
+            function createNearbyStopMarker(location) {
+
+                function addMarkerToNearbyStopsModel (stopId, stopMarker) {
+                    nearbyStopMarkers[stopId] = stopMarker;
+                }
+
+                if (!nearbyStopMarkers[location.locid]) {
+                    var stopId = location.locid,
+                        latitude =  location.lat,
+                        longitude = location.lng,
+                        pinColor = RouteColors[stopId];
+
+                    if (!pinColor) {
+                        pinColor = RouteColors['default'];
+                    }
+
+                    var pinImage = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColor,
+                            new google.maps.Size(21, 34),
+                            new google.maps.Point(0, 0),
+                            new google.maps.Point(10, 34)),
+                        pinShadow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
+                            new google.maps.Size(40, 37),
+                            new google.maps.Point(0, 0),
+                            new google.maps.Point(12, 35)),
+                        stopLatLng = new google.maps.LatLng(latitude, longitude),
+                        stopMarker = new google.maps.Marker({
+                            map: routeMapInstance.map,
+                            position: stopLatLng,
+                            icon: pinImage,
+                            shadow: pinShadow,
+                            animation: google.maps.Animation.DROP,
+                            clickable: true,
+                            title: location.desc + ":" + location.dir
+                        }),
+
+                        infoWindow = new google.maps.InfoWindow(),
+                        infoWindowContent = location.desc +
+                            ": " +
+                            location.dir;
+
+                    google.maps.event.addListener(stopMarker, 'click', function () {
+                        if (previouslyOpenedInfoWindow) {
+                            previouslyOpenedInfoWindow.close();
+                        }
+                        infoWindow.setContent(infoWindowContent);
+                        infoWindow.open(map, this);
+                        map.panTo(this.position);
+                        map.setZoom(17);
+                        previouslyOpenedInfoWindow = infoWindow;
+
+                        showArrivalsForStop(stopMarker);
+                    });
+
+                    stopMarker.stopMetaData = location;
+
+                    addMarkerToNearbyStopsModel(stopId, stopMarker);
+                }
+            }
+
+            function provideListOfNearbyStops(data) {
+                _.forEach(data.resultSet.location, function (location) {
+                    location.enabled = true;
+                });
+                self.nearbyStops = data.resultSet.location;
+                return data;
+            }
+
+            function provideListOfNearbyRoutes(data) {
+                var routes = {};
+                _.forEach(data.resultSet.location, function (location) {
+                    _.forEach(location.route, function (route) {
+                        if (!routes[route.route]) {
+                            routes[route.route] = route;
+                            routes[route.route].stops = {};
+                        }
+                        if (!routes[route.route].stops) {
+                            routes[route.route].stops = {};
+                        }
+                        if (!routes[route.route].stops[location.locid]) {
+                            routes[route.route].stops[location.locid] = location;
+                        }
+                        if (routes[route.route].dir[0].dir !== route.dir[0].dir) {
+                            routes[route.route].dir.push(route.dir[0]);
+                        }
+                    });
+                });
+                self.nearbyRoutes = routes;
+                return data;
+            }
+
+            function setRadiusAroundUser() {
+                if (stopRadiusIndicator) {
+                    stopRadiusIndicator.setMap(null);
+                }
+
+                stopRadiusIndicator = new google.maps.Circle({
+                    map: routeMapInstance.map,
+                    radius: feetToMeters(radiusInFeet),    // 10 miles in metres
+                    strokeColor: '#AA0000',
+                    fillColor: '#AA0000'
+                });
+
+//                stopRadiusIndicator.bindTo('center', userLocation.marker, 'position');
+            }
+
+            function displayNearbyStops(data) {
+                _.forEach(data.resultSet.location, function (location) {
+                    location.enabled = true;
+                    createNearbyStopMarker(location);
+                });
+                return data;
+            }
+
+            function displayNearbyRouteLines(data) {
+                _.forEach(self.nearbyRoutes, function (route) {
+                    _.forEach(route.dir, function (direction) {
+                        showRouteLine(route.route, direction.dir);
+                    });
+                });
+                return data;
+            }
+
+            setRadiusAroundUser();
+
+            clearNearbyStopMarkers();
+
+            nearbyStopMarkers = {};
+
+            return trimet.getStopsAroundLocation(latitude, longitude, radiusInFeet)
+                .then(provideListOfNearbyStops)
+                .then(provideListOfNearbyRoutes)
+                .then(displayNearbyStops)
+                .then(RouteData.retrieveRouteGeoJson)
+                .then(displayNearbyRouteLines)
+                .then(function () {
+                    var exports = {
+                        nearbyStops: self.nearbyStops,
+                        nearbyRoutes: self.nearbyRoutes
+                    };
+                    return exports;
+                });
+
+        };
+    })
 
     .factory('timeCalcService', function ($q, $log) {
         // Variables
@@ -286,6 +749,7 @@ angular.module('pdxStreetcarApp')
     })
 
 
+
     .directive('psFullHeightLeftCol', ['$parse', '$timeout',
         function () {
             return function (scope, element) {
@@ -389,14 +853,9 @@ angular.module('pdxStreetcarApp')
     })
 
 
-    .controller('RouteMapCtrl', function ($scope, $log, $q, $http, trimet, RouteColors, $timeout, feetToMeters, timeCalcService, formatRetrievedRoutes, trimetUtilities, routeMapInstance) {
+    .controller('RouteMapCtrl', function ($scope, $log, $q, $http, trimet, RouteColors, $timeout, feetToMeters, timeCalcService, formatRetrievedRoutes, trimetUtilities, routeMapInstance, RouteData, StopData, userLocation) {
         'use strict';
         var self = this,
-            userLatitude,
-            userLongitude,
-            userLatLng,
-            userLocationMarker,
-            stopRadiusIndicator,
             trimetBoundaryLayer,
             trimetTransitCenterLayer,
             trimetParkAndRidesLayer,
@@ -404,11 +863,7 @@ angular.module('pdxStreetcarApp')
             showTransitCenterLayer = false,
             showBoundaryLayer = false,
             map,
-            geoJsonRoutes,
-            geoJsonRouteLayers = {},
             markers = {},
-            previouslyOpenedInfoWindow,
-            nearbyStopMarkers = {},
             polylines = {};
 
         self.stopIsSelected = false;
@@ -424,155 +879,33 @@ angular.module('pdxStreetcarApp')
             self.nearbyRoutes[routeId].dir[directionId].enabled = true;
         }
 
-        function getGeoJsonFeature(routeId, directionId) {
-            return _.find(geoJsonRoutes.features, function (route) {
-                return parseInt(route.properties.route_number) === routeId && parseInt(route.properties.direction) === directionId;
-            });
-        }
-
-        function removeMapDataLayer(layer) {
-            map.data.remove(layer);
-        }
-
-        function overwriteGeoJsonLayer(routeId, directionId, layer) {
-            if (geoJsonRouteLayers[routeId][directionId]) {
-                geoJsonRouteLayers[routeId][directionId] = {
-                    layer: layer,
-                    enabled: true
-                };
-            }
-        }
-
-        function setMapDataLayer(routeId, directionId) {
-            var layer;
-
-            var featureCollection = getGeoJsonFeature(routeId, directionId);
-            layer = map.data.addGeoJson(featureCollection);
-            overwriteGeoJsonLayer(routeId, directionId, layer);
-        }
-
         function toggleNearbyRoute(route) {
             var routeId = route.route,
                 directionId;
-            if (geoJsonRouteLayers[routeId]) {
-                var directions = geoJsonRouteLayers[route.route];
+            if (RouteData.routeLayers[routeId]) {
+                var directions = RouteData.routeLayers[route.route];
                 _.forEach(directions, function (direction, key) {
                     directionId = parseInt(key);
                     if (direction.enabled === false) {
                         direction.enabled = true;
                         setRouteEnabled(routeId, directionId);
-                        setMapDataLayer(routeId, directionId);
+                        RouteData.overwriteRouteLayerOnMap(routeId, directionId);
                     } else if (direction.enabled === true) {
                         direction.enabled = false;
                         setRouteDisabled(routeId, directionId);
-                        removeMapDataLayer(direction.layer[0]);
+                        RouteData.clearRoutelayerOnMap(direction.layer[0]);
                     }
                 });
             }
-        }
-
-        function compriseFeatureCollection(feature) {
-            var featureCollection = {
-                    "type": "FeatureCollection",
-                    "features": []
-                };
-            featureCollection.features.push(feature);
-            return featureCollection;
-        }
-
-        function createGoogleStopMarker(routeId, directionId, stops) {
-            var infoWindow,
-                infoWindowContent,
-                stopMarker,
-                stopLatLng,
-                pinColor = RouteColors[routeId];
-
-            if (!pinColor) {
-                pinColor = RouteColors['default'];
-            }
-
-            var pinImage = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColor,
-                    new google.maps.Size(21, 34),
-                    new google.maps.Point(0, 0),
-                    new google.maps.Point(10, 34)),
-                pinShadow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
-                    new google.maps.Size(40, 37),
-                    new google.maps.Point(0, 0),
-                    new google.maps.Point(12, 35));
-
-            function addMarkerToMarkerModel(routeId, directionId, stopMarker) {
-                if (!markers[routeId]) {
-                    markers[routeId] = {};
-                }
-                if (!markers[routeId][directionId]) {
-                    markers[routeId][directionId] = [];
-                }
-                markers[routeId][directionId].push(stopMarker);
-            }
-
-            _.forEach(stops, function (stop) {
-                stopLatLng = new google.maps.LatLng(stop.lat, stop.lng);
-                stopMarker = new google.maps.Marker({
-                    map: map,
-                    position: stopLatLng,
-                    icon: pinImage,
-                    shadow: pinShadow,
-                    animation: google.maps.Animation.DROP,
-                    clickable: true,
-                    title: stop.desc + ":" + stop.dir
-                });
-
-                infoWindow = new google.maps.InfoWindow();
-                infoWindowContent = stop.desc;
-
-                google.maps.event.addListener(stopMarker, 'click', function () {
-                    if (previouslyOpenedInfoWindow) {
-                        previouslyOpenedInfoWindow.close();
-                    }
-                    infoWindow.setContent(infoWindowContent);
-                    infoWindow.open(map, this);
-                    map.panTo(this.position);
-                    map.setZoom(17);
-                    previouslyOpenedInfoWindow = infoWindow;
-
-                    showArrivalsForStop(stopMarker);
-                });
-
-                stopMarker.stopMetaData = stop;
-
-                addMarkerToMarkerModel(routeId, directionId, stopMarker);
-            });
-        }
-
-        function memoizeGeoJsonLayer(routeId, directionId, layer) {
-            if (!geoJsonRouteLayers[routeId]) {
-                geoJsonRouteLayers[routeId] = {};
-            }
-            if (!geoJsonRouteLayers[routeId][directionId]) {
-                geoJsonRouteLayers[routeId][directionId] = {
-                    layer: layer,
-                    enabled: true
-                };
-            }
-        }
-
-        function enableRouteLine(routeId, directionId, feature) {
-            var featureCollection,
-                layer;
-
-            featureCollection = compriseFeatureCollection(feature);
-            layer = map.data.addGeoJson(featureCollection);
-            memoizeGeoJsonLayer(routeId, directionId, layer);
-            setRouteEnabled(routeId, directionId);
         }
 
         function showRouteLine(routeId, directionId) {
-            var feature = getGeoJsonFeature(routeId, directionId);
-            enableRouteLine(routeId, directionId, feature);
+            RouteData.initRouteLineDisplay(routeId, directionId);
+            setRouteEnabled(routeId, directionId);
         }
 
         function setRouteMarkers(route) {
-            createGoogleStopMarker(route.routeId, route.directionId, route.stops);
+            StopData.createGoogleStopMarker(route.routeId, route.directionId, route.stops);
             showRouteLine(route.routeId, route.directionId);
         }
 
@@ -613,165 +946,7 @@ angular.module('pdxStreetcarApp')
             }
         }
 
-        function showArrivalsForStop(stopMarker) {
-            return trimet.getArrivalsForStop(stopMarker.stopMetaData.locid)
-                .then(function (data) {
-                    return timeCalcService.calculateRelativeTimes(data, data.resultSet.queryTime)
-                        .then(function (arrivalInfo) {
-                            self.selectedStop = arrivalInfo;
-                            self.remainingTime = self.selectedStop.resultSet.arrival[0].remainingTime;
-                            self.arrivalInfo = self.selectedStop.resultSet.arrival[0];
-                            self.stopIsSelected = true;
-                        });
-                });
-        }
-
         // User Interaction
-
-        function getNearbyStops() {
-
-            var radiusInFeet = self.distanceFromLocation;
-
-            function clearNearbyStopMarkers() {
-                _.forEach(nearbyStopMarkers, function (marker) {
-                    marker.setMap(null);
-                });
-            }
-
-            function createNearbyStopMarker(location) {
-
-                function addMarkerToNearbyStopsModel (stopId, stopMarker) {
-                    nearbyStopMarkers[stopId] = stopMarker;
-                }
-
-                if (!nearbyStopMarkers[location.locid]) {
-                    var stopId = location.locid,
-                        latitude =  location.lat,
-                        longitude = location.lng,
-                        pinColor = RouteColors[stopId];
-
-                    if (!pinColor) {
-                        pinColor = RouteColors['default'];
-                    }
-
-                    var pinImage = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColor,
-                            new google.maps.Size(21, 34),
-                            new google.maps.Point(0, 0),
-                            new google.maps.Point(10, 34)),
-                        pinShadow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
-                            new google.maps.Size(40, 37),
-                            new google.maps.Point(0, 0),
-                            new google.maps.Point(12, 35)),
-                        stopLatLng = new google.maps.LatLng(latitude, longitude),
-                        stopMarker = new google.maps.Marker({
-                            map: map,
-                            position: stopLatLng,
-                            icon: pinImage,
-                            shadow: pinShadow,
-                            animation: google.maps.Animation.DROP,
-                            clickable: true,
-                            title: location.desc + ":" + location.dir
-                        }),
-
-                        infoWindow = new google.maps.InfoWindow(),
-                        infoWindowContent = location.desc +
-                            ": " +
-                            location.dir;
-
-                    google.maps.event.addListener(stopMarker, 'click', function () {
-                        if (previouslyOpenedInfoWindow) {
-                            previouslyOpenedInfoWindow.close();
-                        }
-                        infoWindow.setContent(infoWindowContent);
-                        infoWindow.open(map, this);
-                        map.panTo(this.position);
-                        map.setZoom(17);
-                        previouslyOpenedInfoWindow = infoWindow;
-
-                        showArrivalsForStop(stopMarker);
-                    });
-
-                    stopMarker.stopMetaData = location;
-
-                    addMarkerToNearbyStopsModel(stopId, stopMarker);
-                }
-            }
-
-            function provideListOfNearbyStops(data) {
-                _.forEach(data.resultSet.location, function (location) {
-                    location.enabled = true;
-                });
-                self.nearbyStops = data.resultSet.location;
-                return data;
-            }
-
-            function provideListOfNearbyRoutes(data) {
-                var routes = {};
-                _.forEach(data.resultSet.location, function (location) {
-                    _.forEach(location.route, function (route) {
-                        if (!routes[route.route]) {
-                            routes[route.route] = route;
-                            routes[route.route].stops = {};
-                        }
-                        if (!routes[route.route].stops) {
-                            routes[route.route].stops = {};
-                        }
-                        if (!routes[route.route].stops[location.locid]) {
-                            routes[route.route].stops[location.locid] = location;
-                        }
-                        if (routes[route.route].dir[0].dir !== route.dir[0].dir) {
-                            routes[route.route].dir.push(route.dir[0]);
-                        }
-                    });
-                });
-                self.nearbyRoutes = routes;
-                return data;
-            }
-
-            function setRadiusAroundUser() {
-                if (stopRadiusIndicator) {
-                    stopRadiusIndicator.setMap(null);
-                }
-
-                stopRadiusIndicator = new google.maps.Circle({
-                    map: map,
-                    radius: feetToMeters(radiusInFeet),    // 10 miles in metres
-                    strokeColor: '#AA0000',
-                    fillColor: '#AA0000'
-                });
-
-                stopRadiusIndicator.bindTo('center', userLocationMarker, 'position');
-            }
-
-            function displayNearbyStops(data) {
-                _.forEach(data.resultSet.location, function (location) {
-                    location.enabled = true;
-                    createNearbyStopMarker(location);
-                });
-                return data;
-            }
-
-            function displayNearbyRouteLines(data) {
-                _.forEach(self.nearbyRoutes, function (route) {
-                    _.forEach(route.dir, function (direction) {
-                        showRouteLine(route.route, direction.dir);
-                    });
-                });
-                return data;
-            }
-
-            setRadiusAroundUser();
-
-            clearNearbyStopMarkers();
-
-            nearbyStopMarkers = {};
-
-            trimet.getStopsAroundLocation(userLatitude, userLongitude, radiusInFeet)
-                .then(provideListOfNearbyStops)
-                .then(provideListOfNearbyRoutes)
-                .then(displayNearbyStops)
-                .then(displayNearbyRouteLines);
-        }
 
         function toggleRoute(route) {
             var origEnabledValue;
@@ -867,7 +1042,7 @@ angular.module('pdxStreetcarApp')
 
         self.toggleNearbyRoute = toggleNearbyRoute;
 
-        self.getNearbyRoutes = getNearbyStops;
+        self.getNearbyRoutes = StopData.getNearbyStops(self.userLatitude, self.userLongitude, self.distanceFromLocation);
 
         self.getStreetCarData = getStreetCarData;
 
@@ -879,8 +1054,22 @@ angular.module('pdxStreetcarApp')
 
         function init() {
 
+            function loadLayers() {
+                trimetBoundaryLayer = new google.maps.KmlLayer({
+                    url: 'http://developer.trimet.org/gis/data/tm_boundary.kml'
+                });
+                trimetTransitCenterLayer = new google.maps.KmlLayer({
+                    url: 'http://developer.trimet.org/gis/data/tm_tran_cen.kml'
+                });
+                trimetParkAndRidesLayer = new google.maps.KmlLayer({
+                    url: 'http://developer.trimet.org/gis/data/tm_parkride.kml'
+                });
+            }
+
             function setUserLocationMarker() {
-                var deferred = $q.defer();
+                var deferred = $q.defer(),
+                    userLocationMarker,
+                    userLatLng;
 
                 function handleNoGeolocation(errorFlag) {
                     var content;
@@ -894,20 +1083,25 @@ angular.module('pdxStreetcarApp')
                 function checkForGeolocation() {
                     if (navigator.geolocation) {
                         navigator.geolocation.getCurrentPosition(function (position) {
-                            userLatitude = position.coords.latitude;
-                            userLongitude = position.coords.longitude;
+                            self.userLatitude = position.coords.latitude;
+                            self.userLongitude = position.coords.longitude;
                             userLatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
                             userLocationMarker = new google.maps.Marker({
-                                map: map,
+                                map: routeMapInstance.map,
                                 position: userLatLng,
                                 animation: google.maps.Animation.DROP,
                                 clickable: true,
                                 title: "Current Location"
                             });
+                            userLocation.set(userLocationMarker);
                             google.maps.event.addListener(userLocationMarker, 'click', function () {
                                 map.panTo(userLatLng);
                             });
-                            deferred.resolve();
+                            var exports = {
+                                latitude: self.userLatitude,
+                                longitude: self.userLongitude
+                            };
+                            deferred.resolve(exports);
                         }, function () {
                             handleNoGeolocation(true);
                             deferred.reject();
@@ -924,108 +1118,20 @@ angular.module('pdxStreetcarApp')
                 return deferred.promise;
             }
 
-            function createMap() {
-                var deferred = $q.defer();
-
-                var latLng,
-                    mapOptions,
-                    transitLayer;
-
-                latLng = new google.maps.LatLng(45.5200, -122.6819);
-                mapOptions = {
-                    center: latLng,
-                    zoom: 13,
-                    mapTypeId: google.maps.MapTypeId.ROADMAP,
-                    styles: [
-                        {featureType: "administrative", stylers: [
-                            {visibility: "on"}
-                        ]},
-                        {featureType: "poi", stylers: [
-                            {visibility: "simplified"}
-                        ]},
-                        {featureType: "road", elementType: "labels", stylers: [
-                            {visibility: "simplified"}
-                        ]},
-                        {featureType: "water", stylers: [
-                            {visibility: "simplified"}
-                        ]},
-                        {featureType: "transit", stylers: [
-                            {visibility: "simplified"}
-                        ]},
-                        {featureType: "landscape", stylers: [
-                            {visibility: "simplified"}
-                        ]},
-                        {featureType: "road.highway", stylers: [
-                            {visibility: "off"}
-                        ]},
-                        {featureType: "road.local", stylers: [
-                            {visibility: "on"}
-                        ]},
-                        {featureType: "road.highway", elementType: "geometry", stylers: [
-                            {visibility: "on"}
-                        ]},
-                        {featureType: "water", stylers: [
-                            {color: "#84afa3"},
-                            {lightness: 52}
-                        ]},
-                        {stylers: [
-                            {saturation: -17},
-                            {gamma: 0.36}
-                        ]},
-                        {featureType: "transit.line", elementType: "geometry", stylers: [
-                            {color: "#3f518c"}
-                        ]}
-                    ]
-                };
-                if (routeMapInstance.map) {
-                    routeMapInstance.clear();
-                }
-                map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-                routeMapInstance.set(map);
-                transitLayer = new google.maps.TransitLayer();
-                //                transitLayer.setMap(map);
-
-                deferred.resolve();
-
-                return deferred.promise;
-            }
-
-            function loadLayers() {
-                trimetBoundaryLayer = new google.maps.KmlLayer({
-                    url: 'http://developer.trimet.org/gis/data/tm_boundary.kml'
-                });
-                trimetTransitCenterLayer = new google.maps.KmlLayer({
-                    url: 'http://developer.trimet.org/gis/data/tm_tran_cen.kml'
-                });
-                trimetParkAndRidesLayer = new google.maps.KmlLayer({
-                    url: 'http://developer.trimet.org/gis/data/tm_parkride.kml'
-                });
-            }
-
-            function getRouteGeoJson() {
-                var deferred = $q.defer();
-                $.ajax({
-                    type: 'GET',
-                    url:'data/kml/tm_routes.kml'
-                })
-                    .done(function(xml) {
-                        geoJsonRoutes = toGeoJSON.kml(xml);
-                        deferred.resolve(geoJsonRoutes);
-                    });
-                return deferred.promise;
-            }
-
             function runAfterTimeout() {
-                createMap()
-                    .then(loadLayers)
+                routeMapInstance.init()
                     .then(setUserLocationMarker)
-                    .then(getRouteGeoJson)
-                    .then(getNearbyStops);
+                    .then(function (exports) {
+                        return StopData.getNearbyStops(exports.latitude, exports.longitude, 660);
+                    })
+                    .then(function (exports) {
+                        self.nearbyRoutes = exports.nearbyRoutes;
+                        self.nearbyStops = exports.nearbyStops;
+                        return exports;
+                    });
             }
 
             $timeout(runAfterTimeout, 100);
-
-
         }
 
         init();
@@ -1036,19 +1142,6 @@ angular.module('pdxStreetcarApp')
         // Variables
         $scope.showStreetcarServiceWarning = false;
         $scope.streetcarScheduleMessage = "";
-
-        function geoLocate() {
-            $log.log("Using Geolocation to find nearby stops.");
-            geolocation.getLocation()
-                .then(function (data) {
-                    $scope.distanceFeet = 1320;
-                    $scope.coords = {
-                        lat: data.coords.latitude,
-                        long: data.coords.longitude
-                    };
-                    $location.path('/nearbyStops/' + $scope.coords.lat + '/' + $scope.coords.long + '/' + $scope.distanceFeet);
-                });
-        }
 
         function determineIfServiceIsAvailable() {
             timeCalcService.isStreetCarOutOfService()
@@ -1062,10 +1155,6 @@ angular.module('pdxStreetcarApp')
                     $scope.showStreetcarServiceWarning = true;
                 });
         }
-
-        $scope.geoLocate = function () {
-            geoLocate();
-        };
 
         determineIfServiceIsAvailable();
     });
