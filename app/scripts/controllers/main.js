@@ -434,11 +434,21 @@ angular.module('pdxStreetcarApp')
             map.data.remove(layer);
         }
 
+        function overwriteGeoJsonLayer(routeId, directionId, layer) {
+            if (geoJsonRouteLayers[routeId][directionId]) {
+                geoJsonRouteLayers[routeId][directionId] = {
+                    layer: layer,
+                    enabled: true
+                };
+            }
+        }
+
         function setMapDataLayer(routeId, directionId) {
             var layer;
 
             var featureCollection = getGeoJsonFeature(routeId, directionId);
             layer = map.data.addGeoJson(featureCollection);
+            overwriteGeoJsonLayer(routeId, directionId, layer);
         }
 
         function toggleNearbyRoute(route) {
@@ -449,12 +459,13 @@ angular.module('pdxStreetcarApp')
                 _.forEach(directions, function (direction, key) {
                     directionId = parseInt(key);
                     if (direction.enabled === false) {
+                        direction.enabled = true;
                         setRouteEnabled(routeId, directionId);
                         setMapDataLayer(routeId, directionId);
                     } else if (direction.enabled === true) {
                         direction.enabled = false;
-                        removeMapDataLayer(direction.layer[0]);
                         setRouteDisabled(routeId, directionId);
+                        removeMapDataLayer(direction.layer[0]);
                     }
                 });
             }
