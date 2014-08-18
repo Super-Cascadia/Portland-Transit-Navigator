@@ -164,11 +164,15 @@ angular.module('pdxStreetcarApp')
         };
     })
 
-    .service('RouteData', function ($q, routeMapInstance) {
+    .service('RouteData', function ($q, routeMapInstance, trimet, formatRetrievedRoutes) {
         var self = this;
 
         self.geoJsonRouteData = null;
+        self.streetcarData = null;
+        self.maxRailData = null;
+        self.busRoutesData = null;
         self.routeLayers = {};
+        self.stopMarkers = {};
 
         self.retrieveRouteGeoJson = function () {
                 var deferred = $q.defer();
@@ -253,12 +257,81 @@ angular.module('pdxStreetcarApp')
             layer = routeMapInstance.map.data.addGeoJson(featureCollection);
             self.memoizeRouteLayer(routeId, directionId, layer);
         };
+
+        function toggleEnabledFlags(route) {
+            function setAllMapMarkers(map, route, direction) {
+                var stopMarkers = markers[route][direction];
+                if (stopMarkers && _.isArray(stopMarkers)) {
+                    _.forEach(stopMarkers, function (marker) {
+                        marker.setMap(map);
+                    });
+                }
+            }
+
+            function hideRoute(route, direction) {
+                setAllMapMarkers(null, route, direction);
+            }
+
+            function showRoute(route, direction) {
+                setAllMapMarkers(routeMapInstance.map, route, direction);
+            }
+
+            if (route.enabled === true) {
+                route.enabled = false;
+                hideRoute(route.routeId, route.directionId);
+            } else if (route.enabled === false) {
+                route.enabled = true;
+                showRoute(route.routeId, route.directionId);
+            }
+        }
+
+        self.enableRoute = function (route) {
+            if (!self.stopMarkers[route.routeId]) {
+                self.stopMarkers[route.routeId] = {};
+            }
+            if (!self.stopMarkers[route.routeId][route.directionId]) {
+                self.initRouteLineDisplay(route.routeId, route.directionId);
+            }
+
+            if (route.enabled === true) {
+
+            } else if (route.enabled === false) {
+
+            }
+
+            toggleEnabledFlags(route);
+        };
+
+        self.streetCar = function () {
+            return trimet.streetcar.getRoutes()
+                .then(formatRetrievedRoutes)
+                .then(function (result) {
+                    self.streetcarData = result;
+                    return result;
+                });
+        };
+
+        self.bus = function () {
+            return trimet.bus.getRoutes()
+                .then(formatRetrievedRoutes)
+                .then(function (result) {
+                    self.busRoutesData = result;
+                    return result;
+                });
+        };
+
+        self.trimet = function () {
+            return trimet.rail.getRoutes()
+                .then(formatRetrievedRoutes)
+                .then(function (result) {
+                    self.maxRailData = result;
+                    return result;
+                });
+        };
     })
 
     .service('StopData', function ($q, trimet, routeMapInstance, RouteColors, RouteData, timeCalcService, feetToMeters, userLocation) {
         var self = this,
-            nearbyStopsList,
-            nearbyRoutesList,
             previouslyOpenedInfoWindow,
             nearbyStopMarkers,
             stopRadiusIndicator,
@@ -405,12 +478,12 @@ angular.module('pdxStreetcarApp')
                             previouslyOpenedInfoWindow.close();
                         }
                         infoWindow.setContent(infoWindowContent);
-                        infoWindow.open(map, this);
-                        map.panTo(this.position);
-                        map.setZoom(17);
+                        infoWindow.open(routeMapInstance.map, this);
+                        routeMapInstance.map.panTo(this.position);
+                        routeMapInstance.map.setZoom(17);
                         previouslyOpenedInfoWindow = infoWindow;
 
-                        showArrivalsForStop(stopMarker);
+                        self.showArrivalsForStop(stopMarker);
                     });
 
                     stopMarker.stopMetaData = location;
@@ -862,9 +935,7 @@ angular.module('pdxStreetcarApp')
             showParkAndRidesLayer = false,
             showTransitCenterLayer = false,
             showBoundaryLayer = false,
-            map,
-            markers = {},
-            polylines = {};
+            map;
 
         self.stopIsSelected = false;
         self.distanceFromLocation = 660;
@@ -883,7 +954,7 @@ angular.module('pdxStreetcarApp')
             var routeId = route.route,
                 directionId;
             if (RouteData.routeLayers[routeId]) {
-                var directions = RouteData.routeLayers[route.route];
+                var directions = RouteData.routeLayers[routeId];
                 _.forEach(directions, function (direction, key) {
                     directionId = parseInt(key);
                     if (direction.enabled === false) {
@@ -899,107 +970,29 @@ angular.module('pdxStreetcarApp')
             }
         }
 
-        function showRouteLine(routeId, directionId) {
-            RouteData.initRouteLineDisplay(routeId, directionId);
-            setRouteEnabled(routeId, directionId);
-        }
-
-        function setRouteMarkers(route) {
-            StopData.createGoogleStopMarker(route.routeId, route.directionId, route.stops);
-            showRouteLine(route.routeId, route.directionId);
-        }
-
-        function toggleEnabledFlags(route) {
-            function setAllMapMarkers(map, route, direction) {
-                var stopMarkers = markers[route][direction];
-                if (stopMarkers && _.isArray(stopMarkers)) {
-                    _.forEach(stopMarkers, function (marker) {
-                        marker.setMap(map);
-                    });
-                }
-            }
-
-            function setAllMapPolylines(map, route, direction) {
-                if (polylines[route][direction]) {
-                    _.forEach(polylines[route][direction], function (polyline) {
-                        polyline.setMap(map);
-                    });
-                }
-            }
-
-            function hideRoute(route, direction) {
-                setAllMapMarkers(null, route, direction);
-                setAllMapPolylines(null, route, direction);
-            }
-
-            function showRoute(route, direction) {
-                setAllMapPolylines(map, route, direction);
-                setAllMapMarkers(map, route, direction);
-            }
-
-            if (route.enabled === true) {
-                route.enabled = false;
-                hideRoute(route.routeId, route.directionId);
-            } else if (route.enabled === false) {
-                route.enabled = true;
-                showRoute(route.routeId, route.directionId);
-            }
-        }
-
         // User Interaction
 
         function toggleRoute(route) {
-            var origEnabledValue;
-
-            function correctEnabledValue(route) {
-                if (route.enabled !== origEnabledValue) {
-                    route.enabled = origEnabledValue;
-                }
-            }
-
-            if (route) {
-                origEnabledValue = route.enabled;
-
-                correctEnabledValue(route);
-
-                if (!markers[route.routeId]) {
-                    markers[route.routeId] = {};
-                }
-                if (!markers[route.routeId][route.directionId]) {
-                    setRouteMarkers(route);
-                }
-                toggleEnabledFlags(route);
-            }
+            RouteData.enableRoute(route);
+            StopData.createGoogleStopMarker(route.routeId, route.directionId, route.stops);
         }
 
         function getStreetCarData() {
-            trimet.streetcar.getRoutes()
-                .then(formatRetrievedRoutes)
-                .then(function (result) {
-                    self.streetcar = result;
-                });
+            self.streetcar = RouteData.streetCar();
         }
 
         function getTrimetData() {
-            trimet.rail.getRoutes()
-                .then(formatRetrievedRoutes)
-                .then(function (result) {
-                    self.maxRail = result;
-                });
+            self.maxrail = RouteData.trimet();
         }
 
         function getBusData() {
-            trimet.bus.getRoutes()
-                .then(formatRetrievedRoutes)
-                .then(function (result) {
-                    self.busRoutes = result;
-                });
+            self.busRoutes = RouteData.bus();
         }
 
         function toggleServiceBoundaryOverlay() {
             if (!showTransitCenterLayer) {
                 showTransitCenterLayer = true;
-                trimetBoundaryLayer.setMap(map);
+                trimetBoundaryLayer.setMap(routeMapInstance.map);
             } else {
                 showTransitCenterLayer = false;
                 trimetBoundaryLayer.setMap(null);
@@ -1009,7 +1002,7 @@ angular.module('pdxStreetcarApp')
         function toggleTransitCenterOverlay() {
             if (!showBoundaryLayer) {
                 showBoundaryLayer = true;
-                trimetTransitCenterLayer.setMap(map);
+                trimetTransitCenterLayer.setMap(routeMapInstance.map);
             } else {
                 showBoundaryLayer = false;
                 trimetTransitCenterLayer.setMap(null);
@@ -1019,35 +1012,23 @@ angular.module('pdxStreetcarApp')
         function toggleParkAndRidesOverlay() {
             if (!showParkAndRidesLayer) {
                 showParkAndRidesLayer = true;
-                trimetParkAndRidesLayer.setMap(map);
+                trimetParkAndRidesLayer.setMap(routeMapInstance.map);
             } else {
                 showParkAndRidesLayer = false;
                 trimetParkAndRidesLayer.setMap(null);
             }
         }
 
-
-
         self.isStreetCarRoute = trimetUtilities.isStreetCarRoute;
-
         self.isTrimetRoute = trimetUtilities.isTrimetRoute;
-
         self.toggleServiceBoundaryOverlay = toggleServiceBoundaryOverlay;
-
         self.toggleTransitCenterOverlay = toggleTransitCenterOverlay;
-
         self.toggleParkAndRidesOverlay = toggleParkAndRidesOverlay;
-
         self.toggleRoute = toggleRoute;
-
         self.toggleNearbyRoute = toggleNearbyRoute;
-
         self.getNearbyRoutes = StopData.getNearbyStops(self.userLatitude, self.userLongitude, self.distanceFromLocation);
-
         self.getStreetCarData = getStreetCarData;
-
         self.getTrimetData = getTrimetData;
-
         self.getBusData = getBusData;
 
         // Init
