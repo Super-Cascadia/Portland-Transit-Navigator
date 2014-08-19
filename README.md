@@ -9,26 +9,26 @@ This project started as a result of living in the South Waterfront neighborhood 
 
 I've since moved out of the service area of the Max or the Portland Streetcar, but I still continue to work on this in the interest of keeping my Javascript skills sharp, and to further my love for mapping & visualizations.
 
-###Project Roadmap
+####Project Roadmap
 
-####Near Future
+#####Near Future
 
 - Route Searching
 - Stop Searching
 - Better UI than the current bootstrap-bland implementation
 
-####Eventually
+#####Eventually
 
--Saved Stops
--Mobile Support
--Car2Go Support
--Kiosk Mode
+- Saved Stops
+- Mobile Support
+- Car2Go Support
+- Kiosk Mode
 
-###Contributors
+####Contributors
 
 I'm currently the only contributor on this project.  Want to help?  I'd love the help.  Shoot me an [email](mailto:jameson.nyeholt@gmail.com) regarding how you want to contribute, fork it, or submit a pull request.
 
-### License
+#### License
 
 The MIT License (MIT)
 
