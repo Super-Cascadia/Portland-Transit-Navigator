@@ -428,6 +428,17 @@ angular.module('pdxStreetcarApp')
     })
 
 
+    .service('ArrivalData', function (trimet, timeCalcService) {
+        var self = this;
+
+        self.getArrivalsForStop = function (stopMarker) {
+            return trimet.getArrivalsForStop(stopMarker.stopMetaData.locid)
+                .then(function (data) {
+                    return timeCalcService.calculateRelativeTimes(data, data.resultSet.queryTime);
+                });
+        };
+    })
+
     .service('RouteData', function ($q, routeMapInstance, trimet, formatRetrievedRoutes) {
         var self = this;
 
@@ -435,8 +446,11 @@ angular.module('pdxStreetcarApp')
         self.streetcarData = null;
         self.maxRailData = null;
         self.busRoutesData = null;
+
         self.routeLayers = {};
         self.stopMarkers = {};
+        self.nearbyRoutes = {};
+        self.routes = {};
 
         self.retrieveRouteGeoJson = function () {
                 var deferred = $q.defer();
@@ -497,9 +511,9 @@ angular.module('pdxStreetcarApp')
             self.geoJsonRouteData = null;
         };
 
-        self.findFeature = function (routeId, directionId) {
-            return _.find(self.geoJsonRouteData.features, function (route) {
-                return parseInt(route.properties.route_number) === routeId && parseInt(route.properties.direction) === directionId;
+        self.findFeature = function (routeId) {
+            return _.forEach(self.geoJsonRouteData.features, function (route) {
+                return parseInt(route.properties.route_number) === routeId;
             });
         };
 
@@ -512,14 +526,19 @@ angular.module('pdxStreetcarApp')
             return featureCollection;
         }
 
-        self.initRouteLineDisplay = function(routeId, directionId) {
+        self.initRouteLineDisplay = function(routeId) {
             var featureCollection,
                 layer;
 
-            var feature = self.findFeature(routeId, directionId);
-            featureCollection = compriseFeatureCollection(feature);
-            layer = routeMapInstance.map.data.addGeoJson(featureCollection);
-            self.memoizeRouteLayer(routeId, directionId, layer);
+            _.forEach(self.geoJsonRouteData.features, function (feature) {
+                if (parseInt(feature.properties.route_number) === routeId) {
+                    var directionId = parseInt(feature.properties.direction);
+                    featureCollection = compriseFeatureCollection(feature);
+                    layer = routeMapInstance.map.data.addGeoJson(featureCollection);
+                    self.memoizeRouteLayer(routeId, directionId, layer);
+                }
+            });
+
         };
 
         function toggleEnabledFlags(route) {
@@ -592,16 +611,17 @@ angular.module('pdxStreetcarApp')
                     return result;
                 });
         };
-    })
 
-    .service('ArrivalData', function (trimet, timeCalcService) {
-        var self = this;
-
-        self.getArrivalsForStop = function (stopMarker) {
-            return trimet.getArrivalsForStop(stopMarker.stopMetaData.locid)
-                .then(function (data) {
-                    return timeCalcService.calculateRelativeTimes(data, data.resultSet.queryTime);
+        self.clearNearbyRoutes = function () {
+            if (!_.isEmpty(self.routeLayers)) {
+                _.forEach(self.routeLayers, function (route, routeKey) {
+                    _.forEach(route, function (directions, directionKey) {
+                        self.clearRoutelayerOnMap(directions.layer[0]);
+                        delete self.routeLayers[routeKey][directionKey];
+                    });
                 });
+            }
+            self.routeLayers = {};
         };
     })
 
@@ -708,12 +728,13 @@ angular.module('pdxStreetcarApp')
     })
 
 
+
     .service('NearbyService', function (StopData, RouteData, trimet, RouteColors, routeMapInstance, feetToMeters) {
         var self = this;
 
         self.nearbyStopMarkers = {};
         self.nearbyStops = null;
-        self.nearbyRoutes = null;
+        self.nearbyRoutes = {};
 
         self.get = function get(latitude, longitude, distanceFromLocation) {
             var radiusInFeet = distanceFromLocation || 660,
@@ -789,21 +810,18 @@ angular.module('pdxStreetcarApp')
             }
 
             function displayNearbyRouteLines(data) {
-                function showRouteLine(routeId, directionId) {
-                    RouteData.initRouteLineDisplay(routeId, directionId);
-                    self.nearbyRoutes[routeId].enabled = true;
-                    self.nearbyRoutes[routeId].dir[directionId].enabled = true;
-                }
                 _.forEach(self.nearbyRoutes, function (route) {
-                    _.forEach(route.dir, function (direction) {
-                        showRouteLine(route.route, direction.dir);
-                    });
+                    var routeId = route.route;
+                    RouteData.initRouteLineDisplay(routeId);
                 });
+
                 return data;
             }
 
             setRadiusAroundUser();
             StopData.clearNearbyStopMarkers();
+            RouteData.clearNearbyRoutes();
+            self.nearbyRoutes = {};
 
             return trimet.getStopsAroundLocation(latitude, longitude, radiusInFeet)
                 .then(provideListOfNearbyStops)
@@ -811,7 +829,7 @@ angular.module('pdxStreetcarApp')
                 .then(createStopMarkersForNearbyStops)
                 .then(RouteData.retrieveRouteGeoJson)
                 .then(displayNearbyRouteLines)
-                .then(function () {
+                .then(function setScopeVariables() {
                     return {
                         nearbyStops: self.nearbyStops,
                         nearbyRoutes: self.nearbyRoutes
