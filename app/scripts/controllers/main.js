@@ -451,6 +451,7 @@ angular.module('pdxStreetcarApp')
         self.stopMarkers = {};
         self.nearbyRoutes = {};
         self.routes = {};
+        self.routesDisplayed = 0;
 
         self.retrieveRouteGeoJson = function () {
                 var deferred = $q.defer();
@@ -469,42 +470,6 @@ angular.module('pdxStreetcarApp')
         self.set = function set(data) {
             self.geoJsonRouteData = data;
             return data;
-        };
-
-        self.memoizeRouteLayer = function (routeId, directionId, layer) {
-            if (!self.routeLayers[routeId]) {
-                self.routeLayers[routeId] = {};
-            }
-            if (!self.routeLayers[routeId][directionId]) {
-                self.routeLayers[routeId][directionId] = {
-                    layer: layer,
-                    enabled: true
-                };
-            }
-            return layer;
-        };
-
-        self.overwriteRouteLayer = function (routeId, directionId, layer) {
-            if (self.routeLayers[routeId][directionId]) {
-                self.routeLayers[routeId][directionId] = {
-                    layer: layer,
-                    enabled: true
-                };
-            }
-            return layer;
-        };
-
-        self.overwriteRouteLayerOnMap = function (routeId, directionId) {
-            var layer,
-                featureCollection;
-
-            featureCollection = self.findFeature(routeId, directionId);
-            layer = routeMapInstance.map.data.addGeoJson(featureCollection);
-            self.overwriteRouteLayer(routeId, directionId, layer);
-        };
-
-        self.clearRoutelayerOnMap = function (layer) {
-            return routeMapInstance.map.data.remove(layer);
         };
 
         self.clear = function clear() {
@@ -535,7 +500,9 @@ angular.module('pdxStreetcarApp')
                     var directionId = parseInt(feature.properties.direction);
                     featureCollection = compriseFeatureCollection(feature);
                     layer = routeMapInstance.map.data.addGeoJson(featureCollection);
+                    console.log(feature.properties);
                     self.memoizeRouteLayer(routeId, directionId, layer);
+                    self.routesDisplayed += 1;
                 }
             });
 
@@ -612,6 +579,8 @@ angular.module('pdxStreetcarApp')
                 });
         };
 
+        // Nearby Routes
+
         self.clearNearbyRoutes = function () {
             if (!_.isEmpty(self.routeLayers)) {
                 _.forEach(self.routeLayers, function (route, routeKey) {
@@ -622,6 +591,51 @@ angular.module('pdxStreetcarApp')
                 });
             }
             self.routeLayers = {};
+        };
+
+        self.memoizeRouteLayer = function (routeId, directionId, layer) {
+            if (!self.routeLayers[routeId]) {
+                self.routeLayers[routeId] = [];
+            }
+            self.routeLayers[routeId].push({
+                enabled: true,
+                directionId: directionId,
+                layer: layer
+            });
+            return layer;
+        };
+
+        self.overwriteRouteLayer = function (routeId, directionId, layer) {
+            if (self.routeLayers[routeId]) {
+                self.routeLayers[routeId] = [];
+                self.routeLayers[routeId].push({
+                    layer: layer,
+                    directionId: directionId,
+                    enabled: true
+                });
+            }
+            return layer;
+        };
+
+        self.overwriteRouteLayerOnMap = function (routeId, directionId) {
+            var layer,
+                featureCollection;
+
+            featureCollection = self.findFeature(routeId, directionId);
+            layer = routeMapInstance.map.data.addGeoJson(featureCollection);
+            self.overwriteRouteLayer(routeId, directionId, layer);
+        };
+
+        self.clearRouteLayerOnMap = function (layer) {
+            return routeMapInstance.map.data.remove(layer);
+        };
+
+        self.clearRouteLayersOnMap = function (routeId, directionId) {
+            _.forEach(self.routeLayers[routeId], function (direction) {
+                if (direction.directionId === directionId) {
+                    self.clearRouteLayerOnMap(direction.layer[0]);
+                }
+            });
         };
     })
 
@@ -729,16 +743,16 @@ angular.module('pdxStreetcarApp')
 
 
 
-    .service('NearbyService', function (StopData, RouteData, trimet, RouteColors, routeMapInstance, feetToMeters) {
+    .service('NearbyService', function (StopData, RouteData, trimet, RouteColors, routeMapInstance, feetToMeters, userLocation) {
         var self = this;
 
         self.nearbyStopMarkers = {};
         self.nearbyStops = null;
         self.nearbyRoutes = {};
+        self.stopRadiusIndicator = null;
 
         self.get = function get(latitude, longitude, distanceFromLocation) {
-            var radiusInFeet = distanceFromLocation || 660,
-                stopRadiusIndicator;
+            var radiusInFeet = distanceFromLocation || 660;
 
             function provideListOfNearbyStops(data) {
                 var locations = data.resultSet.location;
@@ -784,18 +798,18 @@ angular.module('pdxStreetcarApp')
             }
 
             function setRadiusAroundUser() {
-                if (stopRadiusIndicator) {
-                    stopRadiusIndicator.setMap(null);
+                if (self.stopRadiusIndicator) {
+                    self.stopRadiusIndicator.setMap(null);
                 }
 
-                stopRadiusIndicator = new google.maps.Circle({
+                self.stopRadiusIndicator = new google.maps.Circle({
                     map: routeMapInstance.map,
                     radius: feetToMeters(radiusInFeet),    // 10 miles in metres
                     strokeColor: '#AA0000',
                     fillColor: '#AA0000'
                 });
 
-                //                stopRadiusIndicator.bindTo('center', userLocation.marker, 'position');
+                self.stopRadiusIndicator.bindTo('center', userLocation.marker, 'position');
             }
 
             function createStopMarkersForNearbyStops(data) {
@@ -811,10 +825,11 @@ angular.module('pdxStreetcarApp')
 
             function displayNearbyRouteLines(data) {
                 _.forEach(self.nearbyRoutes, function (route) {
+                    route.enabled = true;
                     var routeId = route.route;
                     RouteData.initRouteLineDisplay(routeId);
                 });
-
+                console.log("Route Lines Displayed: " + RouteData.routesDisplayed);
                 return data;
             }
 
@@ -837,45 +852,48 @@ angular.module('pdxStreetcarApp')
                 });
         };
 
+        self.toggleNearbyRoute = function (route) {
+            var routeId = route.route,
+                routeLayer,
+                directionId;
+
+            function setRouteDisabled(routeId, directionId) {
+                self.nearbyRoutes[routeId].enabled = false;
+                self.nearbyRoutes[routeId].dir[directionId].enabled = false;
+            }
+
+            function setRouteEnabled(routeId, directionId) {
+                self.nearbyRoutes[routeId].enabled = true;
+                self.nearbyRoutes[routeId].dir[directionId].enabled = true;
+            }
+
+            _.forEach(self.nearbyRoutes, function (route) {
+                if (route.route === routeId) {
+                    if (route.enabled === false) {
+                        _.forEach(route.dir, function (direction) {
+                            directionId = direction.dir;
+                            RouteData.overwriteRouteLayerOnMap(routeId, directionId);
+                            setRouteEnabled(routeId, directionId);
+                        });
+                    } else if (route.enabled === true) {
+                        _.forEach(route.dir, function (direction) {
+                            directionId = direction.dir;
+                            RouteData.clearRouteLayersOnMap(routeId, directionId);
+                            setRouteDisabled(routeId, directionId);
+                        });
+                    }
+                }
+            });
+
+            return {
+                nearbyRoutes: self.nearbyRoutes
+            };
+        };
+
     })
 
     .service('Navigator', function (RouteData, StopData) {
         var self = this;
-
-        self.nearbyRoutes = null;
-
-        function setRouteDisabled(routeId, directionId) {
-            self.nearbyRoutes[routeId].enabled = false;
-            self.nearbyRoutes[routeId].dir[directionId].enabled = false;
-        }
-
-        function setRouteEnabled(routeId, directionId) {
-            self.nearbyRoutes[routeId].enabled = true;
-            self.nearbyRoutes[routeId].dir[directionId].enabled = true;
-        }
-
-        self.toggleNearbyRoute = function (route) {
-            var routeId = route.route,
-                directionId;
-            if (RouteData.routeLayers[routeId]) {
-                var directions = RouteData.routeLayers[routeId];
-                _.forEach(directions, function (direction, key) {
-                    directionId = parseInt(key);
-                    if (direction.enabled === false) {
-                        direction.enabled = true;
-                        setRouteEnabled(routeId, directionId);
-                        RouteData.overwriteRouteLayerOnMap(routeId, directionId);
-                    } else if (direction.enabled === true) {
-                        direction.enabled = false;
-                        setRouteDisabled(routeId, directionId);
-                        RouteData.clearRoutelayerOnMap(direction.layer[0]);
-                    }
-                });
-            }
-            return {
-
-            };
-        };
 
         self.toggleRoute = function (route) {
             RouteData.enableRoute(route);
@@ -925,13 +943,18 @@ angular.module('pdxStreetcarApp')
                 });
         }
 
+        function toggleNearbyRoutes(route) {
+            var exports = NearbyService.toggleNearbyRoute(route);
+            self.nearbyRoutes = exports.nearbyRoutes;
+        }
+
         self.isStreetCarRoute = trimetUtilities.isStreetCarRoute;
         self.isTrimetRoute = trimetUtilities.isTrimetRoute;
         self.toggleServiceBoundaryOverlay = mapLayers.toggleServiceBoundaryLayer;
         self.toggleTransitCenterOverlay = mapLayers.toggleTransitCenterLayer;
         self.toggleParkAndRidesOverlay = mapLayers.toggleParkAndRidesLayer;
         self.toggleRoute = Navigator.toggleRoute;
-        self.toggleNearbyRoute = Navigator.toggleNearbyRoute;
+        self.toggleNearbyRoute = toggleNearbyRoutes;
         self.getNearbyRoutes = getNearbyStops;
         self.getStreetCarData = getStreetCarData;
         self.getTrimetData = getTrimetData;
