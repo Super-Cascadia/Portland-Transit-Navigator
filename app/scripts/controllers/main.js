@@ -549,7 +549,7 @@ angular.module('pdxStreetcarApp')
                 route.enabled = true;
             }
 
-            toggleEnabledFlags(route);
+//            toggleEnabledFlags(route);
         };
 
         self.streetCar = function () {
@@ -585,7 +585,7 @@ angular.module('pdxStreetcarApp')
             if (!_.isEmpty(self.routeLayers)) {
                 _.forEach(self.routeLayers, function (route, routeKey) {
                     _.forEach(route, function (directions, directionKey) {
-                        self.clearRoutelayerOnMap(directions.layer[0]);
+                        self.clearRouteLayerOnMap(directions.layer[0]);
                         delete self.routeLayers[routeKey][directionKey];
                     });
                 });
@@ -605,25 +605,17 @@ angular.module('pdxStreetcarApp')
             return layer;
         };
 
-        self.overwriteRouteLayer = function (routeId, directionId, layer) {
-            if (self.routeLayers[routeId]) {
-                self.routeLayers[routeId] = [];
-                self.routeLayers[routeId].push({
-                    layer: layer,
-                    directionId: directionId,
-                    enabled: true
-                });
-            }
-            return layer;
-        };
-
         self.overwriteRouteLayerOnMap = function (routeId, directionId) {
             var layer,
                 featureCollection;
 
-            featureCollection = self.findFeature(routeId, directionId);
-            layer = routeMapInstance.map.data.addGeoJson(featureCollection);
-            self.overwriteRouteLayer(routeId, directionId, layer);
+            return _.forEach(self.geoJsonRouteData.features, function (route) {
+                if (parseInt(route.properties.route_number) === routeId) {
+                    featureCollection = route;
+                    layer = routeMapInstance.map.data.addGeoJson(featureCollection);
+                    self.memoizeRouteLayer(routeId, directionId, layer);
+                }
+            });
         };
 
         self.clearRouteLayerOnMap = function (layer) {
@@ -854,7 +846,6 @@ angular.module('pdxStreetcarApp')
 
         self.toggleNearbyRoute = function (route) {
             var routeId = route.route,
-                routeLayer,
                 directionId;
 
             function setRouteDisabled(routeId, directionId) {
