@@ -491,7 +491,7 @@ angular.module('pdxStreetcarApp')
             return featureCollection;
         }
 
-        self.initRouteLineDisplay = function(routeId) {
+        self.initRouteLineDisplay = function(routeId, directionId) {
             var featureCollection,
                 layer;
 
@@ -542,7 +542,6 @@ angular.module('pdxStreetcarApp')
             if (!self.stopMarkers[route.routeId][route.directionId]) {
                 self.initRouteLineDisplay(route.routeId, route.directionId);
             }
-
             if (route.enabled === true) {
                 route.enabled = false;
             } else if (route.enabled === false) {
@@ -629,6 +628,36 @@ angular.module('pdxStreetcarApp')
                 }
             });
         };
+
+        self.reconcileAlreadyEnabledRoutes = function (source, routes) {
+
+            function checkIfRouteLayerIsEnabled(route, routeId) {
+                var routeLayerInstance = self.routeLayers[routeId];
+
+                function enableRouteOnList(directionId) {
+                    _.forEach(route.directions, function (direction) {
+                        if (direction.directionId === directionId) {
+                            direction.enabled = true;
+                        }
+                    });
+                }
+
+                if (routeLayerInstance) {
+                    _.forEach(routeLayerInstance, function (direction) {
+                        if (direction.enabled === true) {
+                            enableRouteOnList(direction.directionId);
+                        }
+                    });
+                }
+            }
+
+            _.forEach(routes, function (route, routeId) {
+                checkIfRouteLayerIsEnabled(route, routeId);
+            });
+
+            return routes;
+        };
+
     })
 
     .service('StopData', function ($q, trimet, routeMapInstance, RouteColors, RouteData, timeCalcService, userLocation, previouslyOpenedInfoWindow, ArrivalData) {
@@ -706,12 +735,12 @@ angular.module('pdxStreetcarApp')
             return stopMarker;
         };
 
-        self.createStopMarkers = function (stops) {
-                _.forEach(stops, function (stop) {
-                    location.enabled = true;
-                    self.createStopMarker(stop);
-                });
-                return stops;
+        self.createStopMarkers = function (routeId, directionId, stops) {
+            _.forEach(stops, function (stop) {
+                location.enabled = true;
+                self.createStopMarker(stop);
+            });
+            return stops;
         };
 
         self.addMarkerToNearbyMarkers = function (stopMarker, stop) {
@@ -731,6 +760,18 @@ angular.module('pdxStreetcarApp')
             self.nearbyStopMarkers = {};
         };
 
+        self.memoizeStopMarkers = function () {
+
+        };
+
+        self.enableStopMarkers = function (routeId, directionId, stops) {
+            _.forEach(stops, function (stop) {
+                location.enabled = true;
+                self.createStopMarker(stop);
+                self.memoizeStopMarkers(routeId, directionId, stop);
+            });
+            return stops;
+        };
     })
 
 
@@ -887,8 +928,13 @@ angular.module('pdxStreetcarApp')
         var self = this;
 
         self.toggleRoute = function (route) {
-            RouteData.enableRoute(route);
-            StopData.createStopMarkers(route.routeId, route.directionId, route.stops);
+            if (route.enabled === true) {
+                route.enabled = false;
+            } else if (route.enabled === false) {
+                route.enabled = true;
+                RouteData.enableRoute(route);
+                StopData.enableStopMarkers(route.routeId, route.directionId, route.stops);
+            }
         };
     })
 
@@ -915,6 +961,10 @@ angular.module('pdxStreetcarApp')
                 .then(function (data) {
                     self.streetcar = data;
                     return data;
+                })
+                .then(function (data) {
+                    var exports = RouteData.reconcileAlreadyEnabledRoutes('streetcar', data);
+                    self.streetcar = exports;
                 });
         }
 
