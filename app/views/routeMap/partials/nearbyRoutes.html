@@ -35,7 +35,9 @@
                     <td><small>Dir</small></td>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="stop in route.stops">
+                    <tr ng-repeat="stop in route.stops"
+                        ng-class="{'panel-success': stop.selected === true}"
+                        ng-click="routeMap.selectStop(stop)">
                         <td><small><span class="label label-default">{{stop.locid}}</span></small></td>
                         <td><small>{{stop.desc}}</small></td>
                         <td><small>{{stop.dir}}</small></td>

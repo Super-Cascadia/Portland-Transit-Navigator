@@ -15,8 +15,10 @@
     <div ng-show="routeMap.nearbyStops">
 
         <div class="panel panel-default"
+             ng-class="{'panel-success': stop.selected === true}"
              ng-repeat="stop in routeMap.nearbyStops | filter: nearbyStopsSearch">
-            <div class="panel-heading">
+            <div class="panel-heading"
+                 ng-click="routeMap.selectStop(stop); $event.stopPropagation();">
                 <small>
                     <strong>{{stop.desc}}</strong> | <span class="label label-default">{{stop.dir}}</span>
                 </small>

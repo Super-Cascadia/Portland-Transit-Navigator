@@ -660,18 +660,20 @@ angular.module('pdxStreetcarApp')
 
     })
 
-    .service('StopData', function ($q, trimet, routeMapInstance, RouteColors, RouteData, timeCalcService, userLocation, previouslyOpenedInfoWindow, ArrivalData) {
+    .service('StopData', function ($q, $rootScope, trimet, routeMapInstance, RouteColors, RouteData, timeCalcService, userLocation, previouslyOpenedInfoWindow, ArrivalData) {
         var self = this;
 
         self.nearbyStopMarkers = {};
+        self.stopMarkers = {};
+
+        self.broadcastArrivalInfo = function (arrivalInfo) {
+            $rootScope.$broadcast("arrivalInformation", arrivalInfo);
+        };
 
         self.showArrivalsForStop = function showArrivalsForStop(stopMarker) {
             return ArrivalData.getArrivalsForStop(stopMarker)
                 .then(function (arrivalInfo) {
-                    self.selectedStop = arrivalInfo;
-                    self.remainingTime = arrivalInfo.resultSet.arrival[0].remainingTime;
-                    self.arrivalInfo = arrivalInfo.resultSet.arrival[0];
-                    self.stopIsSelected = true;
+                    self.broadcastArrivalInfo(arrivalInfo);
                 });
         };
 
@@ -710,6 +712,7 @@ angular.module('pdxStreetcarApp')
                 shadow: pinShadow,
                 animation: google.maps.Animation.DROP,
                 clickable: true,
+                stopMetaData: stop,
                 title: stop.desc + ":" + stop.dir
             });
 
@@ -719,9 +722,10 @@ angular.module('pdxStreetcarApp')
                 ": " +
                 stop.dir;
 
+            // TODO: Provide function callback in separate resusable service function
             google.maps.event.addListener(stopMarker, 'click', function () {
                 if (previouslyOpenedInfoWindow.instance) {
-                    previouslyOpenedInfoWindow.close();
+                    previouslyOpenedInfoWindow.instance.close();
                 }
                 infoWindow.setContent(infoWindowContent);
                 infoWindow.open(routeMapInstance.map, this);
@@ -740,14 +744,17 @@ angular.module('pdxStreetcarApp')
                 location.enabled = true;
                 self.createStopMarker(stop);
             });
+
             return stops;
         };
 
         self.addMarkerToNearbyMarkers = function (stopMarker, stop) {
             var nearbyStops = self.nearbyStopMarkers;
+
             if (!nearbyStops[stop.locid]) {
                 nearbyStops[stop.locid] = stopMarker;
             }
+
             return nearbyStops;
         };
 
@@ -760,7 +767,26 @@ angular.module('pdxStreetcarApp')
             self.nearbyStopMarkers = {};
         };
 
-        self.memoizeStopMarkers = function () {
+        self.clearStopMarkers = function () {
+            if (!_.isEmpty(self.stopMarkers)) {
+                _.forEach(self.stopMarkers, function (marker) {
+                    marker.setMap(null);
+                });
+            }
+            self.stopMarkers = {};
+        };
+
+        self.memoizeIndividualStopMarker = function (stopMarker, stop) {
+            var stops = self.stopMarkers;
+
+            if (!stops[stop.locid]) {
+                stops[stop.locid] = stopMarker;
+            }
+
+            return stops;
+        };
+
+        self.memoizeRouteStopMarkers = function () {
 
         };
 
@@ -771,6 +797,24 @@ angular.module('pdxStreetcarApp')
                 self.memoizeStopMarkers(routeId, directionId, stop);
             });
             return stops;
+        };
+
+        self.findMemoizedStopMarkerInstance = function (locationId) {
+            var stopMarkerInstance;
+
+            if (self.stopMarkers[locationId]) {
+                stopMarkerInstance = self.stopMarkers[locationId];
+            }
+
+            return stopMarkerInstance;
+        };
+
+        self.selectStopMarker = function (stop) {
+            var marker = self.findMemoizedStopMarkerInstance(stop.locid);
+
+            if (marker) {
+                google.maps.event.trigger(marker, 'click');
+            }
         };
     })
 
@@ -787,10 +831,36 @@ angular.module('pdxStreetcarApp')
         self.get = function get(latitude, longitude, distanceFromLocation) {
             var radiusInFeet = distanceFromLocation || 660;
 
+            function initializeModel(data) {
+
+                function setRadiusAroundUser() {
+                    if (self.stopRadiusIndicator) {
+                        self.stopRadiusIndicator.setMap(null);
+                    }
+
+                    self.stopRadiusIndicator = new google.maps.Circle({
+                        map: routeMapInstance.map,
+                        radius: feetToMeters(radiusInFeet),    // 10 miles in metres
+                        strokeColor: '#AA0000',
+                        fillColor: '#AA0000'
+                    });
+
+                    self.stopRadiusIndicator.bindTo('center', userLocation.marker, 'position');
+                }
+
+                setRadiusAroundUser();
+                StopData.clearNearbyStopMarkers();
+                RouteData.clearNearbyRoutes();
+                self.nearbyRoutes = {};
+
+                return data;
+            }
+
             function provideListOfNearbyStops(data) {
                 var locations = data.resultSet.location;
                 _.forEach(locations, function (stop) {
                     stop.enabled = true;
+                    stop.selected = false;
                 });
                 self.nearbyStops = locations;
                 return data;
@@ -830,35 +900,24 @@ angular.module('pdxStreetcarApp')
                 return data;
             }
 
-            function setRadiusAroundUser() {
-                if (self.stopRadiusIndicator) {
-                    self.stopRadiusIndicator.setMap(null);
-                }
-
-                self.stopRadiusIndicator = new google.maps.Circle({
-                    map: routeMapInstance.map,
-                    radius: feetToMeters(radiusInFeet),    // 10 miles in metres
-                    strokeColor: '#AA0000',
-                    fillColor: '#AA0000'
-                });
-
-                self.stopRadiusIndicator.bindTo('center', userLocation.marker, 'position');
-            }
-
             function createStopMarkersForNearbyStops(data) {
                 var locations = data.resultSet.location;
 
                 _.forEach(locations, function (stop) {
                     stop.enabled = true;
+                    stop.selected = false;
                     var stopMarker = StopData.createStopMarker(stop);
                     StopData.addMarkerToNearbyMarkers(stopMarker, stop);
+                    StopData.memoizeIndividualStopMarker(stopMarker, stop);
                 });
+
                 return data;
             }
 
             function displayNearbyRouteLines(data) {
                 _.forEach(self.nearbyRoutes, function (route) {
                     route.enabled = true;
+                    route.selected = false;
                     var routeId = route.route;
                     RouteData.initRouteLineDisplay(routeId);
                 });
@@ -866,12 +925,8 @@ angular.module('pdxStreetcarApp')
                 return data;
             }
 
-            setRadiusAroundUser();
-            StopData.clearNearbyStopMarkers();
-            RouteData.clearNearbyRoutes();
-            self.nearbyRoutes = {};
-
             return trimet.getStopsAroundLocation(latitude, longitude, radiusInFeet)
+                .then(initializeModel)
                 .then(provideListOfNearbyStops)
                 .then(provideListOfNearbyRoutes)
                 .then(createStopMarkersForNearbyStops)
@@ -922,6 +977,34 @@ angular.module('pdxStreetcarApp')
             };
         };
 
+        self.findNearbyStopViewModel = function (stop) {
+            return _.find(self.nearbyStops, {"locid": stop.locid});
+        };
+
+        self.deselectAllStops = function () {
+            _.forEach(self.nearbyStops, function (stop) {
+                stop.selected = false;
+            });
+        };
+
+        self.toggleStopSelected = function (stop) {
+            self.deselectAllStops();
+
+            var stopInstance = self.findNearbyStopViewModel(stop);
+
+            if (stopInstance.selected === true) {
+                stopInstance.selected = false;
+            } else if (stopInstance.selected === false) {
+                stopInstance.selected = true;
+            }
+
+            return self.nearbyStops;
+        };
+
+        self.setRouteSelected = function (route) {
+
+        };
+
     })
 
     .service('Navigator', function (RouteData, StopData) {
@@ -939,7 +1022,7 @@ angular.module('pdxStreetcarApp')
     })
 
 
-    .controller('RouteMapCtrl', function ($scope, $log, $q, $http, trimet, RouteColors, $timeout, feetToMeters, timeCalcService, formatRetrievedRoutes, trimetUtilities, routeMapInstance, RouteData, userLocation, mapLayers, Navigator, NearbyService) {
+    .controller('RouteMapCtrl', function ($scope, $rootScope, $log, $q, $http, trimet, RouteColors, $timeout, feetToMeters, timeCalcService, formatRetrievedRoutes, trimetUtilities, routeMapInstance, RouteData, userLocation, mapLayers, Navigator, NearbyService, StopData) {
         'use strict';
         var self = this,
             map;
@@ -973,6 +1056,10 @@ angular.module('pdxStreetcarApp')
                 .then(function (data) {
                     self.maxrail = data;
                     return data;
+                })
+                .then(function (data) {
+                    var exports = RouteData.reconcileAlreadyEnabledRoutes('trimet', data);
+                    self.maxrail = exports;
                 });
         }
 
@@ -981,6 +1068,10 @@ angular.module('pdxStreetcarApp')
                 .then(function (data) {
                     self.busRoutes = data;
                     return data;
+                })
+                .then(function (data) {
+                    var exports = RouteData.reconcileAlreadyEnabledRoutes('bus', data);
+                    self.busRoutes = exports;
                 });
         }
 
@@ -991,11 +1082,18 @@ angular.module('pdxStreetcarApp')
 
         self.isStreetCarRoute = trimetUtilities.isStreetCarRoute;
         self.isTrimetRoute = trimetUtilities.isTrimetRoute;
+
         self.toggleServiceBoundaryOverlay = mapLayers.toggleServiceBoundaryLayer;
         self.toggleTransitCenterOverlay = mapLayers.toggleTransitCenterLayer;
         self.toggleParkAndRidesOverlay = mapLayers.toggleParkAndRidesLayer;
         self.toggleRoute = Navigator.toggleRoute;
         self.toggleNearbyRoute = toggleNearbyRoutes;
+
+        self.selectStop = function (stop) {
+            StopData.selectStopMarker(stop);
+            self.nearbyStops = NearbyService.toggleStopSelected(stop);
+        };
+
         self.getNearbyRoutes = getNearbyStops;
         self.getStreetCarData = getStreetCarData;
         self.getTrimetData = getTrimetData;
@@ -1057,7 +1155,7 @@ angular.module('pdxStreetcarApp')
                 return deferred.promise;
             }
 
-            function runAfterTimeout() {
+            $timeout(function () {
                 routeMapInstance.init()
                     .then(getUserLocation)
                     .then(function setUserLocationVariables (exports) {
@@ -1067,10 +1165,15 @@ angular.module('pdxStreetcarApp')
                     })
                     .then(getNearbyStops)
                     .then(mapLayers.load);
-            }
-
-            $timeout(runAfterTimeout, 100);
+            }, 100);
         }
 
         init();
+
+        $rootScope.$on('arrivalInformation', function (e, arrivalInfo) {
+            self.selectedStop = arrivalInfo;
+            self.remainingTime = arrivalInfo.resultSet.arrival[0].remainingTime;
+            self.arrivalInfo = arrivalInfo.resultSet.arrival[0];
+            self.stopIsSelected = true;
+        });
     });
