@@ -29,7 +29,7 @@
                 <tbody>
                     <tr ng-repeat="direction in route.directions | filter:busSearch"
                         ng-class="{info: direction.enabled}"
-                        ng-click="routeMap.toggleRoute(direction)">
+                        ng-click="routeMap.toggleBusRoute(direction)">
                         <td>
                             <input type="checkbox"
                                    ng-checked="direction.enabled === true">

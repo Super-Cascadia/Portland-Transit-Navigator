@@ -491,49 +491,31 @@ angular.module('pdxStreetcarApp')
             return featureCollection;
         }
 
+        function addStylingToFeature(feature) {
+            feature.style = {
+                'strokeWeight': 20,
+                'strokeColor': 'red'
+            };
+
+            return feature;
+        }
+
         self.initRouteLineDisplay = function(routeId, directionId) {
             var featureCollection,
                 layer;
 
             _.forEach(self.geoJsonRouteData.features, function (feature) {
                 if (parseInt(feature.properties.route_number) === routeId) {
-                    var directionId = parseInt(feature.properties.direction);
+                    // styling would be added as a part of the feature here
+                    feature = addStylingToFeature(feature);
                     featureCollection = compriseFeatureCollection(feature);
                     layer = routeMapInstance.map.data.addGeoJson(featureCollection);
-                    console.log(feature.properties);
+                    var directionId = parseInt(feature.properties.direction);
                     self.memoizeRouteLayer(routeId, directionId, layer);
                     self.routesDisplayed += 1;
                 }
             });
-
         };
-
-        function toggleEnabledFlags(route) {
-            function setAllMapMarkers(map, route, direction) {
-                var stopMarkers = markers[route][direction];
-                if (stopMarkers && _.isArray(stopMarkers)) {
-                    _.forEach(stopMarkers, function (marker) {
-                        marker.setMap(map);
-                    });
-                }
-            }
-
-            function hideRoute(route, direction) {
-                setAllMapMarkers(null, route, direction);
-            }
-
-            function showRoute(route, direction) {
-                setAllMapMarkers(routeMapInstance.map, route, direction);
-            }
-
-            if (route.enabled === true) {
-                route.enabled = false;
-                hideRoute(route.routeId, route.directionId);
-            } else if (route.enabled === false) {
-                route.enabled = true;
-                showRoute(route.routeId, route.directionId);
-            }
-        }
 
         self.enableRoute = function (route) {
             if (!self.stopMarkers[route.routeId]) {
@@ -547,8 +529,6 @@ angular.module('pdxStreetcarApp')
             } else if (route.enabled === false) {
                 route.enabled = true;
             }
-
-//            toggleEnabledFlags(route);
         };
 
         self.streetCar = function () {
@@ -608,7 +588,7 @@ angular.module('pdxStreetcarApp')
             var layer,
                 featureCollection;
 
-            return _.forEach(self.geoJsonRouteData.features, function (route) {
+            _.forEach(self.geoJsonRouteData.features, function (route) {
                 if (parseInt(route.properties.route_number) === routeId) {
                     featureCollection = route;
                     layer = routeMapInstance.map.data.addGeoJson(featureCollection);
@@ -793,8 +773,8 @@ angular.module('pdxStreetcarApp')
         self.enableStopMarkers = function (routeId, directionId, stops) {
             _.forEach(stops, function (stop) {
                 location.enabled = true;
-                self.createStopMarker(stop);
-                self.memoizeStopMarkers(routeId, directionId, stop);
+                var stopMarker = self.createStopMarker(stop);
+                self.memoizeIndividualStopMarker(stopMarker, stop);
             });
             return stops;
         };
@@ -817,8 +797,6 @@ angular.module('pdxStreetcarApp')
             }
         };
     })
-
-
 
     .service('NearbyService', function (StopData, RouteData, trimet, RouteColors, routeMapInstance, feetToMeters, userLocation) {
         var self = this;
@@ -1007,17 +985,75 @@ angular.module('pdxStreetcarApp')
 
     })
 
-    .service('Navigator', function (RouteData, StopData) {
+    .service('Navigator', function (RouteData) {
         var self = this;
 
-        self.toggleRoute = function (route) {
-            if (route.enabled === true) {
-                route.enabled = false;
-            } else if (route.enabled === false) {
-                route.enabled = true;
-                RouteData.enableRoute(route);
-                StopData.enableStopMarkers(route.routeId, route.directionId, route.stops);
+        self.toggleRoute = function (target, route) {
+
+            var routeId = route.routeId,
+                directionId = route.directionId,
+                routes;
+
+            function retrieveRoutesData(target) {
+                if (target === 'streetcar') {
+                    routes = RouteData.streetcarData;
+                } else if (target === 'trimet') {
+                    routes = RouteData.maxRailData;
+                } else if (target === 'bus') {
+                    routes = RouteData.busRoutesData;
+                }
+                return routes;
             }
+
+            function syncRoutesData(data, target) {
+                if (target === 'streetcar') {
+                    RouteData.streetcarData = data;
+                } else if (target === 'trimet') {
+                    RouteData.maxRailData = data;
+                } else if (target === 'bus') {
+                    RouteData.busRoutesData = data;
+                }
+            }
+
+            function setRouteDisabled(routeId, direction) {
+                routes[routeId].enabled = false;
+                direction.enabled = false;
+            }
+
+            function setRouteEnabled(routeId, direction) {
+                routes[routeId].enabled = true;
+                direction.enabled = true;
+            }
+
+            function findDirection(id, directions) {
+                return _.find(directions, {'directionId': id});
+            }
+
+            function toggleRoute(foundRoute) {
+                var direction = findDirection(directionId, foundRoute.directions);
+
+                if (direction.enabled === false) {
+                    RouteData.overwriteRouteLayerOnMap(routeId, direction.directionId);
+                    setRouteEnabled(routeId, direction);
+                } else if (direction.enabled === true) {
+                    RouteData.clearRouteLayersOnMap(routeId, direction.directionId);
+                    setRouteDisabled(routeId, direction);
+                }
+            }
+
+            function findRoute(routes) {
+                return _.find(routes, {"routeId": routeId});
+            }
+
+            routes = retrieveRoutesData(target);
+
+            var foundRoute = findRoute(routes);
+
+            toggleRoute(foundRoute);
+
+            syncRoutesData(routes, target);
+
+            return routes;
         };
     })
 
@@ -1054,12 +1090,12 @@ angular.module('pdxStreetcarApp')
         function getTrimetData() {
             return RouteData.trimet()
                 .then(function (data) {
-                    self.maxrail = data;
+                    self.maxRail = data;
                     return data;
                 })
                 .then(function (data) {
                     var exports = RouteData.reconcileAlreadyEnabledRoutes('trimet', data);
-                    self.maxrail = exports;
+                    self.maxRail = exports;
                 });
         }
 
@@ -1086,7 +1122,19 @@ angular.module('pdxStreetcarApp')
         self.toggleServiceBoundaryOverlay = mapLayers.toggleServiceBoundaryLayer;
         self.toggleTransitCenterOverlay = mapLayers.toggleTransitCenterLayer;
         self.toggleParkAndRidesOverlay = mapLayers.toggleParkAndRidesLayer;
-        self.toggleRoute = Navigator.toggleRoute;
+
+        self.toggleStreetCarRoute = function (route) {
+            self.streetcar = Navigator.toggleRoute('streetcar', route);
+        };
+
+        self.toggleTrimetRoute = function (route) {
+            self.maxRail = Navigator.toggleRoute('trimet', route);
+        };
+
+        self.toggleBusRoute = function (route) {
+            self.busRoutes = Navigator.toggleRoute('bus', route);
+        };
+
         self.toggleNearbyRoute = toggleNearbyRoutes;
 
         self.selectStop = function (stop) {
