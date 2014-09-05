@@ -12,6 +12,7 @@ angular.module('pdxStreetcarApp')
         "200": "008850",
         "90": "D30E41",
         "190": "FFC500",
+        "BUS": "008DCB",
         "default": "ADD8E6"
     })
 

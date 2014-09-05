@@ -4,7 +4,7 @@
 
 angular.module('pdxStreetcarApp')
 
-    .service('RouteData', function ($q, routeMapInstance, trimet, formatRetrievedRoutes) {
+    .service('RouteData', function ($q, routeMapInstance, trimet, formatRetrievedRoutes, RouteColors) {
         var self = this;
 
         self.geoJsonRouteData = null;
@@ -56,13 +56,24 @@ angular.module('pdxStreetcarApp')
             return featureCollection;
         }
 
-        function addStylingToFeature(feature) {
-            feature.style = {
-                'strokeWeight': 20,
-                'strokeColor': 'red'
-            };
+        function determineRouteColor(routeId) {
+            if (RouteColors[routeId]) {
+                return RouteColors[routeId];
+            } else {
+                return RouteColors.BUS;
+            }
+        }
 
-            return feature;
+        function setRouteStyles() {
+            routeMapInstance.map.data.setStyle(function(feature) {
+                var routeId = feature.getProperty('route_number');
+                var color = determineRouteColor(routeId);
+
+                return {
+                    strokeColor: '#' + color,
+                    strokeWeight: 4
+                };
+            });
         }
 
         self.initRouteLineDisplay = function(routeId, directionId) {
@@ -71,10 +82,9 @@ angular.module('pdxStreetcarApp')
 
             _.forEach(self.geoJsonRouteData.features, function (feature) {
                 if (parseInt(feature.properties.route_number) === routeId) {
-                    // styling would be added as a part of the feature here
-                    feature = addStylingToFeature(feature);
                     featureCollection = compriseFeatureCollection(feature);
                     layer = routeMapInstance.map.data.addGeoJson(featureCollection);
+                    setRouteStyles();
                     var directionId = parseInt(feature.properties.direction);
                     self.memoizeRouteLayer(routeId, directionId, layer);
                     self.routesDisplayed += 1;
