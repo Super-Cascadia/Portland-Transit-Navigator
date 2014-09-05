@@ -6,7 +6,7 @@
 
 angular.module('pdxStreetcarApp')
 
-    .controller('topNavigationCtrl', function ($scope, $routeParams, $log, $route, $location, geolocation, $state, $stateParams) {
+    .controller('topNavigationCtrl', function ($scope, $routeParams, $log, $route, $location, geolocation, $state) {
         var self = this;
 
         function geoLocate() {
@@ -72,7 +72,7 @@ angular.module('pdxStreetcarApp')
         determineIfServiceIsAvailable();
     })
 
-    .controller('RouteMapCtrl', function ($scope, $rootScope, $log, $q, $http, trimet, RouteColors, $timeout, feetToMeters, timeCalcService, formatRetrievedRoutes, trimetUtilities, routeMapInstance, RouteData, userLocation, mapLayers, Navigator, NearbyService, StopData) {
+    .controller('RouteMapCtrl', function ($scope, $rootScope, $log, $q, $http, trimet, RouteColors, $timeout, feetToMeters, timeCalcService, formatRetrievedRoutes, trimetUtilities, routeMapInstance, RouteData, userLocation, mapLayers, Navigator, NearbyTransit, StopData) {
         'use strict';
         var self = this,
             map;
@@ -81,7 +81,7 @@ angular.module('pdxStreetcarApp')
         self.distanceFromLocation = 660;
 
         function getNearbyStops() {
-            return NearbyService.get(self.userLatitude, self.userLongitude, self.distanceFromLocation)
+            return NearbyTransit.get(self.userLatitude, self.userLongitude, self.distanceFromLocation)
                 .then(function (exports) {
                     self.nearbyRoutes = exports.nearbyRoutes;
                     self.nearbyStops = exports.nearbyStops;
@@ -126,7 +126,7 @@ angular.module('pdxStreetcarApp')
         }
 
         function toggleNearbyRoutes(route) {
-            var exports = NearbyService.toggleNearbyRoute(route);
+            var exports = NearbyTransit.toggleNearbyRoute(route);
             self.nearbyRoutes = exports.nearbyRoutes;
         }
 
@@ -153,7 +153,7 @@ angular.module('pdxStreetcarApp')
 
         self.selectStop = function (stop) {
             StopData.selectStopMarker(stop);
-            self.nearbyStops = NearbyService.toggleStopSelected(stop);
+            self.nearbyStops = NearbyTransit.toggleStopSelected(stop);
         };
 
         self.getNearbyRoutes = getNearbyStops;
