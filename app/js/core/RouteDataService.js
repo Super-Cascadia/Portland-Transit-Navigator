@@ -145,13 +145,18 @@ angular.module('pdxStreetcarApp')
             });
 
             routeMapInstance.map.data.addListener('click', function(event) {
-                var value = event.feature.getProperty('route_number');
-                routeMapInstance.map.data.revertStyle();
-                routeMapInstance.map.data.overrideStyle(event.feature, {
+                if (event.alreadyCalled_) {
+                  return;
+                } else {
+                  var value = event.feature.getProperty('route_number');
+                  routeMapInstance.map.data.revertStyle();
+                  routeMapInstance.map.data.overrideStyle(event.feature, {
                     strokeColor: 'red',
                     strokeWeight: 8
-                });
-                routeSelectedOnMap(value);
+                  });
+                  routeSelectedOnMap(value);
+                  event.alreadyCalled_ = true;
+                }
             });
 
             routeMapInstance.map.data.addListener('mouseover', function(event) {
