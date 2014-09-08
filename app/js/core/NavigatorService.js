@@ -48,12 +48,8 @@ angular.module('pdxStreetcarApp')
                 }
             }
 
-            function findRoute(routes) {
-                return _.find(routes, {"routeId": routeId});
-            }
-
             routes = retrieveRoutesData(target);
-            foundRoute = findRoute(routes);
+            foundRoute = _.find(routes, {"routeId": routeId});
 
             toggleRoute(foundRoute);
             syncRoutesData(routes, target);

@@ -4,7 +4,10 @@
 
 angular.module('pdxStreetcarApp')
 
-    .service('RouteData', function ($q, routeMapInstance, trimet, formatRetrievedRoutes, RouteColors) {
+    .service('RouteData', function ($q, $rootScope, routeMapInstance, trimet, formatRetrievedRoutes, RouteColors) {
+
+        "use strict";
+
         var self = this;
 
         self.geoJsonRouteData = null;
@@ -18,8 +21,13 @@ angular.module('pdxStreetcarApp')
         self.routes = {};
         self.routesDisplayed = 0;
 
-        self.retrieveRouteGeoJson = function () {
+        self.retrieveRouteGeoJson = function retrieveRouteGeoJson() {
             var deferred = $q.defer();
+
+            if (self.geoJsonRouteData) {
+                deferred.resolve(self.geoJsonRouteData);
+            }
+
             $.ajax({
                 type: 'GET',
                 url:'data/kml/tm_routes.kml'
@@ -41,9 +49,52 @@ angular.module('pdxStreetcarApp')
             self.geoJsonRouteData = null;
         };
 
-        self.findFeature = function (routeId) {
+        self.findFeature = function findFeature(routeId) {
             return _.forEach(self.geoJsonRouteData.features, function (route) {
                 return parseInt(route.properties.route_number) === routeId;
+            });
+        };
+
+        self.memoizeStopDataOnRoute = function memoizeStopData(route) {
+
+            function findStopsForDirection(directionId) {
+              var stops;
+                _.forEach(route.resultSet.route[0].dir, function (direction) {
+                    if (direction.dir === directionId) {
+                        stops = direction.stop;
+                    }
+                });
+              return stops;
+            }
+
+            var routeId = route.resultSet.route[0].route;
+
+            _.forEach(self.routes[routeId].dir, function (direction) {
+                var stops = findStopsForDirection(direction.dir);
+                direction.stops = stops;
+            });
+
+            return route;
+        };
+
+        self.getRouteData = function (routeId) {
+            // TODO: make sure that routes and nearbyRoutes have data in them at this point
+            if (self.routes[routeId]) {
+                return trimet.getRouteById(routeId)
+                    .then(self.memoizeStopDataOnRoute)
+                    .then(function (data) {
+                        return self.routes[routeId];
+                    });
+            }
+        };
+
+        self.memoizeNearbyRoutes = function (data) {
+            _.forEach(data.resultSet.location, function (stop) {
+                _.forEach(stop.route, function (route) {
+                    if (!self.routes[route.route]) {
+                        self.routes[route.route] = route;
+                    }
+                });
             });
         };
 
@@ -64,6 +115,15 @@ angular.module('pdxStreetcarApp')
             }
         }
 
+        function routeHoveredOnMap(data) {
+            $rootScope.$broadcast('routeHoveredFromMap', data);
+        }
+
+        function routeSelectedOnMap(data) {
+            "use strict";
+            $rootScope.$broadcast('routeSelectedFromMap', data);
+        }
+
         function setRouteStyles() {
             routeMapInstance.map.data.setStyle(function(feature) {
                 var routeId = feature.getProperty('route_number');
@@ -73,6 +133,30 @@ angular.module('pdxStreetcarApp')
                     strokeColor: '#' + color,
                     strokeWeight: 4
                 };
+            });
+
+            routeMapInstance.map.data.addListener('mouseover', function(event) {
+                routeMapInstance.map.data.revertStyle();
+                routeMapInstance.map.data.overrideStyle(event.feature, {strokeWeight: 8});
+            });
+
+            routeMapInstance.map.data.addListener('mouseout', function(event) {
+                routeMapInstance.map.data.revertStyle();
+            });
+
+            routeMapInstance.map.data.addListener('click', function(event) {
+                var value = event.feature.getProperty('route_number');
+                routeMapInstance.map.data.revertStyle();
+                routeMapInstance.map.data.overrideStyle(event.feature, {
+                    strokeColor: 'red',
+                    strokeWeight: 8
+                });
+                routeSelectedOnMap(value);
+            });
+
+            routeMapInstance.map.data.addListener('mouseover', function(event) {
+                var value = event.feature.getProperty('route_number');
+                routeHoveredOnMap(value);
             });
         }
 
@@ -85,9 +169,7 @@ angular.module('pdxStreetcarApp')
                     featureCollection = compriseFeatureCollection(feature);
                     layer = routeMapInstance.map.data.addGeoJson(featureCollection);
                     setRouteStyles();
-                    var directionId = parseInt(feature.properties.direction);
-                    self.memoizeRouteLayer(routeId, directionId, layer);
-                    self.routesDisplayed += 1;
+                    self.memoizeRouteLayer(routeId, layer, feature);
                 }
             });
         };
@@ -162,15 +244,32 @@ angular.module('pdxStreetcarApp')
             self.routeLayers = {};
         };
 
-        self.memoizeRouteLayer = function (routeId, directionId, layer) {
+        self.memoizeRouteLayer = function (routeId, layer, feature) {
+            var directionId = parseInt(feature.properties.direction);
+
+            var frequent = feature.properties.frequent;
+
             if (!self.routeLayers[routeId]) {
-                self.routeLayers[routeId] = [];
+                self.routeLayers[routeId] = {
+                    standard: {},
+                    frequent: {}
+                };
             }
-            self.routeLayers[routeId].push({
-                enabled: true,
-                directionId: directionId,
-                layer: layer
-            });
+
+            if (frequent == 'True') {
+                self.routeLayers[routeId].frequent[directionId] = {
+                    enabled: true,
+                    directionId: directionId,
+                    layer: layer
+                };
+            } else if (frequent == 'False') {
+                self.routeLayers[routeId].standard[directionId] = {
+                    enabled: true,
+                    directionId: directionId,
+                    layer: layer
+                };
+            }
+
             return layer;
         };
 

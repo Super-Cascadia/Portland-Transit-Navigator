@@ -9,8 +9,7 @@ angular.module('pdxStreetcarApp', [
     'ngAnimate',
     'geolocation',
     'ui.select2',
-    'ui.router',
-    'pdxTrimet.api'
+    'ui.router'
 ])
     .config(function ($stateProvider, $urlRouterProvider) {
         $stateProvider

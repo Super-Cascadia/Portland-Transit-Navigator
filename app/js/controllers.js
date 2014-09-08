@@ -79,6 +79,7 @@ angular.module('pdxStreetcarApp')
 
         self.stopIsSelected = false;
         self.distanceFromLocation = 660;
+        self.nothingIsSelected = true;
 
         function getNearbyStops() {
             return NearbyTransit.get(self.userLatitude, self.userLongitude, self.distanceFromLocation)
@@ -137,15 +138,15 @@ angular.module('pdxStreetcarApp')
         self.toggleTransitCenterOverlay = mapLayers.toggleTransitCenterLayer;
         self.toggleParkAndRidesOverlay = mapLayers.toggleParkAndRidesLayer;
 
-        self.toggleStreetCarRoute = function (route) {
+        self.toggleStreetCarRoute = function toggleStreetCarRoute (route) {
             self.streetcar = Navigator.toggleRoute('streetcar', route);
         };
 
-        self.toggleTrimetRoute = function (route) {
+        self.toggleTrimetRoute = function toggleTrimetRoute (route) {
             self.maxRail = Navigator.toggleRoute('trimet', route);
         };
 
-        self.toggleBusRoute = function (route) {
+        self.toggleBusRoute = function toggleBusRoute (route) {
             self.busRoutes = Navigator.toggleRoute('bus', route);
         };
 
@@ -232,10 +233,33 @@ angular.module('pdxStreetcarApp')
 
         init();
 
-        $rootScope.$on('arrivalInformation', function (e, arrivalInfo) {
+        function arrivalInformation (e, arrivalInfo) {
             self.selectedStop = arrivalInfo;
             self.remainingTime = arrivalInfo.resultSet.arrival[0].remainingTime;
             self.arrivalInfo = arrivalInfo.resultSet.arrival[0];
             self.stopIsSelected = true;
-        });
+        }
+
+        function routeHoveredFromMap (e, data) {
+            self.hoveredRoute = data;
+            $scope.$apply();
+        }
+
+        function routeSelectedFromMap (e, routeId) {
+            self.nothingIsSelected = false;
+            self.selectedRoute = RouteData.getRouteData(parseInt(routeId));
+            $scope.$apply();
+        }
+
+        $rootScope.$on('arrivalInformation', arrivalInformation);
+
+        $rootScope.$on('routeHoveredFromMap', routeHoveredFromMap);
+
+        $rootScope.$on('routeSelectedFromMap', routeSelectedFromMap);
+
+        self.closeDetailsPanel = function closeDetailsPanel() {
+            self.selectedRoute = null;
+            self.nothingIsSelected = true;
+        };
+
     });

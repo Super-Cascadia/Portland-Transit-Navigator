@@ -5,6 +5,10 @@
 angular.module('pdxStreetcarApp')
 
     .service('NearbyTransit', function (StopData, RouteData, trimet, RouteColors, routeMapInstance, feetToMeters, userLocation) {
+
+        "use strict";
+
+
         var self = this;
 
         self.nearbyStopMarkers = {};
@@ -36,6 +40,18 @@ angular.module('pdxStreetcarApp')
                 StopData.clearNearbyStopMarkers();
                 RouteData.clearNearbyRoutes();
                 self.nearbyRoutes = {};
+
+                return data;
+            }
+
+            function storeRetrievedRoutes(data) {
+
+                RouteData.memoizeNearbyRoutes(data);
+
+                return data;
+            }
+
+            function storeRetrievedStops(data) {
 
                 return data;
             }
@@ -110,6 +126,8 @@ angular.module('pdxStreetcarApp')
             }
 
             return trimet.getStopsAroundLocation(latitude, longitude, radiusInFeet)
+                .then(storeRetrievedRoutes)
+                .then(storeRetrievedStops)
                 .then(initializeModel)
                 .then(provideListOfNearbyStops)
                 .then(provideListOfNearbyRoutes)
