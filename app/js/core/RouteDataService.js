@@ -115,65 +115,72 @@ angular.module('pdxStreetcarApp')
             }
         }
 
-        function routeHoveredOnMap(data) {
-            $rootScope.$broadcast('routeHoveredFromMap', data);
-        }
-
-        function routeSelectedOnMap(data) {
-            "use strict";
-            $rootScope.$broadcast('routeSelectedFromMap', data);
-        }
-
-        function setRouteStyles() {
-            routeMapInstance.map.data.setStyle(function(feature) {
-                var routeId = feature.getProperty('route_number');
-                var color = determineRouteColor(routeId);
-
-                return {
-                    strokeColor: '#' + color,
-                    strokeWeight: 4
-                };
-            });
-
-            routeMapInstance.map.data.addListener('mouseover', function(event) {
-                routeMapInstance.map.data.revertStyle();
-                routeMapInstance.map.data.overrideStyle(event.feature, {strokeWeight: 8});
-            });
-
-            routeMapInstance.map.data.addListener('mouseout', function(event) {
-                routeMapInstance.map.data.revertStyle();
-            });
-
-            routeMapInstance.map.data.addListener('click', function(event) {
-                if (event.alreadyCalled_) {
-                  return;
-                } else {
-                  var value = event.feature.getProperty('route_number');
-                  routeMapInstance.map.data.revertStyle();
-                  routeMapInstance.map.data.overrideStyle(event.feature, {
-                    strokeColor: 'red',
-                    strokeWeight: 8
-                  });
-                  routeSelectedOnMap(value);
-                  event.alreadyCalled_ = true;
-                }
-            });
-
-            routeMapInstance.map.data.addListener('mouseover', function(event) {
-                var value = event.feature.getProperty('route_number');
-                routeHoveredOnMap(value);
-            });
-        }
-
         self.initRouteLineDisplay = function(routeId, directionId) {
             var featureCollection,
                 layer;
+
+          function routeHoveredOnMap(data) {
+            $rootScope.$broadcast('routeHoveredFromMap', data);
+          }
+
+          function routeSelectedOnMap(data) {
+            $rootScope.$broadcast('routeSelectedFromMap', data);
+          }
+
+          function setRouteMouseOverEvent() {
+            routeMapInstance.map.data.addListener('mouseover', function(event) {
+              routeMapInstance.map.data.revertStyle();
+              routeMapInstance.map.data.overrideStyle(event.feature, {strokeWeight: 8});
+              var value = event.feature.getProperty('route_number');
+              routeHoveredOnMap(value);
+            });
+          }
+
+          function setRouteMouseOutEvent() {
+            routeMapInstance.map.data.addListener('mouseout', function(event) {
+              routeMapInstance.map.data.revertStyle();
+            });
+          }
+
+          function setRouteClickEvent() {
+            routeMapInstance.map.data.addListener('click', function(event) {
+              if (event.alreadyCalled_) {
+                return;
+              } else {
+                var value = event.feature.getProperty('route_number');
+                routeMapInstance.map.data.revertStyle();
+                routeMapInstance.map.data.overrideStyle(event.feature, {
+                  strokeColor: 'red',
+                  strokeWeight: 8
+                });
+                routeSelectedOnMap(value);
+                event.alreadyCalled_ = true;
+              }
+            });
+          }
+
+          function setRouteStyles() {
+            routeMapInstance.map.data.setStyle(function(feature) {
+              var routeId = feature.getProperty('route_number');
+              var color = determineRouteColor(routeId);
+
+              return {
+                strokeColor: '#' + color,
+                strokeWeight: 4
+              };
+            });
+
+
+          }
 
             _.forEach(self.geoJsonRouteData.features, function (feature) {
                 if (parseInt(feature.properties.route_number) === routeId) {
                     featureCollection = compriseFeatureCollection(feature);
                     layer = routeMapInstance.map.data.addGeoJson(featureCollection);
                     setRouteStyles();
+                    setRouteMouseOverEvent();
+                    setRouteMouseOutEvent();
+                    setRouteClickEvent();
                     self.memoizeRouteLayer(routeId, layer, feature);
                 }
             });
@@ -233,6 +240,16 @@ angular.module('pdxStreetcarApp')
                     self.maxRailData = result;
                     return result;
                 });
+        };
+
+        function checkIfRouteIsMemoized() {
+
+        }
+
+        self.selectRoute = function (route) {
+          if (checkIfRouteIsMemoized(route)) {
+
+          }
         };
 
         // Nearby Routes

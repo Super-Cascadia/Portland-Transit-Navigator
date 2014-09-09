@@ -1,4 +1,4 @@
-{{routeMap.hoveredRoute}}
+<!--{{routeMap.hoveredRoute}}-->
 
 <div class="panel panel-primary"
      ng-if="routeMap.stopIsSelected">
@@ -34,7 +34,7 @@
                      style="height: 20px; width: 20px;"
                      alt=""/>
             </td>
-            <td><small>{{arrival.fullSign}}</small></td>
+            <td><small><a ng-click="routeMap.selectRoute(arrival)">{{arrival.fullSign}}</a></small></td>
             <td><small>
                         <span ng-if="arrival.remainingTime.hours">{{arrival.remainingTime.hours}} hr,</span>
                         {{arrival.remainingTime.minutes}} min,

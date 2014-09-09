@@ -8,6 +8,7 @@ angular.module('pdxStreetcarApp')
         var self = this;
 
         self.nearbyStopMarkers = {};
+        self.selectedRouteStops = {};
         self.stopMarkers = {};
 
         self.broadcastArrivalInfo = function (arrivalInfo) {
@@ -21,6 +22,10 @@ angular.module('pdxStreetcarApp')
                 });
         };
 
+        function stopMarkerIsMemoized(stop) {
+           return self.stopMarkers[stop.locid];
+        }
+
         self.createStopMarker = function createStopMarker (stop) {
             var stopId = stop.locid,
                 latitude =  stop.lat,
@@ -32,6 +37,11 @@ angular.module('pdxStreetcarApp')
                 stopMarker,
                 infoWindow,
                 infoWindowContent;
+
+            if (stopMarkerIsMemoized(stop)) {
+              return self.stopMarkers[stop.locid];
+            }
+
 
             if (!pinColor) {
                 pinColor = RouteColors['default'];
@@ -121,13 +131,10 @@ angular.module('pdxStreetcarApp')
         };
 
         self.memoizeIndividualStopMarker = function (stopMarker, stop) {
-            var stops = self.stopMarkers;
-
-            if (!stops[stop.locid]) {
-                stops[stop.locid] = stopMarker;
+            if (!self.stopMarkers[stop.locid]) {
+              self.stopMarkers[stop.locid] = stopMarker;
             }
-
-            return stops;
+            return self.stopMarkers;
         };
 
         self.memoizeRouteStopMarkers = function () {

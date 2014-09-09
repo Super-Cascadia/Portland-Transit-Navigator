@@ -135,10 +135,23 @@ angular.module('pdxStreetcarApp')
       self.busRoutes = Navigator.toggleRoute('bus', route);
     };
     self.toggleNearbyRoute = toggleNearbyRoutes;
-    self.selectStop = function (stop) {
-      // TODO: Refactor to support selection from multiple UI constructs
+    self.selectStop = function selectStop (stop, origin) {
+
+      var stopMarker = StopData.createStopMarker(stop);
+      StopData.memoizeIndividualStopMarker(stopMarker, stop);
       StopData.selectStopMarker(stop);
-      self.nearbyStops = NearbyTransit.toggleStopSelected(stop);
+
+      if (origin === 'routeDetails') {
+        $log.log('Do something');
+      } else if (origin === 'nearbyStops') {
+        self.nearbyStops = NearbyTransit.toggleStopSelected(stop);
+      } else {
+        $log.log('Do something');
+      }
+
+    };
+    self.selectRoute = function selectRoute(route) {
+      RouteData.selectRoute(route);
     };
     self.getNearbyRoutes = getNearbyStops;
     self.getStreetCarData = getStreetCarData;

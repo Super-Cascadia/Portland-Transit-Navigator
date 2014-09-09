@@ -1,0 +1,36 @@
+<br>
+<div class="form-group">
+  <input type="text"
+         class="form-control"
+         id="streetcarSeach"
+         ng-model="streetCarSearch"
+         placeholder="Search Route Stops">
+</div>
+<div class="left-column-container">
+  <div class="panel panel-default">
+    <table class="table table-condensed table-hover">
+      <thead>
+      <td>
+        <small>ID</small>
+      </td>
+      <td>
+        <small>Name</small>
+      </td>
+      </thead>
+      <tbody>
+      <tr ng-repeat="stop in direction.stops"
+          ng-click="routeMap.selectStop(stop, 'routeDetails')">
+        <td>
+          <small><span class="label label-default">{{stop.locid}}</span></small>
+        </td>
+        <td>
+          <small>{{stop.desc}}</small>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
