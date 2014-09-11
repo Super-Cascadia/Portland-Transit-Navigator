@@ -142,7 +142,7 @@ angular.module('pdxStreetcarApp')
       StopData.selectStopMarker(stop);
 
       if (origin === 'routeDetails') {
-        $log.log('Do something');
+        self.selectedRoute = RouteData.selectRouteStop(stop);
       } else if (origin === 'nearbyStops') {
         self.nearbyStops = NearbyTransit.toggleStopSelected(stop);
       } else {
@@ -152,6 +152,10 @@ angular.module('pdxStreetcarApp')
     };
     self.selectRoute = function selectRoute(route) {
       RouteData.selectRoute(route);
+      RouteData.getRouteData(parseInt(route.route))
+        .then(function (data) {
+          self.selectedRoute = data;
+        });
     };
     self.getNearbyRoutes = getNearbyStops;
     self.getStreetCarData = getStreetCarData;
@@ -248,6 +252,8 @@ angular.module('pdxStreetcarApp')
     $rootScope.$on('arrivalInformation', arrivalInformation);
     $rootScope.$on('routeHoveredFromMap', routeHoveredFromMap);
     $rootScope.$on('routeSelectedFromMap', routeSelectedFromMap);
+
+
     self.closeDetailsPanel = function closeDetailsPanel() {
       self.selectedRoute = null;
       self.nothingIsSelected = true;

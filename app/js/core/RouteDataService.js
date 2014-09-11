@@ -14,12 +14,15 @@ angular.module('pdxStreetcarApp')
         self.streetcarData = null;
         self.maxRailData = null;
         self.busRoutesData = null;
+        self.selectedRoute = null;
 
         self.routeLayers = {};
         self.stopMarkers = {};
         self.nearbyRoutes = {};
         self.routes = {};
         self.routesDisplayed = 0;
+
+        self.selectedRouteStop = null;
 
         self.retrieveRouteGeoJson = function retrieveRouteGeoJson() {
             var deferred = $q.defer();
@@ -55,11 +58,11 @@ angular.module('pdxStreetcarApp')
             });
         };
 
-        self.memoizeStopDataOnRoute = function memoizeStopData(route) {
+        self.memoizeStopDataOnRoute = function memoizeStopData(data) {
 
             function findStopsForDirection(directionId) {
               var stops;
-                _.forEach(route.resultSet.route[0].dir, function (direction) {
+                _.forEach(data.resultSet.route[0].dir, function (direction) {
                     if (direction.dir === directionId) {
                         stops = direction.stop;
                     }
@@ -67,25 +70,69 @@ angular.module('pdxStreetcarApp')
               return stops;
             }
 
-            var routeId = route.resultSet.route[0].route;
+            function convertStopsArrayToDictionary(stops) {
+              var stopsDictionary = {};
+              _.forEach(stops, function (stop) {
+                if (!stopsDictionary[stop.locid]) {
+                  stop.selected = false;
+                  stopsDictionary[stop.locid] = stop;
+                }
+              });
+
+              return stopsDictionary;
+            }
+
+            var routeId = data.resultSet.route[0].route;
 
             _.forEach(self.routes[routeId].dir, function (direction) {
                 var stops = findStopsForDirection(direction.dir);
-                direction.stops = stops;
+                if (stops) {
+                  direction.stop = convertStopsArrayToDictionary(stops);
+                }
             });
 
-            return route;
+            return self.routes[routeId];
+        };
+
+        self.memoizeRoute = function (data) {
+            var route = data.resultSet.route[0];
+            var routeId = route.route;
+            if (!self.routes[routeId]) {
+              self.routes[routeId] = route;
+            }
+            return data;
         };
 
         self.getRouteData = function (routeId) {
             // TODO: make sure that routes and nearbyRoutes have data in them at this point
-            if (self.routes[routeId]) {
-                return trimet.getRouteById(routeId)
-                    .then(self.memoizeStopDataOnRoute)
-                    .then(function (data) {
-                        return self.routes[routeId];
-                    });
+              return trimet.getRouteById(routeId)
+                  .then(self.memoizeRoute)
+                  .then(self.memoizeStopDataOnRoute)
+                  .then(function (data){
+                      self.selectedRoute = self.routes[routeId];
+                      return self.selectedRoute;
+                  });
+        };
+
+        self.selectRouteStop = function (stop) {
+
+          if (self.selectedRouteStop) {
+            _.forEach(self.selectedRoute.dir, function (direction) {
+              if (direction.stops[self.selectedRouteStop.locid]) {
+                direction.stops[self.selectedRouteStop.locid].selected = false;
+              }
+            });
+          }
+
+          _.forEach(self.selectedRoute.dir, function (direction) {
+            if (direction.stops[stop.locid]) {
+              direction.stops[stop.locid].selected = true;
+              self.selectedRouteStop = stop;
+              return;
             }
+          });
+
+          return self.selectedRoute;
         };
 
         self.memoizeNearbyRoutes = function (data) {
@@ -242,14 +289,20 @@ angular.module('pdxStreetcarApp')
                 });
         };
 
-        function checkIfRouteIsMemoized() {
+        function checkIfRouteIsMemoized(route) {
+          return self.routeLayers[route.route];
+        }
 
+        function triggerClickEventOnRouteLayer(route) {
+          var routeLayer = self.routeLayers[route.route];
+          google.maps.event.trigger(routeLayer.standard[0].layer, 'click');
         }
 
         self.selectRoute = function (route) {
-          if (checkIfRouteIsMemoized(route)) {
-
+          if (!checkIfRouteIsMemoized(route)) {
+            self.initRouteLineDisplay(route.route);
           }
+          //triggerClickEventOnRouteLayer(route);
         };
 
         // Nearby Routes
