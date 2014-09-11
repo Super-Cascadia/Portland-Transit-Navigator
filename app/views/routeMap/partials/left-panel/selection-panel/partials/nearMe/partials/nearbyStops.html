@@ -1,0 +1,42 @@
+<div class="form-group">
+    <input type="text"
+           class="form-control"
+           id="streetcarSeach"
+           ng-model="nearbyStopsSearch"
+           placeholder="Search nearby Stops">
+</div>
+
+<div class="left-column-container">
+
+    <div ng-show="!routeMap.nearbyStops">
+        <div class="well well-lg">Loading nearby stops...</div>
+    </div>
+
+    <div ng-show="routeMap.nearbyStops">
+
+        <div class="panel panel-default"
+             ng-class="{'panel-success': stop.selected === true}"
+             ng-repeat="stop in routeMap.nearbyStops | filter: nearbyStopsSearch">
+            <div class="panel-heading"
+                 ng-click="routeMap.selectStop(stop); $event.stopPropagation();">
+                <small>
+                    <strong>{{stop.desc}}</strong> | <span class="label label-default">{{stop.dir}}</span>
+                </small>
+            </div>
+            <table class="table table-condensed table-hover">
+                <thead>
+                    <td><small>Route</small></td>
+                    <td><small>Name</small></td>
+                    <td><small>Type</small></td>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="route in stop.route">
+                        <td><small><span class="label label-default">{{route.route}}</span></small></td>
+                        <td><small>{{route.desc}}</small></td>
+                        <td><small>{{route.type}}</small></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

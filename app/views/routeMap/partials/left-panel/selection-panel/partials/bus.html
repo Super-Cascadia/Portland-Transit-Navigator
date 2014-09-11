@@ -1,0 +1,43 @@
+<br>
+<div class="form-group">
+    <input type="text"
+           class="form-control"
+           id="busSeach"
+           ng-model="busSearch"
+           placeholder="Search Bus Routes">
+</div>
+<div class="left-column-container">
+
+    <div ng-show="!routeMap.busRoutes">
+        <div class="well well-lg">Loading Bus routes...</div>
+    </div>
+
+    <div ng-show="routeMap.busRoutes">
+
+        <div class="panel panel-default"
+             ng-repeat="route in routeMap.busRoutes | filter:busSearch">
+            <div class="panel-heading">
+                <small>
+                    <strong>{{route.name}}</strong> <span class="label label-default">{{route.routeId}}</span>
+                </small>
+            </div>
+            <table class="table table-condensed table-hover">
+                <thead>
+                    <td></td>
+                    <td><small>Direction</small></td>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="direction in route.directions | filter:busSearch"
+                        ng-class="{info: direction.enabled}"
+                        ng-click="routeMap.toggleBusRoute(direction)">
+                        <td>
+                            <input type="checkbox"
+                                   ng-checked="direction.enabled === true">
+                        </td>
+                        <td><small>{{direction.displayName}}</small></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

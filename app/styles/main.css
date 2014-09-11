@@ -32,16 +32,16 @@ body {
 .panel-title a {
   cursor: pointer;
 }
-div.left-column-container,
-div.map-container {
+div.left-column-container {
   overflow-y: auto;
+  height: 600px;
 }
 div.map-container {
-  height: 700px;
+  height: 450px;
 }
 div.map-container div#map-canvas {
-  height: 700px;
+  height: 450px;
 }
 .container {
-  width: 1024px !important;
+  width: 970px !important;
 }

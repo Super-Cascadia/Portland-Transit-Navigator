@@ -3,46 +3,45 @@
     <div class="row">
         <!--Left Column-->
         <div class="col-xs-4">
-            <ng-include src="'views/routeMap/partials/leftColumn.html'"></ng-include>
+            <ng-include src="'views/routeMap/partials/left-panel/leftColumn.html'"></ng-include>
         </div>
         <!--Right Column-->
         <div class="col-xs-8">
             <!--Overlay Menu-->
-            <small>Overlays</small>
-            <form class="form-inline"
-                  role="form">
-                <div class="form-row">
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox"
-                                   ng-click="routeMap.toggleServiceBoundaryOverlay()"> Service Boundary
-                        </label>
-                    </div>
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox"
-                                   ng-click="routeMap.toggleTransitCenterOverlay()"> Transit Centers
-                        </label>
-                    </div>
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox"
-                                   ng-click="routeMap.toggleParkAndRidesOverlay()"> Park & Ride
-                        </label>
-                    </div>
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <form class="form-inline"
+                          role="form">
+                        <div class="form-row">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox"
+                                           ng-click="routeMap.toggleServiceBoundaryOverlay()"> <span>Service Boundary </span>
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox"
+                                           ng-click="routeMap.toggleTransitCenterOverlay()"> <span>Transit Centers  </span>
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox"
+                                           ng-click="routeMap.toggleParkAndRidesOverlay()"> <span>Park & Ride  </span>
+                                </label>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-            </form>
-            <br>
+            </div>
             <!--Map-->
-            <div class="row">
-                <div class="map-container">
-                    <div id="map-canvas"></div>
-                </div>
+            <div class="map-container">
+                <div id="map-canvas"></div>
             </div>
             <br>
             <!--Arrivals-->
-            <div class="row"
-                 id="arrivals-slideup">
+            <div id="arrivals-slideup">
                 <!--Empty State-->
                 <div class="well well-lg"
                      ng-if="!routeMap.stopIsSelected">Please select a stop to see arrival times.

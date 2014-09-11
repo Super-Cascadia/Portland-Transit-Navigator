@@ -5,10 +5,9 @@
     </div>
 
     <ul class="nav navbar-nav">
-        <li ng-repeat="navItem in topNavigationItems"
-            ng-class="{active: isActive(navItem)}">
-            <a ng-click="topNavItemClick(navItem)"
-               ng-href="#{{navItem.route}}">{{navItem.displayName}}</a></li>
+        <li ng-repeat="navItem in nav.topNavigationItems"
+            ng-class="{active: nav.isActive(navItem)}">
+            <a ng-href="#{{navItem.route}}">{{navItem.displayName}}</a></li>
     </ul>
 
     <ul class="nav navbar-nav navbar-right">

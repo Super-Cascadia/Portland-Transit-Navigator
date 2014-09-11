@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="Encoding" useUTFGuessing="true" native2AsciiForPropertiesFiles="false" />
+  <component name="Encoding" useUTFGuessing="true" native2AsciiForPropertiesFiles="false">
+    <file url="file://$PROJECT_DIR$/app/js/controllers.js" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/js/core/RouteDataService.js" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/js/core/StopDataService.js" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/views/routeMap/partials/arrivals.html" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/views/routeMap/partials/left-panel/detail-panel/detail-panel.html" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/views/routeMap/partials/left-panel/detail-panel/partials/route-stops.html" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/views/routeMap/partials/left-panel/leftColumn.html" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/views/routeMap/partials/left-panel/selection-panel/partials/nearMe/nearMe.html" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/views/routeMap/partials/left-panel/selection-panel/selection-panel.html" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/views/routeMap/routeMap.html" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dist/views/routeMap.html" charset="UTF-8" />
+  </component>
 </project>
 
