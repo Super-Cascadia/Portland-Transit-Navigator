@@ -12,6 +12,8 @@
     <file url="file://$PROJECT_DIR$/app/views/routeMap/partials/left-panel/selection-panel/selection-panel.html" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/app/views/routeMap/routeMap.html" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/dist/views/routeMap.html" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/karma.conf.js" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/test/spec/controllers/services.js" charset="UTF-8" />
   </component>
 </project>
 
