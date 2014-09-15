@@ -54,6 +54,13 @@ module.exports = function(config) {
     // - IE (only Windows)
     browsers: ['Firefox', 'FirefoxAurora', 'FirefoxNightly'],
 
+    preprocessors: {
+      // source files, that you wanna generate coverage for
+      // do not include tests or libraries
+      // (these files will be instrumented by Istanbul)
+      'app/js/*.js': ['coverage']
+    },
+
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
