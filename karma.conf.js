@@ -14,11 +14,18 @@ module.exports = function(config) {
       'app/bower_components/angular/angular.js',
       'app/bower_components/angular-mocks/angular-mocks.js',
       'app/bower_components/angular-resource/angular-resource.js',
+      'app/bower_components/angular-route/angular-route.js',
       'app/bower_components/angular-cookies/angular-cookies.js',
       'app/bower_components/angular-sanitize/angular-sanitize.js',
+      'app/bower_components/angular-bootstrap/ui-bootstrap.js',
+      'app/bower_components/angular-ui-utils/ui-utils.js',
+      'app/bower_components/angular-animate/angular-animate.js',
+      'app/bower_components/angularjs-geolocation/dist/angularjs-geolocation.min.js',
+      'app/bower_components/angular-ui-select2/src/select2.js',
+      'app/bower_components/angular-ui-router/release/angular-ui-router.js',
+      'app/bower_components/lodash/dist/lodash.js',
       'app/js/*.js',
       'app/js/**/*.js',
-      'test/mock/**/*.js',
       'test/spec/**/*.js'
     ],
 
@@ -45,7 +52,14 @@ module.exports = function(config) {
     // - Safari (only Mac)
     // - PhantomJS
     // - IE (only Windows)
-    browsers: ['Chrome'],
+    browsers: ['Firefox', 'FirefoxAurora', 'FirefoxNightly'],
+
+    preprocessors: {
+      // source files, that you wanna generate coverage for
+      // do not include tests or libraries
+      // (these files will be instrumented by Istanbul)
+      'app/js/*.js': ['coverage']
+    },
 
 
     // Continuous Integration mode

@@ -1,9 +1,6 @@
 {
   "name": "pdxstreetcar",
   "version": "0.0.0",
-  "dependencies": {
-    "togeojson": "^0.8.0"
-  },
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-autoprefixer": "~0.2.0",
@@ -19,7 +16,7 @@
     "grunt-contrib-htmlmin": "~0.1.3",
     "grunt-contrib-imagemin": "~0.2.0",
     "grunt-contrib-jshint": "~0.6.0",
-    "grunt-contrib-less": "^0.11.4",
+    "grunt-contrib-less": "0.11.0",
     "grunt-contrib-uglify": "~0.2.0",
     "grunt-contrib-watch": "~0.5.2",
     "grunt-google-cdn": "~0.2.0",
@@ -48,5 +45,8 @@
   },
   "scripts": {
     "test": "grunt test"
+  },
+  "dependencies": {
+    "karma-coverage": "^0.2.6"
   }
 }
