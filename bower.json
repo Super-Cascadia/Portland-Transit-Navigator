@@ -1,8 +1,8 @@
 {
   "name": "pdxStreetcar",
-  "version": "0.0.0",
+  "version": "0.0.2",
   "dependencies": {
-    "angular": "~1.0.7",
+    "angular": "~1.2.24",
     "json3": "~3.2.4",
     "jquery": "~1.9.1",
     "es5-shim": "~2.0.8",
@@ -12,7 +12,6 @@
     "angular-sanitize": "~1.0.7",
     "angular-animate": "~1.2.24",
     "angular-ui-router": "~0.2.11",
-    "angular-pdxTrimetApi": "https://github.com/wintermuted/angular-pdxTrimetApi.git",
     "angular-ui-select2": "~0.0.5",
     "angular-ui-utils": "~0.1.1",
     "angularjs-geolocation": "~0.1.1",
