@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/wintermuted/Portland-Transit-Navigator.svg?branch=master)](https://travis-ci.org/wintermuted/Portland-Transit-Navigator)
 
+[![Dependency Status](https://gemnasium.com/wintermuted/Portland-Transit-Navigator.svg)](https://gemnasium.com/wintermuted/Portland-Transit-Navigator)
+
 Portland Transit Navigator
 ======================
 
