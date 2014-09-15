@@ -26,7 +26,6 @@ module.exports = function(config) {
       'app/bower_components/lodash/dist/lodash.js',
       'app/js/*.js',
       'app/js/**/*.js',
-      'test/mock/**/*.js',
       'test/spec/**/*.js'
     ],
 
@@ -53,7 +52,7 @@ module.exports = function(config) {
     // - Safari (only Mac)
     // - PhantomJS
     // - IE (only Windows)
-    browsers: ['Chrome'],
+    browsers: ['Firefox', 'FirefoxAurora', 'FirefoxNightly'],
 
 
     // Continuous Integration mode
