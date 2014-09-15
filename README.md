@@ -1,5 +1,7 @@
 [![Code Climate](https://codeclimate.com/github/wintermuted/Portland-Streetcar-App.png)](https://codeclimate.com/github/wintermuted/Portland-Streetcar-App)
 
+[![Build Status](https://travis-ci.org/wintermuted/Portland-Transit-Navigator.svg?branch=master)](https://travis-ci.org/wintermuted/Portland-Transit-Navigator)
+
 Portland Transit Navigator
 ======================
 
