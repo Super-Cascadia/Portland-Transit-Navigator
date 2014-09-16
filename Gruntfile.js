@@ -316,6 +316,21 @@ module.exports = function (grunt) {
                     {expand: true, cwd: 'app/', src: ['**'], dest: ''}
                 ]
             }
+        },
+        coveralls: {
+          options: {
+            // LCOV coverage file relevant to every target
+            src: 'coverage-results/lcov.info',
+
+            // When true, grunt-coveralls will only print a warning rather than
+            // an error, to prevent CI builds from failing unnecessarily (e.g. if
+            // coveralls.io is down). Optional, defaults to false.
+            force: false
+          },
+          your_target: {
+            // Target-specific LCOV coverage file
+            src: 'coverage-results/extra-results-*.info'
+          }
         }
     });
     grunt.loadNpmTasks('grunt-contrib-less');
@@ -352,6 +367,7 @@ module.exports = function (grunt) {
         'rev',
         'usemin'
     ]);
+    grunt.loadNpmTasks('grunt-coveralls');
     grunt.registerTask('default', [
         'jshint',
         'test',
