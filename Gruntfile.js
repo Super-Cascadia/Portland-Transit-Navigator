@@ -310,7 +310,10 @@ module.exports = function (grunt) {
       }
     },
     coveralls: {
-      src: 'coverage/{,*/}*.info'
+      dev_coverage: {
+        src: 'coverage/{,*/}*.info',
+        force: true
+      }
     }
   });
   grunt.loadNpmTasks('grunt-contrib-less');
@@ -333,7 +336,7 @@ module.exports = function (grunt) {
     'autoprefixer',
     'connect:test',
     'karma',
-    'coveralls'
+    'coveralls:dev_coverage'
   ]);
   grunt.registerTask('build', [
     'clean:dist',
