@@ -4,6 +4,8 @@
 
 [![Dependency Status](https://gemnasium.com/wintermuted/Portland-Transit-Navigator.svg)](https://gemnasium.com/wintermuted/Portland-Transit-Navigator)
 
+[![Coverage Status](https://coveralls.io/repos/wintermuted/Portland-Streetcar-App/badge.png)](https://coveralls.io/r/wintermuted/Portland-Streetcar-App)
+
 Portland Transit Navigator
 ======================
 
