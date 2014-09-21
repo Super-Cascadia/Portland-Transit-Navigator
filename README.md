@@ -1,9 +1,7 @@
 [![Code Climate](https://codeclimate.com/github/wintermuted/Portland-Streetcar-App.png)](https://codeclimate.com/github/wintermuted/Portland-Streetcar-App)
-
 [![Build Status](https://travis-ci.org/wintermuted/Portland-Transit-Navigator.svg?branch=master)](https://travis-ci.org/wintermuted/Portland-Transit-Navigator)
-
+![Codeship Status for 35736/35736.github.io](https://www.codeship.io/projects/35736/status?branch=master)]
 [![Dependency Status](https://gemnasium.com/wintermuted/Portland-Transit-Navigator.svg)](https://gemnasium.com/wintermuted/Portland-Transit-Navigator)
-
 [![Coverage Status](https://coveralls.io/repos/wintermuted/Portland-Streetcar-App/badge.png)](https://coveralls.io/r/wintermuted/Portland-Streetcar-App)
 
 Portland Transit Navigator
