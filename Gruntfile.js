@@ -335,8 +335,7 @@ module.exports = function (grunt) {
     'concurrent:test',
     'autoprefixer',
     'connect:test',
-    'karma',
-    'coveralls:dev_coverage'
+    'karma'
   ]);
   grunt.registerTask('build', [
     'clean:dist',
