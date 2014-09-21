@@ -310,18 +310,17 @@ module.exports = function (grunt) {
       }
     },
     coveralls: {
-      options: {
-        debug: true,
-        coverage_dir: 'coverage',
-        dryRun: true,
-        force: true,
-        recursive: true
-      }
+        // LCOV coverage file relevant to every target
+      src: 'coverage/**/lcov.info',
+
+      // When true, grunt-coveralls will only print a warning rather than
+      // an error, to prevent CI builds from failing unnecessarily (e.g. if
+      // coveralls.io is down). Optional, defaults to false.
+      force: true
     }
   });
   grunt.loadNpmTasks('grunt-contrib-less');
-  grunt.loadNpmTasks('grunt-karma-coveralls');
-  grunt.registerTask('run-coveralls', ['coveralls']);
+  grunt.loadNpmTasks('grunt-coveralls');
   grunt.registerTask('server', function (target) {
     if (target === 'dist') {
       return grunt.task.run(['build', 'connect:dist:keepalive']);
