@@ -11,7 +11,6 @@ describe('Factory: trimetUtilities', function () {
     trimetUtilities = _trimetUtilities_;
   }));
 
-
   describe('#trimetUtilities.isStreetCarRoute', function () {
 
     describe('called with a valid set of data', function () {
