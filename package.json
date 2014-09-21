@@ -22,17 +22,19 @@
     "grunt-coveralls": "^1.0.0",
     "grunt-google-cdn": "~0.2.0",
     "grunt-karma": "~0.6.2",
+    "grunt-karma-coveralls": "^2.5.2",
     "grunt-ngmin": "~0.0.2",
     "grunt-rev": "~0.1.0",
     "grunt-svgmin": "~0.2.0",
     "grunt-usemin": "~0.1.11",
+    "istanbul": "^0.3.2",
     "karma": "~0.10.9",
-    "karma-chrome-launcher": "~0.1.2",
+    "karma-chrome-launcher": "^0.1.4",
     "karma-coffee-preprocessor": "~0.1.3",
     "karma-coverage": "^0.2.6",
     "karma-firefox-launcher": "~0.1.3",
     "karma-html2js-preprocessor": "~0.1.0",
-    "karma-jasmine": "~0.1.5",
+    "karma-jasmine": "^0.1.5",
     "karma-ng-html2js-preprocessor": "~0.1.0",
     "karma-ng-scenario": "~0.1.0",
     "karma-phantomjs-launcher": "~0.1.2",
@@ -49,6 +51,8 @@
     "test": "grunt test"
   },
   "dependencies": {
+    "coveralls": "^2.11.1",
+    "jasmine": "^2.0.1",
     "karma": "~0.10",
     "karma-coverage": "^0.2.6"
   }

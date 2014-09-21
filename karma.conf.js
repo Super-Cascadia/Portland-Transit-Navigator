@@ -52,7 +52,7 @@ module.exports = function(config) {
     // - Safari (only Mac)
     // - PhantomJS
     // - IE (only Windows)
-    browsers: ['Firefox', 'FirefoxAurora', 'FirefoxNightly'],
+    browsers: ['Firefox'],
 
     // coverage reporter generates the coverage
     reporters: ['progress', 'coverage'],
@@ -65,9 +65,15 @@ module.exports = function(config) {
     },
 
     coverageReporter: {
-      type : 'html',
-      dir : 'coverage/'
+      type: 'lcov',
+      dir: 'coverage/'
     },
+
+    plugins: [
+      'karma-coverage',
+      'karma-firefox-launcher',
+      'karma-jasmine'
+    ],
 
 
     // Continuous Integration mode
