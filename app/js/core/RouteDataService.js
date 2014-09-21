@@ -108,10 +108,10 @@ angular.module('pdxStreetcarApp')
               return trimet.getRouteById(routeId)
                   .then(self.memoizeRoute)
                   .then(self.memoizeStopDataOnRoute)
-                  .then(function (data){
+                  .then(function (data) {
                       self.selectedRoute = self.routes[routeId];
                       return self.selectedRoute;
-                  });
+                    });
         };
 
         self.selectRouteStop = function (stop) {
