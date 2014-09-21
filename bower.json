@@ -26,7 +26,7 @@
     "angular-scenario": "~1.0.7"
   },
   "resolutions": {
-    "angular": "1.2.24",
+    "angular": "1.2.25",
     "select2": "~3.4"
   }
 }
