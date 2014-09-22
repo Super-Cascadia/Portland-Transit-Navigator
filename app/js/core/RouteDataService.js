@@ -4,7 +4,7 @@
 
 angular.module('pdxStreetcarApp')
 
-    .service('RouteData', function ($q, $rootScope, routeMapInstance, trimet, formatRetrievedRoutes, RouteColors) {
+    .service('RouteData', function ($q, $log, $rootScope, routeMapInstance, trimet, formatRetrievedRoutes, RouteColors) {
 
         "use strict";
 
@@ -359,42 +359,28 @@ angular.module('pdxStreetcarApp')
         };
 
         function getMemoizedRoute(routeId, directionId) {
-            return self.routeLayers[routeId].regular[directionId] || self.routeLayers[routeId].standard[directionId];
+            if (self.routeLayers[routeId]) {
+                return self.routeLayers[routeId].standard[directionId] || self.routeLayers[routeId].frequent[directionId];
+            }
+            return;
         }
 
         self.showRouteLayer = function (routeId, directionId) {
 
             var route;
 
-            function setRouteToEnabled (dir) {
-                if (dir.enabled && dir.enabled === true) {
-                    dir.enabled = false;
-                }
-            }
-
             function addRouteLayerToMap(featureCollection) {
                 return routeMapInstance.map.data.addGeoJson(featureCollection);
             }
 
-            function enableMemoizedRoute(route, routeId, directionId) {
-                var direction,
-                    layer,
+            function enableMemoizedRoute(route, routeId) {
+                var layer,
                     featureCollection;
 
-                if (route.frequent && route.frequent[directionId]) {
-                    direction = route.frequent[directionId];
-                    featureCollection = compriseFeatureCollection(direction.feature);
+                    featureCollection = compriseFeatureCollection(route.feature);
                     layer = addRouteLayerToMap(featureCollection);
-                    self.memoizeRouteLayer(routeId, layer, direction.feature);
-                    setRouteToEnabled(direction);
-                }
-                if (route.standard && route.standard[directionId]) {
-                    direction = route.standard[directionId];
-                    featureCollection = compriseFeatureCollection(direction.feature);
-                    layer = addRouteLayerToMap(featureCollection);
-                    self.memoizeRouteLayer(routeId, layer, direction.feature);
-                    setRouteToEnabled(direction);
-                }
+                    self.memoizeRouteLayer(routeId, layer, route.feature);
+                    route.enabled = false;
             }
 
             function enableNewRoute (routeId, directionId) {
@@ -413,7 +399,7 @@ angular.module('pdxStreetcarApp')
             route = getMemoizedRoute(routeId, directionId);
 
             if (route) {
-                enableMemoizedRoute(route, routeId, directionId);
+                enableMemoizedRoute(route, routeId);
             } else {
                 enableNewRoute(routeId, directionId);
             }
@@ -421,8 +407,7 @@ angular.module('pdxStreetcarApp')
         };
 
         self.hideRouteLayer = function (routeId, directionId) {
-            var route,
-                direction;
+            var route;
 
             function setRouteLayerToDisabled(dir) {
                 if (dir.enabled && dir.enabled === true) {
@@ -430,19 +415,11 @@ angular.module('pdxStreetcarApp')
                 }
             }
 
-            route = getMemoizedRoute(routeId);
+            route = getMemoizedRoute(routeId, directionId);
 
             if (route) {
-                if (route.frequent && route.frequent[directionId]) {
-                    direction = route.frequent[directionId];
-                    self.clearRouteLayerOnMap(direction.layer[0]);
-                    setRouteLayerToDisabled(direction);
-                }
-                if (route.standard && route.standard[directionId]) {
-                    direction = route.standard[directionId];
-                    self.clearRouteLayerOnMap(direction.layer[0]);
-                    setRouteLayerToDisabled(direction);
-                }
+                self.clearRouteLayerOnMap(route.layer[0]);
+                setRouteLayerToDisabled(route);
             } else {
                 $log.error('Route ' + routeId + ' could not be found.  An error occurred.');
             }
