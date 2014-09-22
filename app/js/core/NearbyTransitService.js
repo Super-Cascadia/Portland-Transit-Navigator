@@ -8,7 +8,6 @@ angular.module('pdxStreetcarApp')
 
         "use strict";
 
-
         var self = this;
 
         self.nearbyStopMarkers = {};
@@ -73,19 +72,34 @@ angular.module('pdxStreetcarApp')
                     var routes = {};
 
                     function placeRoute(route, stop) {
-                        if (!routes[route.route]) {
-                            routes[route.route] = route;
-                            routes[route.route].stops = {};
+                        var routeId = route.route,
+                            routeInst;
+
+                        if (!routes[routeId]) {
+                            routes[routeId] = {};
+                            routes[routeId].desc = route.desc;
+                            routes[routeId].routeId = route.route;
+                            routes[routeId].type = route.type;
                         }
-                        if (!routes[route.route].stops) {
-                            routes[route.route].stops = {};
+
+                        routeInst = routes[routeId];
+
+                        if (!routeInst.stops) {
+                            routeInst.stops = {};
                         }
-                        if (!routes[route.route].stops[stop.locid]) {
-                            routes[route.route].stops[stop.locid] = stop;
+
+                        if (!routeInst.stops[stop.locid]) {
+                            routeInst.stops[stop.locid] = stop;
                         }
-                        if (routes[route.route].dir[0].dir !== route.dir[0].dir) {
-                            routes[route.route].dir.push(route.dir[0]);
+
+                        if (!routeInst.directions) {
+                            routeInst.directions = {};
                         }
+
+                        if (!routeInst.directions[route.dir[0].dir]) {
+                            routeInst.directions[route.dir[0].dir] = route.dir[0];
+                        }
+
                     }
 
                     _.forEach(locations, function (stop) {
@@ -118,10 +132,12 @@ angular.module('pdxStreetcarApp')
                 _.forEach(self.nearbyRoutes, function (route) {
                     route.enabled = true;
                     route.selected = false;
-                    var routeId = route.route;
-                    RouteData.initRouteLineDisplay(routeId);
+                    _.forEach(route.directions, function (direction) {
+                        var directionId = direction.dir;
+                        RouteData.initRouteLineDisplay(route.routeId, directionId);
+                    });
                 });
-                console.log("Route Lines Displayed: " + RouteData.routesDisplayed);
+                console.log('Route Lines Displayed: ' + RouteData.routesDisplayed);
                 return data;
             }
 
@@ -143,36 +159,36 @@ angular.module('pdxStreetcarApp')
         };
 
         self.toggleNearbyRoute = function (route) {
-            var routeId = route.route,
-                directionId;
+            var nearbyRouteInst;
 
-            function setRouteDisabled(routeId, directionId) {
-                self.nearbyRoutes[routeId].enabled = false;
-                self.nearbyRoutes[routeId].dir[directionId].enabled = false;
+            function enableRoute(routeInst) {
+                var directionId;
+                _.forEach(routeInst.directions, function (direction) {
+                    directionId = direction.dir;
+                    RouteData.showRouteLayer(route.routeId, directionId);
+                    self.nearbyRoutes[route.routeId].enabled = true;
+                    self.nearbyRoutes[route.routeId].directions[directionId].enabled = true;
+                });
             }
 
-            function setRouteEnabled(routeId, directionId) {
-                self.nearbyRoutes[routeId].enabled = true;
-                self.nearbyRoutes[routeId].dir[directionId].enabled = true;
+            function disableRoute(routeInst) {
+                var directionId;
+                _.forEach(routeInst.directions, function (direction) {
+                    directionId = direction.dir;
+                    RouteData.hideRouteLayer(route.routeId, directionId);
+                    self.nearbyRoutes[route.routeId].enabled = false;
+                    self.nearbyRoutes[route.routeId].directions[directionId].enabled = false;
+                });
             }
 
-            _.forEach(self.nearbyRoutes, function (route) {
-                if (route.route === routeId) {
-                    if (route.enabled === false) {
-                        _.forEach(route.dir, function (direction) {
-                            directionId = direction.dir;
-                            RouteData.overwriteRouteLayerOnMap(routeId, directionId);
-                            setRouteEnabled(routeId, directionId);
-                        });
-                    } else if (route.enabled === true) {
-                        _.forEach(route.dir, function (direction) {
-                            directionId = direction.dir;
-                            RouteData.clearRouteLayersOnMap(routeId, directionId);
-                            setRouteDisabled(routeId, directionId);
-                        });
-                    }
+            if (self.nearbyRoutes[route.routeId]) {
+                nearbyRouteInst = self.nearbyRoutes[route.routeId];
+                if (nearbyRouteInst.enabled === false) {
+                    enableRoute(nearbyRouteInst);
+                } else if (nearbyRouteInst.enabled === true) {
+                    disableRoute(nearbyRouteInst);
                 }
-            });
+            }
 
             return {
                 nearbyRoutes: self.nearbyRoutes
@@ -201,10 +217,6 @@ angular.module('pdxStreetcarApp')
             }
 
             return self.nearbyStops;
-        };
-
-        self.setRouteSelected = function (route) {
-
         };
 
     });

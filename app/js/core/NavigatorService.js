@@ -35,21 +35,21 @@ angular.module('pdxStreetcarApp')
 
             function toggleRoute(foundRoute) {
 
-                var direction = _.find(foundRoute.directions, {'directionId': directionId});
+                var direction = foundRoute.directions[directionId];
 
                 if (direction.enabled === false) {
-                    RouteData.overwriteRouteLayerOnMap(routeId, direction.directionId);
+                    RouteData.showRouteLayer(routeId, direction.directionId);
                     routes[routeId].enabled = true;
                     direction.enabled = true;
                 } else if (direction.enabled === true) {
-                    RouteData.clearRouteLayersOnMap(routeId, direction.directionId);
+                    RouteData.hideRouteLayer(routeId, direction.directionId);
                     routes[routeId].enabled = false;
                     direction.enabled = false;
                 }
             }
 
             routes = retrieveRoutesData(target);
-            foundRoute = _.find(routes, {"routeId": routeId});
+            foundRoute = _.find(routes, {'routeId': routeId});
 
             toggleRoute(foundRoute);
             syncRoutesData(routes, target);

@@ -210,28 +210,22 @@ angular.module('pdxStreetcarApp')
                     detour: route.detour,
                     routeId: routeId,
                     type: route.type,
-                    directions: []
+                    directions: {}
                 };
-                if (route.dir && _.isArray(route.dir)) {
-                    if (route.dir[0]) {
-                        template.directions[0] = {
+
+                _.forEach(route.dir, function (direction) {
+                    var directionId = direction.dir;
+                    if (!template.directions[directionId]) {
+                        template.directions[directionId] = {
                             routeId: routeId,
-                            directionId: route.dir[0].dir || 0,
-                            stops: route.dir[0].stop || [],
-                            displayName: route.dir[0].desc || route.desc,
+                            directionId: directionId,
+                            stops: direction.stop || [],
+                            displayName: direction.desc || route.desc,
                             enabled: false
                         };
                     }
-                    if (route.dir[1]) {
-                        template.directions[1] = {
-                            routeId: routeId,
-                            directionId: route.dir[1].dir || 1,
-                            stops: route.dir[1].stop || [],
-                            displayName: route.dir[1].desc || route.desc,
-                            enabled: false
-                        };
-                    }
-                }
+                });
+
                 result[routeId] = template;
             });
             return result;

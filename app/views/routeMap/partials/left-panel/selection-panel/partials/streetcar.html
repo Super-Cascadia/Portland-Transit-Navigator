@@ -31,7 +31,7 @@
                     ng-class="{info: direction.enabled}">
                     <td>
                         <input type="checkbox"
-                               ng-click="routeMap.toggleStreetCarRoute(direction)"
+                               ng-click="routeMap.toggleStreetCarRoute(direction); $event.preventDefault()"
                                ng-checked="direction.enabled === true">
                     </td>
                     <td><small>{{direction.displayName}}</small></td>
