@@ -70,6 +70,7 @@ angular.module('pdxStreetcarApp')
         self.stopIsSelected = false;
         self.distanceFromLocation = 660;
         self.nothingIsSelected = true;
+
         function getNearbyStops() {
             return NearbyTransit.get(self.userLatitude, self.userLongitude, self.distanceFromLocation)
                 .then(function (exports) {
@@ -125,16 +126,21 @@ angular.module('pdxStreetcarApp')
         self.toggleServiceBoundaryOverlay = mapLayers.toggleServiceBoundaryLayer;
         self.toggleTransitCenterOverlay = mapLayers.toggleTransitCenterLayer;
         self.toggleParkAndRidesOverlay = mapLayers.toggleParkAndRidesLayer;
+
         self.toggleStreetCarRoute = function toggleStreetCarRoute(route) {
             self.streetcar = Navigator.toggleRoute('streetcar', route);
         };
+
         self.toggleTrimetRoute = function toggleTrimetRoute(route) {
             self.maxRail = Navigator.toggleRoute('trimet', route);
         };
+
         self.toggleBusRoute = function toggleBusRoute(route) {
             self.busRoutes = Navigator.toggleRoute('bus', route);
         };
+
         self.toggleNearbyRoute = toggleNearbyRoutes;
+
         self.selectStop = function selectStop(stop, origin) {
 
             var stopMarker = StopData.createStopMarker(stop);
@@ -157,10 +163,12 @@ angular.module('pdxStreetcarApp')
                     self.selectedRoute = data;
                 });
         };
+
         self.getNearbyRoutes = getNearbyStops;
         self.getStreetCarData = getStreetCarData;
         self.getTrimetData = getTrimetData;
         self.getBusData = getBusData;
+
         // Init
         function init() {
             function getUserLocation() {
@@ -228,6 +236,7 @@ angular.module('pdxStreetcarApp')
         }
 
         init();
+
         function arrivalInformation(e, arrivalInfo) {
             self.selectedStop = arrivalInfo;
             self.remainingTime = arrivalInfo.resultSet.arrival[0].remainingTime;

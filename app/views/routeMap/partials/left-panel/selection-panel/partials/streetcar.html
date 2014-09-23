@@ -28,10 +28,10 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="direction in route.directions | filter:busSearch"
-                    ng-class="{info: direction.enabled}">
+                    ng-class="{info: direction.enabled}"
+                    ng-click="routeMap.toggleStreetCarRoute(direction)">
                     <td>
                         <input type="checkbox"
-                               ng-click="routeMap.toggleStreetCarRoute(direction); $event.preventDefault()"
                                ng-checked="direction.enabled === true">
                     </td>
                     <td><small>{{direction.displayName}}</small></td>

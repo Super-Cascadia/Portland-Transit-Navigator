@@ -358,29 +358,41 @@ angular.module('pdxStreetcarApp')
             return layer;
         };
 
-        function getMemoizedRoute(routeId, directionId) {
-            if (self.routeLayers[routeId]) {
-                return self.routeLayers[routeId].standard[directionId] || self.routeLayers[routeId].frequent[directionId];
-            }
-            return;
+        function routeIsMemoized(routeId, directionId) {
+            return self.routeLayers[routeId] &&
+                (self.routeLayers[routeId].standard[directionId] || self.routeLayers[routeId].frequent[directionId]);
         }
 
         self.showRouteLayer = function (routeId, directionId) {
-
-            var route;
 
             function addRouteLayerToMap(featureCollection) {
                 return routeMapInstance.map.data.addGeoJson(featureCollection);
             }
 
-            function enableMemoizedRoute(route, routeId) {
+            function enableMemoizedRoute(routeId, directionId) {
                 var layer,
+                    route,
+                    direction,
                     featureCollection;
 
-                    featureCollection = compriseFeatureCollection(route.feature);
+                function enableRouteFeature(direction) {
+                    featureCollection = compriseFeatureCollection(direction.feature);
                     layer = addRouteLayerToMap(featureCollection);
-                    self.memoizeRouteLayer(routeId, layer, route.feature);
-                    route.enabled = false;
+                    self.memoizeRouteLayer(routeId, layer, direction.feature);
+                    direction.enabled = false;
+                }
+
+                if (self.routeLayers[routeId]) {
+                    route = self.routeLayers[routeId];
+                    if (route.frequent && route.frequent[directionId]) {
+                        direction = route.frequent[directionId];
+                        enableRouteFeature(direction);
+                    }
+                    if (route.standard && route.standard[directionId]) {
+                        direction = route.standard[directionId];
+                        enableRouteFeature(direction);
+                    }
+                }
             }
 
             function enableNewRoute (routeId, directionId) {
@@ -396,61 +408,42 @@ angular.module('pdxStreetcarApp')
                 });
             }
 
-            route = getMemoizedRoute(routeId, directionId);
-
-            if (route) {
-                enableMemoizedRoute(route, routeId);
+            if (routeIsMemoized(routeId, directionId)) {
+                enableMemoizedRoute(routeId, directionId);
             } else {
                 enableNewRoute(routeId, directionId);
             }
-
         };
 
         self.hideRouteLayer = function (routeId, directionId) {
-            var route;
 
-            function setRouteLayerToDisabled(dir) {
-                if (dir.enabled && dir.enabled === true) {
-                    dir.enabled = false;
+            function clearRouteLayersOnMap(routeId, directionId) {
+                var direction,
+                    route;
+
+                function clearRouteLayer(layer) {
+                    return routeMapInstance.map.data.remove(layer);
+                }
+
+                if (self.routeLayers[routeId]) {
+                    route = self.routeLayers[routeId];
+                    if (route.frequent && route.frequent[directionId]) {
+                        direction = route.frequent[directionId];
+                        clearRouteLayer(direction.layer[0]);
+                        direction.enabled = false;
+                    }
+                    if (route.standard && route.standard[directionId]) {
+                        direction = route.standard[directionId];
+                        clearRouteLayer(direction.layer[0]);
+                        direction.enabled = false;
+                    }
                 }
             }
 
-            route = getMemoizedRoute(routeId, directionId);
-
-            if (route) {
-                self.clearRouteLayerOnMap(route.layer[0]);
-                setRouteLayerToDisabled(route);
+            if (routeIsMemoized(routeId, directionId)) {
+                clearRouteLayersOnMap(routeId, directionId);
             } else {
-                $log.error('Route ' + routeId + ' could not be found.  An error occurred.');
-            }
-        };
-
-        self.clearRouteLayerOnMap = function (layer) {
-            return routeMapInstance.map.data.remove(layer);
-        };
-
-        self.clearRouteLayersOnMap = function (routeId, directionId) {
-            var route,
-                direction;
-
-            function setRouteLayerToDisabled(dir) {
-                if (dir.enabled && dir.enabled === true) {
-                    dir.enabled = false;
-                }
-            }
-
-            if (self.routeLayers[routeId]) {
-                route = self.routeLayers[routeId];
-                if (route.frequent && route.frequent[directionId]) {
-                    direction = route.frequent[directionId];
-                    self.clearRouteLayerOnMap(direction.layer[0]);
-                    setRouteLayerToDisabled(direction);
-                }
-                if (route.standard && route.standard[directionId]) {
-                    direction = route.standard[directionId];
-                    self.clearRouteLayerOnMap(direction.layer[0]);
-                    setRouteLayerToDisabled(direction);
-                }
+                $log.error('Route ' + routeId + ' could not be found in model.  An error occurred.');
             }
         };
 
@@ -459,19 +452,16 @@ angular.module('pdxStreetcarApp')
             function checkIfRouteLayerIsEnabled(route, routeId) {
                 var routeLayerInstance = self.routeLayers[routeId];
 
-                function enableRouteOnList(directionId) {
-                    _.forEach(route.directions, function (direction) {
-                        if (direction.directionId === directionId) {
-                            direction.enabled = true;
-                        }
-                    });
+                function syncToRouteList(direction) {
+                    route.directions[direction.directionId].enabled = direction.enabled;
                 }
 
                 if (routeLayerInstance) {
-                    _.forEach(routeLayerInstance, function (direction) {
-                        if (direction.enabled === true) {
-                            enableRouteOnList(direction.directionId);
-                        }
+                    _.forEach(routeLayerInstance.standard, function (direction) {
+                        syncToRouteList(direction);
+                    });
+                    _.forEach(routeLayerInstance.frequent, function (direction) {
+                        syncToRouteList(direction);
                     });
                 }
             }
