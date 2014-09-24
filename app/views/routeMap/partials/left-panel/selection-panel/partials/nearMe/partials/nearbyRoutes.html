@@ -13,10 +13,11 @@
     </div>
 
     <div ng-show="routeMap.nearbyStops">
+
         <div class="panel panel-default"
              ng-class="{'panel-primary': route.enabled}"
              ng-repeat="route in routeMap.nearbyRoutes | filter: nearbyRouteSearch">
-            <!-- Default panel contents -->
+            <!--Heading-->
             <div class="panel-heading">
                 <small>
                     <strong>{{route.desc}}</strong> | <span class="label label-default">{{route.route}}</span>
@@ -27,23 +28,75 @@
                            ng-checked="route.enabled === true">
                 </div>
             </div>
-            <!-- Table -->
-            <table class="table table-condensed table-hover">
-                <thead>
-                    <td><small>Stop</small></td>
-                    <td><small>Name</small></td>
-                    <td><small>Dir</small></td>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="stop in route.stops"
-                        ng-class="{'panel-success': stop.selected === true}"
-                        ng-click="routeMap.selectStop(stop)">
-                        <td><small><span class="label label-default">{{stop.locid}}</span></small></td>
-                        <td><small>{{stop.desc}}</small></td>
-                        <td><small>{{stop.dir}}</small></td>
-                    </tr>
-                </tbody>
-            </table>
+
+            <div class="panel-body" ng-repeat="direction in route.directions">
+
+                <div class="panel panel-default"
+                     ng-class="{'panel-primary': direction.enabled}">
+                    <!--Heading-->
+                    <div class="panel-heading">
+                        <small>
+                            <strong>{{direction.desc}}</strong> | <span class="label label-default">{{route.dir}}</span>
+                        </small>
+                        <div class="pull-right">
+                            <input type="checkbox"
+                                   ng-click="routeMap.toggleNearbyRouteDirection(route, direction)"
+                                   ng-checked="direction.enabled === true">
+                        </div>
+                    </div>
+                    <!--Table-->
+                    <table class="table table-condensed table-hover">
+                        <thead>
+                        <td><small>Stop</small></td>
+                        <td><small>Name</small></td>
+                        <td><small>Dir</small></td>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="stop in direction.stops"
+                            ng-class="{'panel-success': stop.selected === true}"
+                            ng-click="routeMap.selectStop(stop)">
+                            <td><small><span class="label label-default">{{stop.locid}}</span></small></td>
+                            <td><small>{{stop.desc}}</small></td>
+                            <td><small>{{stop.dir}}</small></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
         </div>
+
+        <!--<div class="panel panel-default"-->
+             <!--ng-class="{'panel-primary': route.enabled}"-->
+             <!--ng-repeat="route in routeMap.nearbyRoutes | filter: nearbyRouteSearch">-->
+            <!--&lt;!&ndash; Default panel contents &ndash;&gt;-->
+            <!--<div class="panel-heading">-->
+                <!--<small>-->
+                    <!--<strong>{{route.desc}}</strong> | <span class="label label-default">{{route.route}}</span>-->
+                <!--</small>-->
+                <!--<div class="pull-right">-->
+                    <!--<input type="checkbox"-->
+                           <!--ng-click="routeMap.toggleNearbyRoute(route)"-->
+                           <!--ng-checked="route.enabled === true">-->
+                <!--</div>-->
+            <!--</div>-->
+            <!--&lt;!&ndash; Table &ndash;&gt;-->
+            <!--<table class="table table-condensed table-hover">-->
+                <!--<thead>-->
+                    <!--<td><small>Stop</small></td>-->
+                    <!--<td><small>Name</small></td>-->
+                    <!--<td><small>Dir</small></td>-->
+                <!--</thead>-->
+                <!--<tbody>-->
+                    <!--<tr ng-repeat="stop in route.stops"-->
+                        <!--ng-class="{'panel-success': stop.selected === true}"-->
+                        <!--ng-click="routeMap.selectStop(stop)">-->
+                        <!--<td><small><span class="label label-default">{{stop.locid}}</span></small></td>-->
+                        <!--<td><small>{{stop.desc}}</small></td>-->
+                        <!--<td><small>{{stop.dir}}</small></td>-->
+                    <!--</tr>-->
+                <!--</tbody>-->
+            <!--</table>-->
+        <!--</div>-->
     </div>
 </div>

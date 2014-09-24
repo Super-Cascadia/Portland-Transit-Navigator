@@ -73,6 +73,8 @@ angular.module('pdxStreetcarApp')
 
                     function placeRoute(route, stop) {
                         var routeId = route.route,
+                            directionId = route.dir[0].dir,
+                            stopId = stop.locid,
                             routeInst;
 
                         if (!routes[routeId]) {
@@ -88,16 +90,23 @@ angular.module('pdxStreetcarApp')
                             routeInst.stops = {};
                         }
 
-                        if (!routeInst.stops[stop.locid]) {
-                            routeInst.stops[stop.locid] = stop;
+                        if (!routeInst.stops[stopId]) {
+                            routeInst.stops[stopId] = stop;
                         }
 
                         if (!routeInst.directions) {
                             routeInst.directions = {};
                         }
 
-                        if (!routeInst.directions[route.dir[0].dir]) {
-                            routeInst.directions[route.dir[0].dir] = route.dir[0];
+                        if (!routeInst.directions[directionId]) {
+                            routeInst.directions[directionId] = route.dir[0];
+                            routeInst.directions[directionId].enabled = true;
+                            routeInst.directions[directionId].selected = false;
+                            routeInst.directions[directionId].stops = {};
+                        }
+
+                        if (!routeInst.directions[directionId].stops[stopId]) {
+                            routeInst.directions[directionId].stops[stopId] = stop;
                         }
 
                     }
@@ -107,6 +116,7 @@ angular.module('pdxStreetcarApp')
                             placeRoute(route, stop);
                         });
                     });
+
                     return routes;
                 }
 
@@ -187,6 +197,52 @@ angular.module('pdxStreetcarApp')
                     enableRoute(nearbyRouteInst);
                 } else if (nearbyRouteInst.enabled === true) {
                     disableRoute(nearbyRouteInst);
+                }
+            }
+
+            return {
+                nearbyRoutes: self.nearbyRoutes
+            };
+        };
+
+        self.toggleNearbyRouteDirection = function (route, direction) {
+            var routeId = route.routeId,
+                directionId = direction.dir,
+                directionInst;
+
+            function checkEnabledStatusForRoute(routeId) {
+                var routeInst;
+
+                if (self.nearbyRoutes[routeId]) {
+                    routeInst = self.nearbyRoutes[routeId];
+                    if (routeInst.directions[0].enabled === false && routeInst.directions[1].enabled === false) {
+                        routeInst.enabled = false;
+                    } else if (routeInst.directions[0].enabled === true && routeInst.directions[1].enabled === true) {
+                        routeInst.enabled = true;
+                    }
+                }
+            }
+
+            function enableRouteDirection(directionInst) {
+                var directionId = directionInst.dir;
+                RouteData.showRouteLayer(route.routeId, directionId);
+                self.nearbyRoutes[route.routeId].directions[directionId].enabled = true;
+                checkEnabledStatusForRoute(route.routeId);
+            }
+
+            function disableRouteDirection(directionInst) {
+                var directionId = directionInst.dir;
+                RouteData.hideRouteLayer(route.routeId, directionId);
+                self.nearbyRoutes[route.routeId].directions[directionId].enabled = false;
+                checkEnabledStatusForRoute(route.routeId);
+            }
+
+            if (self.nearbyRoutes[routeId].directions[directionId]) {
+                directionInst = self.nearbyRoutes[routeId].directions[directionId];
+                if (directionInst.enabled === false) {
+                    enableRouteDirection(directionInst);
+                } else if (directionInst.enabled === true) {
+                    disableRouteDirection(directionInst);
                 }
             }
 

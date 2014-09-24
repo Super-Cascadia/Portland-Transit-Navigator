@@ -199,16 +199,16 @@
     <h1>Code coverage report for <span class="entity">js/services.js</span></h1>
     <h2>
         
-        Statements: <span class="metric">14.16% <small>(16 / 113)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Statements: <span class="metric">14.29% <small>(16 / 112)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
         
         
-        Branches: <span class="metric">0% <small>(0 / 54)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Branches: <span class="metric">0% <small>(0 / 40)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
         
         
-        Functions: <span class="metric">10% <small>(3 / 30)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Functions: <span class="metric">9.68% <small>(3 / 31)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
         
         
-        Lines: <span class="metric">14.16% <small>(16 / 113)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Lines: <span class="metric">14.29% <small>(16 / 112)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
         
         Ignored: <span class="metric"><span class="ignore-none">none</span></span> &nbsp;&nbsp;&nbsp;&nbsp;
     </h2>
@@ -465,13 +465,7 @@
 247
 248
 249
-250
-251
-252
-253
-254
-255
-256</td><td class="line-coverage"><span class="cline-any cline-neutral">&nbsp;</span>
+250</td><td class="line-coverage"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -685,18 +679,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -938,28 +926,22 @@ angular.module('pdxStreetcarApp')
                     detour: route.detour,
                     routeId: routeId,
                     type: route.type,
-                    directions: []
+                    directions: {}
                 };
-<span class="cstat-no" title="statement not covered" >                if (route.dir &amp;&amp; _.isArray(route.dir)) {</span>
-<span class="cstat-no" title="statement not covered" >                    if (route.dir[0]) {</span>
-<span class="cstat-no" title="statement not covered" >                        template.directions[0] = {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >                _.forEach(route.dir, <span class="fstat-no" title="function not covered" >function (direction) {</span></span>
+<span class="cstat-no" title="statement not covered" >                    var directionId = direction.dir;</span>
+<span class="cstat-no" title="statement not covered" >                    if (!template.directions[directionId]) {</span>
+<span class="cstat-no" title="statement not covered" >                        template.directions[directionId] = {</span>
                             routeId: routeId,
-                            directionId: route.dir[0].dir || 0,
-                            stops: route.dir[0].stop || [],
-                            displayName: route.dir[0].desc || route.desc,
+                            directionId: directionId,
+                            stops: direction.stop || [],
+                            displayName: direction.desc || route.desc,
                             enabled: false
                         };
                     }
-<span class="cstat-no" title="statement not covered" >                    if (route.dir[1]) {</span>
-<span class="cstat-no" title="statement not covered" >                        template.directions[1] = {</span>
-                            routeId: routeId,
-                            directionId: route.dir[1].dir || 1,
-                            stops: route.dir[1].stop || [],
-                            displayName: route.dir[1].desc || route.desc,
-                            enabled: false
-                        };
-                    }
-                }
+                });
+&nbsp;
 <span class="cstat-no" title="statement not covered" >                result[routeId] = template;</span>
             });
 <span class="cstat-no" title="statement not covered" >            return result;</span>
@@ -986,7 +968,7 @@ angular.module('pdxStreetcarApp')
 
 </div>
 <div class="footer">
-    <div class="meta">Generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sun Sep 21 2014 03:09:06 GMT-0700 (PDT)</div>
+    <div class="meta">Generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Sep 23 2014 23:12:37 GMT-0700 (PDT)</div>
 </div>
 
 <script src="../prettify.js"></script>

@@ -121,6 +121,33 @@ angular.module('pdxStreetcarApp')
             self.nearbyRoutes = exports.nearbyRoutes;
         }
 
+        function toggleNearbyRouteDirection(route, direction) {
+            var exports = NearbyTransit.toggleNearbyRouteDirection(route, direction);
+            self.nearbyRoutes = exports.nearbyRoutes;
+        }
+
+        function selectStop(stop, origin) {
+            var stopMarker = StopData.createStopMarker(stop);
+            StopData.memoizeIndividualStopMarker(stopMarker, stop);
+            StopData.selectStopMarker(stop);
+
+            if (origin === 'routeDetails') {
+                self.selectedRoute = RouteData.selectRouteStop(stop);
+            } else if (origin === 'nearbyStops') {
+                self.nearbyStops = NearbyTransit.toggleStopSelected(stop);
+            } else {
+                $log.log('Do something');
+            }
+        }
+
+        function selectRoute(route) {
+            RouteData.selectRoute(route);
+            RouteData.getRouteData(parseInt(route.route))
+                .then(function (data) {
+                    self.selectedRoute = data;
+                });
+        }
+
         self.isStreetCarRoute = trimetUtilities.isStreetCarRoute;
         self.isTrimetRoute = trimetUtilities.isTrimetRoute;
         self.toggleServiceBoundaryOverlay = mapLayers.toggleServiceBoundaryLayer;
@@ -139,31 +166,13 @@ angular.module('pdxStreetcarApp')
             self.busRoutes = Navigator.toggleRoute('bus', route);
         };
 
+        // Toggle
         self.toggleNearbyRoute = toggleNearbyRoutes;
-
-        self.selectStop = function selectStop(stop, origin) {
-
-            var stopMarker = StopData.createStopMarker(stop);
-            StopData.memoizeIndividualStopMarker(stopMarker, stop);
-            StopData.selectStopMarker(stop);
-
-            if (origin === 'routeDetails') {
-                self.selectedRoute = RouteData.selectRouteStop(stop);
-            } else if (origin === 'nearbyStops') {
-                self.nearbyStops = NearbyTransit.toggleStopSelected(stop);
-            } else {
-                $log.log('Do something');
-            }
-
-        };
-        self.selectRoute = function selectRoute(route) {
-            RouteData.selectRoute(route);
-            RouteData.getRouteData(parseInt(route.route))
-                .then(function (data) {
-                    self.selectedRoute = data;
-                });
-        };
-
+        self.toggleNearbyRouteDirection = toggleNearbyRouteDirection;
+        // Selection
+        self.selectStop = selectStop;
+        self.selectRoute = selectRoute;
+        // Get
         self.getNearbyRoutes = getNearbyStops;
         self.getStreetCarData = getStreetCarData;
         self.getTrimetData = getTrimetData;
@@ -261,7 +270,6 @@ angular.module('pdxStreetcarApp')
         $rootScope.$on('arrivalInformation', arrivalInformation);
         $rootScope.$on('routeHoveredFromMap', routeHoveredFromMap);
         $rootScope.$on('routeSelectedFromMap', routeSelectedFromMap);
-
 
         self.closeDetailsPanel = function closeDetailsPanel() {
             self.selectedRoute = null;
