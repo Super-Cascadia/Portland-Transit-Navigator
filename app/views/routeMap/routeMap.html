@@ -46,8 +46,14 @@
                 <div class="well well-lg"
                      ng-if="!routeMap.stopIsSelected">Please select a stop to see arrival times.
                 </div>
+                <!--Empty State-->
+                <div class="well well-lg"
+                     ng-if="routeMap.arrivalsUnavailable">There are no upcoming arrivals for this stop.
+                </div>
                 <!--Stop Info-->
-                <ng-include src="'views/routeMap/partials/arrivals.html'"></ng-include>
+                <div ng-if="routeMap.stopIsSelected">
+                    <ng-include src="'views/routeMap/partials/arrivals.html'"></ng-include>
+                </div>
             </div>
         </div>
     </div>

@@ -100,12 +100,12 @@ angular.module('pdxStreetcarApp')
             return arrivals;
         }
 
-        function calculateRelativeTimes(arrivalInfo, queryTime) {
+        function calculateRelativeTimes(arrivalInfo) {
             var deferred = $q.defer(),
                 arrivals = arrivalInfo.resultSet.arrival;
             arrivals = sortArrivalsArrayByDate(arrivals);
             _.forEach(arrivals, function (currentArrival, index, array) {
-                calculateDifferenceInTimes(currentArrival, queryTime)
+                calculateDifferenceInTimes(currentArrival, arrivalInfo.resultSet.queryTime)
                     .then(function (remainingTime) {
                         if (remainingTime.days < 1 && remainingTime.hours < 1) {
                             if (remainingTime.minutes <= 3) {
@@ -125,7 +125,7 @@ angular.module('pdxStreetcarApp')
                             deferred.resolve(arrivalInfo);
                         }
                     }, function () {
-                        $log.error("Could not calculate the difference in times.");
+                        $log.error('Could not calculate the difference in times.');
                         deferred.reject();
                     });
             });
@@ -187,9 +187,7 @@ angular.module('pdxStreetcarApp')
 
         // Public API here
         return {
-            calculateRelativeTimes: function (arrivalInfo, queryTime) {
-                return calculateRelativeTimes(arrivalInfo, queryTime);
-            },
+            calculateRelativeTimes: calculateRelativeTimes,
             calculateDifferenceInTimes: function (arrival, queryTime) {
                 return calculateDifferenceInTimes(arrival, queryTime);
             },

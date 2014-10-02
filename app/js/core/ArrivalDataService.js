@@ -7,10 +7,13 @@ angular.module('pdxStreetcarApp')
     .service('ArrivalData', function (trimet, timeCalcService) {
         var self = this;
 
-        self.getArrivalsForStop = function (stopMarker) {
-            return trimet.getArrivalsForStop(stopMarker.stopMetaData.locid)
+        self.getArrivalsForStop = function (locId) {
+            return trimet.getArrivalsForStop(locId)
                 .then(function (data) {
-                    return timeCalcService.calculateRelativeTimes(data, data.resultSet.queryTime);
+                    if (data.resultSet.arrival) {
+                        data = timeCalcService.calculateRelativeTimes(data);
+                    }
+                    return data;
                 });
         };
     });

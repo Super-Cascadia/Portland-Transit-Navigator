@@ -18,7 +18,7 @@
       </td>
       </thead>
       <tbody>
-      <tr ng-repeat="stop in direction.stop"
+      <tr ng-repeat="stop in direction.stops"
           ng-class="{'success': stop.selected === true}"
           ng-click="routeMap.selectStop(stop, 'routeDetails')">
         <td>

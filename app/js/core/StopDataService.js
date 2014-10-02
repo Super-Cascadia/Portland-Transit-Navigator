@@ -16,7 +16,7 @@ angular.module('pdxStreetcarApp')
         };
 
         self.showArrivalsForStop = function showArrivalsForStop(stopMarker) {
-            return ArrivalData.getArrivalsForStop(stopMarker)
+            return ArrivalData.getArrivalsForStop(stopMarker.stopMetaData.locid)
                 .then(function (arrivalInfo) {
                     self.broadcastArrivalInfo(arrivalInfo);
                 });
@@ -39,9 +39,8 @@ angular.module('pdxStreetcarApp')
                 infoWindowContent;
 
             if (stopMarkerIsMemoized(stop)) {
-              return self.stopMarkers[stop.locid];
+                return self.stopMarkers[stop.locid];
             }
-
 
             if (!pinColor) {
                 pinColor = RouteColors['default'];
@@ -160,11 +159,11 @@ angular.module('pdxStreetcarApp')
             return stopMarkerInstance;
         };
 
-        self.selectStopMarker = function (stop) {
-            var marker = self.findMemoizedStopMarkerInstance(stop.locid);
+        self.selectStopMarker = function (stopMarker) {
+//            var marker = self.findMemoizedStopMarkerInstance(stop.locid);
 
-            if (marker) {
-                google.maps.event.trigger(marker, 'click');
+            if (stopMarker) {
+                google.maps.event.trigger(stopMarker, 'click');
             }
         };
     });

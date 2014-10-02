@@ -129,7 +129,7 @@ angular.module('pdxStreetcarApp')
         function selectStop(stop, origin) {
             var stopMarker = StopData.createStopMarker(stop);
             StopData.memoizeIndividualStopMarker(stopMarker, stop);
-            StopData.selectStopMarker(stop);
+            StopData.selectStopMarker(stopMarker);
 
             if (origin === 'routeDetails') {
                 self.selectedRoute = RouteData.selectRouteStop(stop);
@@ -248,9 +248,15 @@ angular.module('pdxStreetcarApp')
 
         function arrivalInformation(e, arrivalInfo) {
             self.selectedStop = arrivalInfo;
-            self.remainingTime = arrivalInfo.resultSet.arrival[0].remainingTime;
-            self.arrivalInfo = arrivalInfo.resultSet.arrival[0];
             self.stopIsSelected = true;
+            if (arrivalInfo && arrivalInfo.resultSet && arrivalInfo.resultSet.arrival) {
+                self.arrivalsUnavailable = false;
+                self.remainingTime = arrivalInfo.resultSet.arrival[0].remainingTime;
+                self.arrivalInfo = arrivalInfo.resultSet.arrival[0];
+            } else {
+                $log.warn('No arrival times were available');
+                self.arrivalsUnavailable = true;
+            }
         }
 
         function routeHoveredFromMap(e, data) {
@@ -263,6 +269,7 @@ angular.module('pdxStreetcarApp')
             RouteData.getRouteData(parseInt(routeId))
                 .then(function (data) {
                     self.selectedRoute = data;
+                    self.nothingIsSelected = false;
                     $scope.$apply();
                 });
         }

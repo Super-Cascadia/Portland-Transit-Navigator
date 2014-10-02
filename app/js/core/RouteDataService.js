@@ -6,7 +6,7 @@ angular.module('pdxStreetcarApp')
 
     .service('RouteData', function ($q, $log, $rootScope, routeMapInstance, trimet, formatRetrievedRoutes, RouteColors) {
 
-        "use strict";
+        'use strict';
 
         var self = this;
 
@@ -21,7 +21,6 @@ angular.module('pdxStreetcarApp')
         self.nearbyRoutes = {};
         self.routes = {};
         self.routesDisplayed = 0;
-
         self.selectedRouteStop = null;
 
         self.retrieveRouteGeoJson = function retrieveRouteGeoJson() {
@@ -58,11 +57,11 @@ angular.module('pdxStreetcarApp')
             });
         };
 
-        self.memoizeStopDataOnRoute = function memoizeStopData(data) {
+        self.memoizeStopDataOnRoute = function memoizeStopData(route) {
 
             function findStopsForDirection(directionId) {
                 var stops;
-                _.forEach(data.resultSet.route[0].dir, function (direction) {
+                _.forEach(route.dir, function (direction) {
                     if (direction.dir === directionId) {
                         stops = direction.stop;
                     }
@@ -82,30 +81,77 @@ angular.module('pdxStreetcarApp')
                 return stopsDictionary;
             }
 
-            var routeId = data.resultSet.route[0].route;
+            var routeId = route.route;
 
-            _.forEach(self.routes[routeId].dir, function (direction) {
-                var stops = findStopsForDirection(direction.dir);
-                if (stops) {
-                    direction.stop = convertStopsArrayToDictionary(stops);
-                }
-            });
+            if (self.routes[routeId] && self.routes[routeId].directions) {
+                _.forEach(self.routes[routeId].directions, function (direction) {
+                    if (!self.routes[routeId].directions.stops) {
+                        var stops = findStopsForDirection(direction.dir);
+                        if (stops) {
+                            direction.stop = convertStopsArrayToDictionary(stops);
+                        }
+                    }
+                });
+            }
 
             return self.routes[routeId];
         };
 
-        self.memoizeRoute = function (data) {
-            var route = data.resultSet.route[0];
-            var routeId = route.route;
-            if (!self.routes[routeId]) {
-                self.routes[routeId] = route;
+        function cleanResultSet(data) {
+            return data.resultSet.route[0];
+        }
+
+        function convertStopArrToDict(stopsArray) {
+            var stops = {};
+
+            _.forEach(stopsArray, function (stop) {
+                if (!stops[stop.locid]) {
+                    stops[stop.locid] = stop;
+                }
+            });
+
+            return stops;
+        }
+
+        function convertDirectionsArrToDict(directionArray) {
+            var directions = {};
+
+            _.forEach(directionArray, function (direction) {
+                if (!directions[direction.dir]) {
+                    directions[direction.dir] = direction;
+                }
+            });
+
+            return directions;
+        }
+
+        function normalizeRoutePropertyNames(route) {
+            if (route.dir) {
+                route.directions = convertDirectionsArrToDict(route.dir);
+                delete route.dir;
             }
-            return data;
+            if (route.directions) {
+                _.forEach(route.directions, function (direction) {
+                    if (direction.stop) {
+                        direction.stops = convertStopArrToDict(direction.stop);
+                        delete direction.stop;
+                    }
+                });
+            }
+            return route;
+        }
+
+        self.memoizeRoute = function (route) {
+            var routeId = route.route;
+            self.routes[routeId] = route;
+            return route;
         };
 
         self.getRouteData = function (routeId) {
             // TODO: make sure that routes and nearbyRoutes have data in them at this point
             return trimet.getRouteById(routeId)
+                .then(cleanResultSet)
+                .then(normalizeRoutePropertyNames)
                 .then(self.memoizeRoute)
                 .then(self.memoizeStopDataOnRoute)
                 .then(function (data) {
@@ -115,22 +161,23 @@ angular.module('pdxStreetcarApp')
         };
 
         self.selectRouteStop = function (stop) {
-
-            if (self.selectedRouteStop) {
-                _.forEach(self.selectedRoute.dir, function (direction) {
-                    if (direction.stops[self.selectedRouteStop.locid]) {
-                        direction.stops[self.selectedRouteStop.locid].selected = false;
+            if (stop.locid && self.selectedRoute.directions) {
+                _.forEach(self.selectedRoute.directions, function (direction) {
+                    if (direction.stops[stop.locid]) {
+                        direction.stops[stop.locid].selected = false;
                     }
                 });
-            }
 
-            _.forEach(self.selectedRoute.dir, function (direction) {
-                if (direction.stops[stop.locid]) {
-                    direction.stops[stop.locid].selected = true;
-                    self.selectedRouteStop = stop;
-                    return;
-                }
-            });
+                _.forEach(self.selectedRoute.directions, function (direction) {
+                    if (direction.stops[stop.locid]) {
+                        direction.stops[stop.locid].selected = true;
+                        self.selectedRouteStop = stop;
+                        return;
+                    }
+                });
+            } else {
+                $log.error('self.selectedRouteStop is not available.');
+            }
 
             return self.selectedRoute;
         };
