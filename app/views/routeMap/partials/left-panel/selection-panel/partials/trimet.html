@@ -19,7 +19,9 @@
              ng-repeat="route in routeMap.maxRail | filter:trimetSearch">
             <div class="panel-heading">
                 <small>
-                    <strong>{{route.name}}</strong>
+                    <a ng-click="routeMap.selectRoute(route); $event.stopPropagation();">
+                        {{route.name}}
+                    </a>
                 </small>
             </div>
             <table class="table table-condensed table-hover">

@@ -20,7 +20,11 @@
             <div class="panel-heading"
                  ng-click="routeMap.selectStop(stop); $event.stopPropagation();">
                 <small>
-                    <strong>{{stop.desc}}</strong> | <span class="label label-default">{{stop.dir}}</span>
+                    <strong>
+                        <a ng-click="routeMap.selectStop(stop); $event.stopPropagation();">
+                            {{stop.desc}}
+                        </a>
+                    </strong> | <span class="label label-default">{{stop.dir}}</span>
                 </small>
             </div>
             <table class="table table-condensed table-hover">
@@ -32,7 +36,11 @@
                 <tbody>
                     <tr ng-repeat="route in stop.route">
                         <td><small><span class="label label-default">{{route.route}}</span></small></td>
-                        <td><small>{{route.desc}}</small></td>
+                        <td>
+                            <small>
+                                <a ng-click="routeMap.selectRoute(route); $event.stopPropagation();">{{route.desc}}</a>
+                            </small>
+                        </td>
                         <td><small>{{route.type}}</small></td>
                     </tr>
                 </tbody>

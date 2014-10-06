@@ -150,11 +150,11 @@ angular.module('pdxStreetcarApp')
 
             provideRouteId(route);
 
-            RouteData.selectRoute(route);
             RouteData.getRouteData(parseInt(route.routeId))
                 .then(function (data) {
                     self.selectedRoute = data;
                 });
+            RouteData.selectRoute(route);
         }
 
         self.isStreetCarRoute = trimetUtilities.isStreetCarRoute;

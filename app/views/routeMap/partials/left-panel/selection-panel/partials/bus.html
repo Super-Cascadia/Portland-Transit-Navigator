@@ -19,7 +19,11 @@
              ng-repeat="route in routeMap.busRoutes | filter:busSearch">
             <div class="panel-heading">
                 <small>
-                    <strong>{{route.name}}</strong> <span class="label label-default">{{route.routeId}}</span>
+                    <strong>
+                        <a ng-click="routeMap.selectRoute(route); $event.stopPropagation();">
+                            {{route.name}}
+                        </a>
+                    </strong> <span class="label label-default">{{route.routeId}}</span>
                 </small>
             </div>
             <table class="table table-condensed table-hover">

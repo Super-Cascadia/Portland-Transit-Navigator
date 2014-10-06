@@ -231,24 +231,24 @@ angular.module('pdxStreetcarApp')
             routeMapInstance.map.fitBounds(bounds);
         }
 
+        self.routeSelectedOnMap = function (routeNumber) {
+            $rootScope.$broadcast('routeSelectedFromMap', routeNumber);
+        };
+
+        self.routeHoveredOnMap = function (routeNumber) {
+            $rootScope.$broadcast('routeHoveredFromMap', routeNumber);
+        };
+
         self.initRouteLineDisplay = function (routeId, directionId) {
             var featureCollection,
                 layer;
-
-            function routeHoveredOnMap(data) {
-                $rootScope.$broadcast('routeHoveredFromMap', data);
-            }
-
-            function routeSelectedOnMap(data) {
-                $rootScope.$broadcast('routeSelectedFromMap', data);
-            }
 
             function setRouteMouseOverEvent() {
                 routeMapInstance.map.data.addListener('mouseover', function (event) {
                     routeMapInstance.map.data.revertStyle();
                     routeMapInstance.map.data.overrideStyle(event.feature, {strokeWeight: 8});
-                    var value = event.feature.getProperty('route_number');
-                    routeHoveredOnMap(value);
+                    var routeNumber = event.feature.getProperty('route_number');
+                    self.routeHoveredOnMap(routeNumber);
                 });
             }
 
@@ -260,6 +260,7 @@ angular.module('pdxStreetcarApp')
 
             function setRouteClickEvent() {
                 routeMapInstance.map.data.addListener('click', function (event) {
+                    var routeNumber;
                     if (event.alreadyCalled_) {
                         $log.warn('Route click event was already called.');
                     } else {
@@ -267,13 +268,12 @@ angular.module('pdxStreetcarApp')
                             var routeId = parseInt(event.feature.k.route_number);
                             zoomMapToFitRoute(routeId);
                         }
-                        var value = event.feature.getProperty('route_number');
+                        routeNumber = event.feature.getProperty('route_number');
                         routeMapInstance.map.data.revertStyle();
                         routeMapInstance.map.data.overrideStyle(event.feature, {
-                            strokeColor: 'red',
                             strokeWeight: 8
                         });
-                        routeSelectedOnMap(value);
+                        self.routeSelectedOnMap(routeNumber);
                         event.alreadyCalled_ = true;
                     }
                 });
@@ -377,6 +377,7 @@ angular.module('pdxStreetcarApp')
                 self.initRouteLineDisplay(route.routeId);
             }
             zoomMapToFitRoute(route.routeId);
+            self.routeSelectedOnMap(route.routeId);
         };
 
         // Nearby Routes
