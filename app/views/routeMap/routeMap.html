@@ -1,12 +1,15 @@
 <section class="map route-map"
          ng-if="selectedRoute !== null">
+    <!--<div class="map-container">-->
+        <!--<div id="map-canvas"></div>-->
+    <!--</div>-->
     <div class="row">
         <!--Left Column-->
-        <div class="col-xs-4">
+        <div class="col-sm-5 col-md-4 col-lg-3">
             <ng-include src="'views/routeMap/partials/left-panel/leftColumn.html'"></ng-include>
         </div>
         <!--Right Column-->
-        <div class="col-xs-8">
+        <div class="col-sm-7 col-md-8 col-lg-9">
             <!--Overlay Menu-->
             <div class="panel panel-default">
                 <div class="panel-body">
@@ -51,7 +54,7 @@
                      ng-if="routeMap.arrivalsUnavailable">There are no upcoming arrivals for this stop.
                 </div>
                 <!--Stop Info-->
-                <div ng-if="routeMap.stopIsSelected">
+                <div ng-if="routeMap.stopIsSelected && !routeMap.arrivalsUnavailable">
                     <ng-include src="'views/routeMap/partials/arrivals.html'"></ng-include>
                 </div>
             </div>

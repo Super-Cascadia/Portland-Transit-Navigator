@@ -1,69 +1,74 @@
-<div class="form-group">
-    <input type="text"
-           class="form-control"
-           id="streetcarSeach"
-           ng-model="nearbyRouteSearch"
-           placeholder="Search nearby Routes">
-</div>
-
-<div class="left-column-container">
-
-    <div ng-show="!routeMap.nearbyStops">
-        <div class="well well-lg">Loading nearby stops...</div>
+<section class="nearby-routes">
+    <div class="form-group">
+        <input type="text"
+               class="form-control"
+               id="streetcarSeach"
+               ng-model="nearbyRouteSearch"
+               placeholder="Search nearby Routes">
     </div>
-
-    <div ng-show="routeMap.nearbyStops">
-
-        <div class="panel panel-default"
-             ng-class="{'panel-primary': route.enabled}"
-             ng-repeat="route in routeMap.nearbyRoutes | filter: nearbyRouteSearch">
-            <!--Heading-->
-            <div class="panel-heading">
-                <small>
-                    <strong>{{route.desc}}</strong> | <span class="label label-default">{{route.route}}</span>
-                </small>
-                <div class="pull-right">
-                    <input type="checkbox"
-                           ng-click="routeMap.toggleNearbyRoute(route)"
-                           ng-checked="route.enabled === true">
-                </div>
-            </div>
-
-            <div class="panel-body" ng-repeat="direction in route.directions">
-
-                <div class="panel panel-default"
-                     ng-class="{'panel-primary': direction.enabled}">
-                    <!--Heading-->
-                    <div class="panel-heading">
-                        <small>
-                            <strong>{{direction.desc}}</strong> | <span class="label label-default">{{route.dir}}</span>
-                        </small>
-                        <div class="pull-right">
-                            <input type="checkbox"
-                                   ng-click="routeMap.toggleNearbyRouteDirection(route, direction)"
-                                   ng-checked="direction.enabled === true">
-                        </div>
+    <div class="left-column-container">
+        <div ng-show="!routeMap.nearbyStops">
+            <div class="well well-lg">Loading nearby stops...</div>
+        </div>
+        <div ng-show="routeMap.nearbyStops">
+            <!--Nearby Routes-->
+            <div class="panel panel-default nearby-routes panel-subpanel"
+                 ng-repeat="route in routeMap.nearbyRoutes | filter: nearbyRouteSearch">
+                <div class="panel-heading">
+                    <div class="color-square"></div>
+                    <small>
+                        <strong>
+                            <a ng-click="routeMap.selectRoute(route); $event.stopPropagation(); ">
+                                {{route.desc}}
+                            </a>
+                        </strong>
+                    </small>
+                    <div class="pull-right">
+                        <input type="checkbox"
+                               ng-click="routeMap.toggleNearbyRoute(route); $event.stopPropagation();"
+                               ng-checked="route.enabled === true">
                     </div>
-                    <!--Table-->
-                    <table class="table table-condensed table-hover">
-                        <thead>
-                        <td><small>Stop</small></td>
-                        <td><small>Name</small></td>
-                        <td><small>Dir</small></td>
-                        </thead>
-                        <tbody>
-                        <tr ng-repeat="stop in direction.stops"
-                            ng-class="{'panel-success': stop.selected === true}"
-                            ng-click="routeMap.selectStop(stop)">
-                            <td><small><span class="label label-default">{{stop.locid}}</span></small></td>
-                            <td><small>{{stop.desc}}</small></td>
-                            <td><small>{{stop.dir}}</small></td>
-                        </tr>
-                        </tbody>
-                    </table>
                 </div>
-
+                <!--Route Directions-->
+                <div class="panel-body route-directions">
+                    <div class="panel panel-default subpanel"
+                         ng-repeat="direction in route.directions">
+                        <div class="panel-heading">
+                            <small>{{direction.desc}}</small>
+                            <div class="pull-right">
+                                <input type="checkbox"
+                                       ng-click="routeMap.toggleNearbyRouteDirection(route, direction); $event.stopPropagation();"
+                                       ng-checked="direction.enabled === true">
+                            </div>
+                        </div>
+                        <!--Direction Stops-->
+                        <table class="table table-condensed table-hover">
+                            <thead>
+                            <td><small>Stop</small></td>
+                            <td><small>Name</small></td>
+                            <!--<td><small>Dir</small></td>-->
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="stop in direction.stops"
+                                ng-class="{'panel-success': stop.selected === true}"
+                                class="cursor-pointer"
+                                ng-click="routeMap.selectStop(stop); $event.stopPropagation();">
+                                <td><small><span class="label label-default">{{stop.locid}}</span></small></td>
+                                <td>
+                                    <small>
+                                        <a ng-click="routeMap.selectStop(stop); $event.stopPropagation();">
+                                            {{stop.desc}}
+                                        </a>
+                                    </small>
+                                </td>
+                                <!--<td><small>{{stop.dir}}</small></td>-->
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</section>
+

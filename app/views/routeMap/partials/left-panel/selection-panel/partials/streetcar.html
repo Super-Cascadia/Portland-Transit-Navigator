@@ -1,4 +1,6 @@
 <br>
+<p>
+    The Portland Streetcar runs about every 15 minutes during the day (less frequently in the evening and on Sundays)</p>
 <div class="form-group">
     <input type="text"
            class="form-control"
@@ -18,13 +20,15 @@
              ng-repeat="route in routeMap.streetcar | filter:busSearch">
             <div class="panel-heading">
                 <small>
-                    <strong>{{route.name}}</strong>  <span class="label label-default">{{route.routeId}}</span>
+                    <strong>{{route.name}}</strong> <span class="label label-default">{{route.routeId}}</span>
                 </small>
             </div>
             <table class="table table-condensed table-hover">
                 <thead>
                 <td></td>
-                <td><small>Direction</small></td>
+                <td>
+                    <small>Direction</small>
+                </td>
                 </thead>
                 <tbody>
                 <tr ng-repeat="direction in route.directions | filter:busSearch"
@@ -34,7 +38,9 @@
                         <input type="checkbox"
                                ng-checked="direction.enabled === true">
                     </td>
-                    <td><small>{{direction.displayName}}</small></td>
+                    <td>
+                        <small>{{direction.displayName}}</small>
+                    </td>
                 </tr>
                 </tbody>
             </table>

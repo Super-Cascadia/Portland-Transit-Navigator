@@ -1,44 +1,49 @@
 <br>
-<div class="row">
-    <div class="col-xs-8">
-        <div class="form-group">
-            <select id="stopSelector"
-                    class="form-control"
-                    ui-select2
-                    ng-model="routeMap.distanceFromLocation">
-                <option value="660">1/8 Mile</option>
-                <option value="1320">1/4 Mile</option>
-                <option value="2640">1/2 Mile</option>
-                <option value="3960">3/4 Mile</option>
-                <option value="5280">1 Mile</option>
-            </select>
-        </div>
-    </div>
-    <div class="col-xs-4">
-        <div class="form-group">
-            <!--<label for="stopSelector"></label>-->
-            <button class="btn btn-primary"
-                    ng-click="routeMap.getNearbyRoutes()">Submit
-            </button>
-        </div>
-    </div>
-</div>
 
-<tabset justified="true">
-    <!--Nearby Routes-->
-    <tab>
-        <tab-heading>
-            <small>Routes</small>
-        </tab-heading>
-        <br>
-        <ng-include src="'views/routeMap/partials/left-panel/selection-panel/partials/nearMe/partials/nearbyRoutes.html'"></ng-include>
-    </tab>
-    <!--Nearby Stop-->
-    <tab>
-        <tab-heading>
-            <small>Stops</small>
-        </tab-heading>
-        <br>
-        <ng-include src="'views/routeMap/partials/left-panel/selection-panel/partials/nearMe/partials/nearbyStops.html'"></ng-include>
-    </tab>
-</tabset>
+<section class="near-me">
+    <div class="row">
+        <div class="col-xs-8">
+            <div class="form-group">
+                <select id="stopSelector"
+                        class="form-control"
+                        ui-select2
+                        ng-model="routeMap.distanceFromLocation">
+                    <option value="660">1/8 Mile</option>
+                    <option value="1320">1/4 Mile</option>
+                    <option value="2640">1/2 Mile</option>
+                    <option value="3960">3/4 Mile</option>
+                    <option value="5280">1 Mile</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-xs-4">
+            <div class="form-group">
+                <!--<label for="stopSelector"></label>-->
+                <button class="btn btn-primary"
+                        ng-click="routeMap.getNearbyRoutes()">Submit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <tabset justified="true">
+        <!--Nearby Routes-->
+        <tab>
+            <tab-heading>
+                <small>Routes</small>
+            </tab-heading>
+            <br>
+            <ng-include src="'views/routeMap/partials/left-panel/selection-panel/partials/nearMe/partials/nearbyRoutes.html'"></ng-include>
+        </tab>
+        <!--Nearby Stop-->
+        <tab>
+            <tab-heading>
+                <small>Stops</small>
+            </tab-heading>
+            <br>
+            <ng-include src="'views/routeMap/partials/left-panel/selection-panel/partials/nearMe/partials/nearbyStops.html'"></ng-include>
+        </tab>
+    </tabset>
+</section>
+
+

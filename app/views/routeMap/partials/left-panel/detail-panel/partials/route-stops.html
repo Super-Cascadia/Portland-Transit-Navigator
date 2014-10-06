@@ -19,6 +19,7 @@
       </thead>
       <tbody>
       <tr ng-repeat="stop in direction.stops"
+          class="cursor-pointer"
           ng-class="{'success': stop.selected === true}"
           ng-click="routeMap.selectStop(stop, 'routeDetails')">
         <td>

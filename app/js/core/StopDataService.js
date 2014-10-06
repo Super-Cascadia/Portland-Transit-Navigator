@@ -83,7 +83,7 @@ angular.module('pdxStreetcarApp')
                 infoWindow.setContent(infoWindowContent);
                 infoWindow.open(routeMapInstance.map, this);
                 routeMapInstance.map.panTo(this.position);
-                routeMapInstance.map.setZoom(17);
+                routeMapInstance.map.setZoom(15);
                 previouslyOpenedInfoWindow.set(infoWindow);
 
                 self.showArrivalsForStop(stopMarker);

@@ -1,40 +1,38 @@
 <section class="selection-panel"
          ng-show="routeMap.nothingIsSelected === true">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      Navigator
-    </div>
-    <div class="panel-body">
-      <tabset justified="true">
+
+    <tabset justified="true">
         <!--Nearby Routes-->
         <tab>
-          <tab-heading>
-            <small>Nearby</small>
-          </tab-heading>
-          <ng-include src="'views/routeMap/partials/left-panel/selection-panel/partials/nearMe/nearMe.html'"></ng-include>
+            <tab-heading>
+                <small>Nearby</small>
+            </tab-heading>
+            <ng-include
+                    src="'views/routeMap/partials/left-panel/selection-panel/partials/nearMe/nearMe.html'"></ng-include>
         </tab>
         <!--Streetcar Tab-->
         <tab select="routeMap.getStreetCarData()">
-          <tab-heading>
-            <small>Streetcar</small>
-          </tab-heading>
-          <ng-include src="'views/routeMap/partials/left-panel/selection-panel/partials/streetcar.html'"></ng-include>
+            <tab-heading>
+                <small>Streetcar</small>
+            </tab-heading>
+            <ng-include
+                    src="'views/routeMap/partials/left-panel/selection-panel/partials/streetcar.html'"></ng-include>
         </tab>
         <!--Trimet Tab-->
         <tab select="routeMap.getTrimetData()">
-          <tab-heading>
-            <small>Trimet</small>
-          </tab-heading>
-          <ng-include src="'views/routeMap/partials/left-panel/selection-panel/partials/trimet.html'"></ng-include>
+            <tab-heading>
+                <small>Trimet</small>
+            </tab-heading>
+            <ng-include
+                    src="'views/routeMap/partials/left-panel/selection-panel/partials/trimet.html'"></ng-include>
         </tab>
         <!--Bus Tab-->
         <tab select="routeMap.getBusData()">
-          <tab-heading>
-            <small>Bus</small>
-          </tab-heading>
-          <ng-include src="'views/routeMap/partials/left-panel/selection-panel/partials/bus.html'"></ng-include>
+            <tab-heading>
+                <small>Bus</small>
+            </tab-heading>
+            <ng-include
+                    src="'views/routeMap/partials/left-panel/selection-panel/partials/bus.html'"></ng-include>
         </tab>
-      </tabset>
-    </div>
-  </div>
+    </tabset>
 </section>

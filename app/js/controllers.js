@@ -141,8 +141,17 @@ angular.module('pdxStreetcarApp')
         }
 
         function selectRoute(route) {
+
+            function provideRouteId(route) {
+                if (!route.routeId && route.route) {
+                    route.routeId = route.route;
+                }
+            }
+
+            provideRouteId(route);
+
             RouteData.selectRoute(route);
-            RouteData.getRouteData(parseInt(route.route))
+            RouteData.getRouteData(parseInt(route.routeId))
                 .then(function (data) {
                     self.selectedRoute = data;
                 });

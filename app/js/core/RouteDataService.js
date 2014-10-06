@@ -209,6 +209,28 @@ angular.module('pdxStreetcarApp')
             }
         }
 
+        function zoomMapToFitRoute(routeId) {
+            function processPoints(geometry, callback, thisArg) {
+                if (geometry instanceof google.maps.LatLng) {
+                    callback.call(thisArg, geometry);
+                } else if (geometry instanceof google.maps.Data.Point) {
+                    callback.call(thisArg, geometry.get());
+                } else {
+                    geometry.getArray().forEach(function(g) {
+                        processPoints(g, callback, thisArg);
+                    });
+                }
+            }
+
+            var bounds = new google.maps.LatLngBounds();
+            routeMapInstance.map.data.forEach(function(feature) {
+                if (feature.k.route_number && parseInt(feature.k.route_number) === routeId) {
+                    processPoints(feature.getGeometry(), bounds.extend, bounds);
+                }
+            });
+            routeMapInstance.map.fitBounds(bounds);
+        }
+
         self.initRouteLineDisplay = function (routeId, directionId) {
             var featureCollection,
                 layer;
@@ -239,8 +261,12 @@ angular.module('pdxStreetcarApp')
             function setRouteClickEvent() {
                 routeMapInstance.map.data.addListener('click', function (event) {
                     if (event.alreadyCalled_) {
-                        return;
+                        $log.warn('Route click event was already called.');
                     } else {
+                        if (event.feature.k && event.feature.k.route_number) {
+                            var routeId = parseInt(event.feature.k.route_number);
+                            zoomMapToFitRoute(routeId);
+                        }
                         var value = event.feature.getProperty('route_number');
                         routeMapInstance.map.data.revertStyle();
                         routeMapInstance.map.data.overrideStyle(event.feature, {
@@ -263,8 +289,6 @@ angular.module('pdxStreetcarApp')
                         strokeWeight: 4
                     };
                 });
-
-
             }
 
             _.forEach(self.geoJsonRouteData.features, function (feature) {
@@ -345,20 +369,14 @@ angular.module('pdxStreetcarApp')
         };
 
         self.selectRoute = function (route) {
-
-            function triggerClickEventOnRouteLayer(route) {
-                var routeLayer = self.routeLayers[route.route];
-                google.maps.event.trigger(routeLayer.standard[0].layer, 'click');
-            }
-
             function checkIfRouteIsMemoized(route) {
-                return self.routeLayers[route.route];
+                return self.routeLayers[route.routeId];
             }
 
             if (!checkIfRouteIsMemoized(route)) {
-                self.initRouteLineDisplay(route.route);
+                self.initRouteLineDisplay(route.routeId);
             }
-            //triggerClickEventOnRouteLayer(route);
+            zoomMapToFitRoute(route.routeId);
         };
 
         // Nearby Routes
