@@ -140,52 +140,58 @@ angular.module('pdxStreetcarApp')
             }
         }
 
-        function selectRoute(route) {
-
-            function provideRouteId(route) {
-                if (!route.routeId && route.route) {
-                    route.routeId = route.route;
-                }
-            }
-
-            provideRouteId(route);
-
-            RouteData.getRouteData(parseInt(route.routeId))
-                .then(function (data) {
-                    self.selectedRoute = data;
-                });
-            RouteData.selectRoute(route);
+        function toggleStreetCarDirection(route) {
+            self.streetcar = Navigator.toggleDirection('streetcar', route);
         }
+
+        function toggleTrimetDirection(route) {
+            self.maxRail = Navigator.toggleDirection('trimet', route);
+        }
+
+        function toggleBusDirection(route) {
+            self.busRoutes = Navigator.toggleDirection('bus', route);
+        }
+
+        function selectStreetCarRoute(route) {
+            self.streetcar = Navigator.selectRoute('streetcar', route);
+        }
+
+        function selectTrimetRoute(route) {
+            self.streetcar = Navigator.selectRoute('trimet', route);
+        }
+
+        function selectBusRoute(route) {
+            self.streetcar = Navigator.selectRoute('bus', route);
+        }
+
+        function toggleStreetCarRoute(route) {
+            self.streetcar = Navigator.toggleRoute('streetcar', route);
+        }
+
+        // Toggle
+        self.toggleNearbyRoute = toggleNearbyRoutes;
+        self.toggleNearbyRouteDirection = toggleNearbyRouteDirection;
+        self.toggleStreetCarDirection = toggleStreetCarDirection;
+        self.toggleStreetCarRoute = toggleStreetCarRoute;
+        self.toggleTrimetDirection = toggleTrimetDirection;
+        self.toggleBusDirection = toggleBusDirection;
+        // Selection
+        self.selectStop = selectStop;
+        self.selectRoute = Navigator.selectRoute;
+        self.selectStreetCarRoute = selectStreetCarRoute;
+        self.selectTrimetRoute = selectTrimetRoute;
+        self.selectBusRoute = selectBusRoute;
+        // Get
+        self.getNearbyRoutes = getNearbyStops;
+        self.getStreetCarData = getStreetCarData;
+        self.getTrimetData = getTrimetData;
+        self.getBusData = getBusData;
 
         self.isStreetCarRoute = trimetUtilities.isStreetCarRoute;
         self.isTrimetRoute = trimetUtilities.isTrimetRoute;
         self.toggleServiceBoundaryOverlay = mapLayers.toggleServiceBoundaryLayer;
         self.toggleTransitCenterOverlay = mapLayers.toggleTransitCenterLayer;
         self.toggleParkAndRidesOverlay = mapLayers.toggleParkAndRidesLayer;
-
-        self.toggleStreetCarRoute = function toggleStreetCarRoute(route) {
-            self.streetcar = Navigator.toggleRoute('streetcar', route);
-        };
-
-        self.toggleTrimetRoute = function toggleTrimetRoute(route) {
-            self.maxRail = Navigator.toggleRoute('trimet', route);
-        };
-
-        self.toggleBusRoute = function toggleBusRoute(route) {
-            self.busRoutes = Navigator.toggleRoute('bus', route);
-        };
-
-        // Toggle
-        self.toggleNearbyRoute = toggleNearbyRoutes;
-        self.toggleNearbyRouteDirection = toggleNearbyRouteDirection;
-        // Selection
-        self.selectStop = selectStop;
-        self.selectRoute = selectRoute;
-        // Get
-        self.getNearbyRoutes = getNearbyStops;
-        self.getStreetCarData = getStreetCarData;
-        self.getTrimetData = getTrimetData;
-        self.getBusData = getBusData;
 
         // Init
         function init() {

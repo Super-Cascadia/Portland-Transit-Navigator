@@ -209,7 +209,7 @@ angular.module('pdxStreetcarApp')
             }
         }
 
-        function zoomMapToFitRoute(routeId) {
+        self.zoomMapToFitRoute = function zoomMapToFitRoute(routeId) {
             function processPoints(geometry, callback, thisArg) {
                 if (geometry instanceof google.maps.LatLng) {
                     callback.call(thisArg, geometry);
@@ -229,7 +229,7 @@ angular.module('pdxStreetcarApp')
                 }
             });
             routeMapInstance.map.fitBounds(bounds);
-        }
+        };
 
         self.routeSelectedOnMap = function (routeNumber) {
             $rootScope.$broadcast('routeSelectedFromMap', routeNumber);
@@ -266,7 +266,7 @@ angular.module('pdxStreetcarApp')
                     } else {
                         if (event.feature.k && event.feature.k.route_number) {
                             var routeId = parseInt(event.feature.k.route_number);
-                            zoomMapToFitRoute(routeId);
+                            self.zoomMapToFitRoute(routeId);
                         }
                         routeNumber = event.feature.getProperty('route_number');
                         routeMapInstance.map.data.revertStyle();
@@ -304,6 +304,11 @@ angular.module('pdxStreetcarApp')
                     }
                 }
             });
+        };
+
+        self.displayBothDirectionsForRoute = function (routeId) {
+            self.initRouteLineDisplay(routeId, 0);
+            self.initRouteLineDisplay(routeId, 1);
         };
 
         self.enableRoute = function (route) {
@@ -376,7 +381,7 @@ angular.module('pdxStreetcarApp')
             if (!checkIfRouteIsMemoized(route)) {
                 self.initRouteLineDisplay(route.routeId);
             }
-            zoomMapToFitRoute(route.routeId);
+            self.zoomMapToFitRoute(route.routeId);
             self.routeSelectedOnMap(route.routeId);
         };
 

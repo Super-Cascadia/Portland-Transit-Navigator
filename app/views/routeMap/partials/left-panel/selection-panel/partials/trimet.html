@@ -19,7 +19,7 @@
              ng-repeat="route in routeMap.maxRail | filter:trimetSearch">
             <div class="panel-heading">
                 <small>
-                    <a ng-click="routeMap.selectRoute(route); $event.stopPropagation();">
+                    <a ng-click="routeMap.selectTrimetRoute(route); $event.stopPropagation();">
                         {{route.name}}
                     </a>
                 </small>
@@ -32,7 +32,7 @@
                 <tbody>
                 <tr ng-repeat="direction in route.directions | filter:busSearch"
                     ng-class="{info: direction.enabled}"
-                    ng-click="routeMap.toggleTrimetRoute(direction)">
+                    ng-click="routeMap.toggleTrimetDirection(direction)">
                     <td>
                         <input type="checkbox"
                                ng-checked="direction.enabled === true">

@@ -21,12 +21,17 @@
             <div class="panel-heading">
                 <small>
                     <strong>
-                        <a ng-click="routeMap.selectRoute(route); $event.stopPropagation();">
+                        <a ng-click="routeMap.selectStreetCarRoute(route); $event.stopPropagation();">
                             {{route.name}}
                         </a>
                     </strong>
                     <span class="label label-default">{{route.routeId}}</span>
                 </small>
+                <div class="pull-right">
+                    <input type="checkbox"
+                           ng-click="routeMap.toggleStreetCarRoute(route); $event.stopPropagation();"
+                           ng-checked="route.enabled === true">
+                </div>
             </div>
             <table class="table table-condensed table-hover">
                 <thead>
@@ -38,7 +43,7 @@
                 <tbody>
                 <tr ng-repeat="direction in route.directions | filter:busSearch"
                     ng-class="{info: direction.enabled}"
-                    ng-click="routeMap.toggleStreetCarRoute(direction)">
+                    ng-click="routeMap.toggleStreetCarDirection(direction)">
                     <td>
                         <input type="checkbox"
                                ng-checked="direction.enabled === true">

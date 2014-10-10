@@ -4,3 +4,9 @@ dist
 .sass-cache
 app/bower_components
 .aws-credentials.json
+pdxStreetcar_node_modules.xml
+misc.xml
+pdxStreetcar.iml
+.idea/libraries/pdxStreetcar_node_modules.xml
+.idea/misc.xml
+.idea/pdxStreetcar.iml
